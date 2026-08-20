@@ -32,28 +32,30 @@
       <div class="mb-3">
 
         <input
-          type="file"
-          class="form-control"
-          accept=".xlsx,.xls"
-          (change)="onFileSelected($event)"
-        />
+        #fileInput
+        type="file"
+        class="form-control"
+        accept=".xlsx,.xls"
+        [disabled]="isReading || isUploading"
+        (change)="onFileSelected($event)"
+         />
 
       </div>
 
 
       @if (isReading) {
 
-        <div class="alert alert-info">
+  <div class="alert alert-info mt-3">
 
-          <span
-            class="spinner-border spinner-border-sm me-2"
-          ></span>
+    <span
+      class="spinner-border spinner-border-sm me-2"
+    ></span>
 
-          Reading Excel file...
+    Reading Excel file, please wait...
 
-        </div>
+      </div>
 
-      }
+    }
 
 
       @if (message) {

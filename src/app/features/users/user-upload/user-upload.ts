@@ -1,5 +1,10 @@
-import { Component } from '@angular/core';
+import {
+  Component,
+  ChangeDetectorRef
+} from '@angular/core';
+
 import { CommonModule } from '@angular/common';
+
 import * as XLSX from 'xlsx';
 
 import {
@@ -7,8 +12,10 @@ import {
   UserService
 } from '../../../shared/services/user.service';
 
+
 @Component({
   selector: 'app-user-upload',
+
   standalone: true,
 
   imports: [
@@ -16,9 +23,16 @@ import {
   ],
 
   templateUrl: './user-upload.html',
+
   styleUrl: './user-upload.css'
 })
+
+
 export class UserUpload {
+
+  // =====================================================
+  // VARIABLES
+  // =====================================================
 
   selectedFile: File | null = null;
 
@@ -32,62 +46,220 @@ export class UserUpload {
 
   isUploading = false;
 
+
+  // =====================================================
+  // CONSTRUCTOR
+  // =====================================================
+
   constructor(
-    private userService: UserService
+    private userService: UserService,
+    private cdr: ChangeDetectorRef
   ) {}
+
+
+  // =====================================================
+  // FILE SELECTED
+  // =====================================================
 
   onFileSelected(event: Event): void {
 
     const input =
       event.target as HTMLInputElement;
 
+
     if (
       !input.files ||
       input.files.length === 0
     ) {
+
       return;
+
     }
 
-    this.selectedFile = input.files[0];
 
-    this.message = '';
-    this.errorMessage = '';
-    this.users = [];
+    const file =
+      input.files[0];
+
+
+    console.log('=================================');
+
+    console.log(
+      'FILE SELECTED'
+    );
+
+    console.log(
+      'Name:',
+      file.name
+    );
+
+    console.log(
+      'Size:',
+      file.size
+    );
+
+    console.log(
+      'Type:',
+      file.type
+    );
+
+    console.log('=================================');
+
+
+    this.selectedFile =
+      file;
+
+    this.users =
+      [];
+
+    this.message =
+      '';
+
+    this.errorMessage =
+      '';
+
 
     this.readExcelFile(
-      this.selectedFile
+      file
     );
 
   }
 
-  readExcelFile(file: File): void {
 
-    this.isReading = true;
+  // =====================================================
+  // READ EXCEL FILE
+  // =====================================================
 
-    const reader = new FileReader();
+  readExcelFile(
+    file: File
+  ): void {
 
-    reader.onload = (event: ProgressEvent<FileReader>) => {
+
+    // Prevent double processing
+
+    if (this.isReading) {
+
+      return;
+
+    }
+
+
+    this.isReading =
+      true;
+
+    this.message =
+      '';
+
+    this.errorMessage =
+      '';
+
+
+    // Force UI update
+
+    this.cdr.detectChanges();
+
+
+    console.log(
+      'START READING EXCEL'
+    );
+
+
+    const reader =
+      new FileReader();
+
+
+    // ===================================================
+    // FILE READER SUCCESS
+    // ===================================================
+
+    reader.onload = (
+      event: ProgressEvent<FileReader>
+    ) => {
+
+
+      console.log(
+        'FILEREADER ONLOAD'
+      );
+
 
       try {
 
-        const result = event.target?.result;
 
-        if (!result) {
-          throw new Error('Unable to read file.');
+        const result =
+          event.target?.result;
+
+
+        // -----------------------------------------------
+        // CHECK RESULT
+        // -----------------------------------------------
+
+        if (
+          !(result instanceof ArrayBuffer)
+        ) {
+
+          throw new Error(
+            'Unable to read Excel file.'
+          );
+
         }
 
+
+        console.log(
+          'ArrayBuffer size:',
+          result.byteLength
+        );
+
+
+        // -----------------------------------------------
+        // CONVERT TO UINT8ARRAY
+        // -----------------------------------------------
+
         const data =
-          new Uint8Array(result as ArrayBuffer);
+          new Uint8Array(
+            result
+          );
+
+
+        console.log(
+          'Calling XLSX.read...'
+        );
+
+
+        // -----------------------------------------------
+        // READ WORKBOOK
+        // -----------------------------------------------
 
         const workbook =
           XLSX.read(
             data,
             {
-              type: 'array'
+
+              type: 'array',
+
+              cellDates: false,
+
+              cellNF: false,
+
+              cellStyles: false,
+
+              sheetRows: 5000
+
             }
           );
 
-        if (workbook.SheetNames.length === 0) {
+
+        console.log(
+          'XLSX.READ FINISHED'
+        );
+
+
+        // -----------------------------------------------
+        // CHECK WORKSHEETS
+        // -----------------------------------------------
+
+        if (
+          !workbook.SheetNames ||
+          workbook.SheetNames.length === 0
+        ) {
 
           throw new Error(
             'Excel file contains no worksheet.'
@@ -95,21 +267,58 @@ export class UserUpload {
 
         }
 
+
         const sheetName =
           workbook.SheetNames[0];
 
+
+        console.log(
+          'Worksheet:',
+          sheetName
+        );
+
+
         const worksheet =
-          workbook.Sheets[sheetName];
+          workbook.Sheets[
+            sheetName
+          ];
+
+
+        if (!worksheet) {
+
+          throw new Error(
+            'Unable to open worksheet.'
+          );
+
+        }
+
+
+        // -----------------------------------------------
+        // CONVERT EXCEL TO JSON
+        // -----------------------------------------------
 
         const excelData =
           XLSX.utils.sheet_to_json<any>(
             worksheet,
             {
-              defval: ''
+
+              defval: '',
+
+              raw: false
+
             }
           );
 
-        if (excelData.length === 0) {
+
+        console.log(
+          'Excel rows:',
+          excelData.length
+        );
+
+
+        if (
+          excelData.length === 0
+        ) {
 
           throw new Error(
             'Excel file contains no data.'
@@ -117,18 +326,33 @@ export class UserUpload {
 
         }
 
+
+        // =================================================
+        // REQUIRED COLUMNS
+        // =================================================
+
         const requiredColumns = [
+
           'First Name',
+
           'Second Name',
+
           'Last Name',
+
           'Type',
+
           'Patient Name',
+
           'Patient Number',
+
           'Ward'
+
         ];
+
 
         const firstRow =
           excelData[0];
+
 
         const missingColumns =
           requiredColumns.filter(
@@ -136,57 +360,90 @@ export class UserUpload {
               !(column in firstRow)
           );
 
-        if (missingColumns.length > 0) {
+
+        if (
+          missingColumns.length > 0
+        ) {
 
           throw new Error(
-            `Missing columns: ${missingColumns.join(', ')}`
+            'Missing columns: ' +
+            missingColumns.join(', ')
           );
 
         }
 
-        const parsedUsers: User[] = [];
 
-        const errors: string[] = [];
+        // =================================================
+        // PARSE USERS
+        // =================================================
+
+        const parsedUsers: User[] =
+          [];
+
+        const errors: string[] =
+          [];
+
 
         excelData.forEach(
-          (row: any, index: number) => {
+          (
+            row: any,
+            index: number
+          ) => {
 
-            const rowNumber = index + 2;
+
+            const rowNumber =
+              index + 2;
+
+
+            // ---------------------------------------------
+            // READ VALUES
+            // ---------------------------------------------
 
             const firstName =
               String(
                 row['First Name'] ?? ''
               ).trim();
 
+
             const secondName =
               String(
                 row['Second Name'] ?? ''
               ).trim();
+
 
             const lastName =
               String(
                 row['Last Name'] ?? ''
               ).trim();
 
+
             const typeValue =
               String(
                 row['Type'] ?? ''
               ).trim();
+
 
             const patientName =
               String(
                 row['Patient Name'] ?? ''
               ).trim();
 
+
             const patientNumber =
               String(
                 row['Patient Number'] ?? ''
               ).trim();
 
+
             const ward =
               String(
                 row['Ward'] ?? ''
               ).trim();
+
+
+            // ---------------------------------------------
+            // VALIDATE NAME
+            // ---------------------------------------------
 
             if (
               !firstName ||
@@ -202,6 +459,11 @@ export class UserUpload {
 
             }
 
+
+            // ---------------------------------------------
+            // VALIDATE TYPE
+            // ---------------------------------------------
+
             if (
               typeValue !== 'Patient' &&
               typeValue !== 'Relative'
@@ -215,6 +477,11 @@ export class UserUpload {
 
             }
 
+
+            // ---------------------------------------------
+            // VALIDATE PATIENT NUMBER
+            // ---------------------------------------------
+
             if (!patientNumber) {
 
               errors.push(
@@ -225,6 +492,11 @@ export class UserUpload {
 
             }
 
+
+            // ---------------------------------------------
+            // VALIDATE WARD
+            // ---------------------------------------------
+
             if (!ward) {
 
               errors.push(
@@ -234,6 +506,11 @@ export class UserUpload {
               return;
 
             }
+
+
+            // ---------------------------------------------
+            // VALIDATE RELATIVE
+            // ---------------------------------------------
 
             if (
               typeValue === 'Relative' &&
@@ -248,14 +525,16 @@ export class UserUpload {
 
             }
 
+
+            // ---------------------------------------------
+            // CREATE USER
+            // ---------------------------------------------
+
             parsedUsers.push({
 
               id:
                 Date.now() +
-                index +
-                Math.floor(
-                  Math.random() * 1000
-                ),
+                index,
 
               firstName,
 
@@ -284,109 +563,319 @@ export class UserUpload {
           }
         );
 
-        if (errors.length > 0) {
+
+        // =================================================
+        // RESULTS
+        // =================================================
+
+        console.log(
+          'VALID USERS:',
+          parsedUsers.length
+        );
+
+
+        console.log(
+          'INVALID ROWS:',
+          errors.length
+        );
+
+
+        // -----------------------------------------------
+        // SAVE USERS TO COMPONENT
+        // -----------------------------------------------
+
+        this.users =
+          parsedUsers;
+
+
+        // -----------------------------------------------
+        // SUCCESS MESSAGE
+        // -----------------------------------------------
+
+        if (
+          parsedUsers.length > 0
+        ) {
+
+          this.message =
+            `${parsedUsers.length} users loaded successfully.`;
+
+        }
+
+
+        // -----------------------------------------------
+        // ERROR MESSAGE
+        // -----------------------------------------------
+
+        if (
+          errors.length > 0
+        ) {
 
           this.errorMessage =
-            errors.slice(0, 10).join('\n');
+            errors
+              .slice(0, 10)
+              .join('\n');
 
-          if (errors.length > 10) {
+
+          if (
+            errors.length > 10
+          ) {
 
             this.errorMessage +=
-              `\n...and ${errors.length - 10} more errors.`;
+              `\n...and ${
+                errors.length - 10
+              } more errors.`;
 
           }
 
         }
 
-        this.users = parsedUsers;
 
-        if (this.users.length > 0) {
+        // -----------------------------------------------
+        // NO USERS
+        // -----------------------------------------------
 
-          this.message =
-            `${this.users.length} valid users loaded.`;
+        if (
+          parsedUsers.length === 0
+        ) {
+
+          this.errorMessage =
+            'No valid users found in the Excel file.';
 
         }
 
+
       }
 
-      catch (error: any) {
+      // ==================================================
+      // ERROR
+      // ==================================================
 
-        this.users = [];
+      catch (
+        error: any
+      ) {
+
+
+        console.error(
+          'EXCEL ERROR:',
+          error
+        );
+
+
+        this.users =
+          [];
+
 
         this.errorMessage =
           error?.message ||
-          'Failed to read Excel file.';
+          'Failed to process Excel file.';
 
       }
+
+
+      // ==================================================
+      // FINALLY
+      // ==================================================
 
       finally {
 
-        this.isReading = false;
+
+        this.isReading =
+          false;
+
+
+        console.log(
+          'EXCEL PROCESS FINISHED'
+        );
+
+
+        // VERY IMPORTANT
+        // Force Angular to update the UI
+
+        this.cdr.detectChanges();
 
       }
 
     };
 
-    reader.onerror = () => {
 
-      this.isReading = false;
+    // =====================================================
+    // FILE READER ERROR
+    // =====================================================
 
-      this.errorMessage =
-        'Failed to read the selected file.';
+    reader.onerror =
+      () => {
 
-    };
 
-    reader.readAsArrayBuffer(file);
+        console.error(
+          'FILE READER ERROR'
+        );
+
+
+        this.isReading =
+          false;
+
+
+        this.errorMessage =
+          'Failed to read the selected Excel file.';
+
+
+        // Force UI update
+
+        this.cdr.detectChanges();
+
+      };
+
+
+    // =====================================================
+    // START READING
+    // =====================================================
+
+    reader.readAsArrayBuffer(
+      file
+    );
 
   }
 
+
+  // =====================================================
+  // UPLOAD USERS
+  // =====================================================
+
   uploadUsers(): void {
 
-    if (this.users.length === 0) {
 
-      this.errorMessage =
-        'No valid users available to upload.';
+    if (
+      this.isUploading ||
+      this.users.length === 0
+    ) {
 
       return;
 
     }
 
-    this.isUploading = true;
 
-    setTimeout(() => {
+    this.isUploading =
+      true;
+
+
+    this.message =
+      '';
+
+
+    this.errorMessage =
+      '';
+
+
+    // Force UI update
+
+    this.cdr.detectChanges();
+
+
+    try {
+
+
+      // -----------------------------------------------
+      // SAVE TO USER SERVICE
+      // -----------------------------------------------
 
       this.userService.addUsers(
         this.users
       );
 
+
+      const count =
+        this.users.length;
+
+
       this.message =
-        `${this.users.length} users uploaded successfully.`;
+        `${count} users uploaded successfully.`;
 
-      this.errorMessage = '';
 
-      this.users = [];
+      // -----------------------------------------------
+      // CLEAR PREVIEW
+      // -----------------------------------------------
 
-      this.selectedFile = null;
+      this.users =
+        [];
 
-      this.isUploading = false;
 
-    }, 300);
+      this.selectedFile =
+        null;
+
+
+      console.log(
+        `${count} users uploaded successfully.`
+      );
+
+
+    }
+
+    catch (
+      error
+    ) {
+
+
+      console.error(
+        'UPLOAD ERROR:',
+        error
+      );
+
+
+      this.errorMessage =
+        'Failed to upload users.';
+
+    }
+
+    finally {
+
+
+      this.isUploading =
+        false;
+
+
+      // Force UI update
+
+      this.cdr.detectChanges();
+
+    }
 
   }
 
+
+  // =====================================================
+  // CLEAR DATA
+  // =====================================================
+
   clearData(): void {
 
-    this.selectedFile = null;
 
-    this.users = [];
+    this.selectedFile =
+      null;
 
-    this.message = '';
 
-    this.errorMessage = '';
+    this.users =
+      [];
 
-    this.isReading = false;
 
-    this.isUploading = false;
+    this.message =
+      '';
+
+
+    this.errorMessage =
+      '';
+
+
+    this.isReading =
+      false;
+
+
+    this.isUploading =
+      false;
+
+
+    // Force UI update
+
+    this.cdr.detectChanges();
 
   }
 

@@ -13,108 +13,185 @@ import {
 @Component({
   selector: 'app-reports',
   standalone: true,
+
   imports: [
     CommonModule,
     FormsModule
   ],
+
   templateUrl: './reports.html',
   styleUrl: './reports.css'
 })
 export class Reports {
 
+  // =====================================================
+  // FILTERS
+  // =====================================================
+
   searchText = '';
 
   selectedType:
-    'All'
+    | 'All'
     | 'Patient'
     | 'Relative'
     = 'All';
 
   selectedStatus:
-    'All'
+    | 'All'
     | 'Visited'
     | 'Not Visited'
     = 'All';
 
   selectedDate = '';
 
+
+  // =====================================================
+  // USERS
+  // =====================================================
+
   users: User[] = [];
+
 
   constructor(
     private userService: UserService
   ) {
-    this.users = this.userService.getUsers();
+
+    this.loadUsers();
+
   }
 
 
-  // ==========================================
+  // =====================================================
+  // LOAD USERS
+  // =====================================================
+
+  loadUsers(): void {
+
+    this.users =
+      this.userService.getUsers();
+
+    console.log(
+      'REPORT USERS:',
+      this.users
+    );
+
+    console.log(
+      'TOTAL REPORT USERS:',
+      this.users.length
+    );
+
+  }
+
+
+  // =====================================================
   // SUMMARY
-  // ==========================================
+  // =====================================================
 
   get totalUsers(): number {
+
     return this.users.length;
+
   }
 
 
   get totalPatients(): number {
+
     return this.users.filter(
-      user => user.type === 'Patient'
+      user =>
+        user.type === 'Patient'
     ).length;
+
   }
 
 
   get totalRelatives(): number {
+
     return this.users.filter(
-      user => user.type === 'Relative'
+      user =>
+        user.type === 'Relative'
     ).length;
+
   }
 
 
   get totalVisited(): number {
+
     return this.users.filter(
-      user => user.visited
+      user =>
+        user.visited === true
     ).length;
+
   }
 
 
   get totalNotVisited(): number {
+
     return this.users.filter(
-      user => !user.visited
+      user =>
+        user.visited === false
     ).length;
+
   }
 
 
-  // ==========================================
+  // =====================================================
   // FILTERED USERS
-  // ==========================================
+  // =====================================================
 
   get filteredUsers(): User[] {
 
-    const search = this.searchText
-      .trim()
-      .toLowerCase();
+    const search =
+      this.searchText
+        .trim()
+        .toLowerCase();
+
 
     return this.users.filter(
       user => {
+
+        // -----------------------------------------------
+        // FULL NAME
+        // -----------------------------------------------
 
         const fullName =
           `${user.firstName} ${user.secondName} ${user.lastName}`
             .toLowerCase();
 
+
+        // -----------------------------------------------
+        // PATIENT NUMBER
+        // -----------------------------------------------
+
         const patientNumber =
-          (user.patientNumber || '')
-            .toLowerCase();
+          String(
+            user.patientNumber || ''
+          ).toLowerCase();
+
+
+        // -----------------------------------------------
+        // WARD
+        // -----------------------------------------------
 
         const ward =
-          (user.ward || '')
-            .toLowerCase();
+          String(
+            user.ward || ''
+          ).toLowerCase();
+
+
+        // -----------------------------------------------
+        // PATIENT NAME
+        // -----------------------------------------------
 
         const patientName =
-          (user.patientName || '')
-            .toLowerCase();
+          String(
+            user.patientName || ''
+          ).toLowerCase();
 
 
-        // Search
+        // -----------------------------------------------
+        // SEARCH
+        // -----------------------------------------------
+
         const matchesSearch =
           search === ''
           ||
@@ -127,35 +204,62 @@ export class Reports {
           patientName.includes(search);
 
 
-        // Type
+        // -----------------------------------------------
+        // TYPE
+        // -----------------------------------------------
+
         const matchesType =
           this.selectedType === 'All'
           ||
           user.type === this.selectedType;
 
 
-        // Status
+        // -----------------------------------------------
+        // STATUS
+        // -----------------------------------------------
+
         const matchesStatus =
           this.selectedStatus === 'All'
           ||
           (
             this.selectedStatus === 'Visited'
             &&
-            user.visited
+            user.visited === true
           )
           ||
           (
             this.selectedStatus === 'Not Visited'
             &&
-            !user.visited
+            user.visited === false
           );
 
 
-        // Date
-        const matchesDate =
-          this.selectedDate === ''
-          ||
-          user.visitDate === this.selectedDate;
+        // -----------------------------------------------
+        // DATE
+        // -----------------------------------------------
+
+        let matchesDate = true;
+
+
+        if (this.selectedDate !== '') {
+
+          if (!user.visitDate) {
+
+            matchesDate = false;
+
+          } else {
+
+            const visitDate =
+              new Date(user.visitDate)
+                .toISOString()
+                .substring(0, 10);
+
+            matchesDate =
+              visitDate === this.selectedDate;
+
+          }
+
+        }
 
 
         return (
@@ -167,56 +271,96 @@ export class Reports {
           &&
           matchesDate
         );
+
       }
     );
+
   }
 
 
-  // ==========================================
+  // =====================================================
   // EXPORT EXCEL
-  // ==========================================
+  // =====================================================
 
   exportExcel(): void {
 
+    const usersToExport =
+      this.filteredUsers;
+
+
+    console.log(
+      'EXPORTING EXCEL USERS:',
+      usersToExport
+    );
+
+
+    if (usersToExport.length === 0) {
+
+      alert(
+        'No users available to export.'
+      );
+
+      return;
+
+    }
+
+
+    // ===================================================
+    // EXCEL DATA
+    // IMPORTANT:
+    // Column names must match Excel Upload
+    // ===================================================
+
     const reportData =
-      this.filteredUsers.map(
+      usersToExport.map(
         user => ({
 
-          ID:
-            user.id,
-
           'First Name':
-            user.firstName,
+            user.firstName || '',
 
           'Second Name':
-            user.secondName,
+            user.secondName || '',
 
           'Last Name':
-            user.lastName,
+            user.lastName || '',
 
-          'Patient Number':
-            user.patientNumber || '-',
+          'Type':
+            user.type || '',
 
-          Ward:
-            user.ward || '-',
-
-          Type:
-            user.type,
-
-          Patient:
+          'Patient Name':
             user.patientName || '-',
 
-          Status:
+          'Patient Number':
+            user.patientNumber || '',
+
+          'Ward':
+            user.ward || '',
+
+          'Status':
             user.visited
               ? 'Visited'
               : 'Not Visited',
 
           'Visit Date':
-            user.visitDate || '-'
+            user.visitDate
+              ? new Date(
+                  user.visitDate
+                ).toLocaleDateString()
+              : '-'
 
         })
       );
 
+
+    console.log(
+      'EXCEL DATA:',
+      reportData
+    );
+
+
+    // ===================================================
+    // CREATE WORKSHEET
+    // ===================================================
 
     const worksheet =
       XLSX.utils.json_to_sheet(
@@ -224,31 +368,54 @@ export class Reports {
       );
 
 
-    // Column widths
+    // ===================================================
+    // COLUMN WIDTHS
+    // ===================================================
+
     worksheet['!cols'] = [
 
-      { wch: 8 },   // ID
+      {
+        wch: 18
+      },
 
-      { wch: 18 },  // First Name
+      {
+        wch: 18
+      },
 
-      { wch: 18 },  // Second Name
+      {
+        wch: 18
+      },
 
-      { wch: 18 },  // Last Name
+      {
+        wch: 15
+      },
 
-      { wch: 20 },  // Patient Number
+      {
+        wch: 30
+      },
 
-      { wch: 20 },  // Ward
+      {
+        wch: 20
+      },
 
-      { wch: 15 },  // Type
+      {
+        wch: 22
+      },
 
-      { wch: 25 },  // Patient
+      {
+        wch: 15
+      },
 
-      { wch: 15 },  // Status
-
-      { wch: 15 }   // Visit Date
+      {
+        wch: 18
+      }
 
     ];
 
+
+    // ===================================================
+    // CREATE WORKBOOK
+    // ===================================================
 
     const workbook =
       XLSX.utils.book_new();
@@ -261,33 +428,66 @@ export class Reports {
     );
 
 
+    // ===================================================
+    // DOWNLOAD
+    // ===================================================
+
     XLSX.writeFile(
       workbook,
       'FollowUp-Report.xlsx'
     );
+
+
+    console.log(
+      'EXCEL EXPORT COMPLETED'
+    );
+
   }
 
 
-  // ==========================================
+  // =====================================================
   // EXPORT PDF
-  // ==========================================
+  // =====================================================
 
   exportPDF(): void {
 
-    const doc = new jsPDF({
-      orientation: 'landscape',
-      unit: 'mm',
-      format: 'a4'
-    });
+    const usersToExport =
+      this.filteredUsers;
 
 
-    // ------------------------------------------
+    if (usersToExport.length === 0) {
+
+      alert(
+        'No users available to export.'
+      );
+
+      return;
+
+    }
+
+
+    const doc =
+      new jsPDF({
+
+        orientation: 'landscape',
+
+        unit: 'mm',
+
+        format: 'a4'
+
+      });
+
+
+    // ===================================================
     // TITLE
-    // ------------------------------------------
+    // ===================================================
 
     doc.setFontSize(18);
 
-    doc.setFont('helvetica', 'bold');
+    doc.setFont(
+      'helvetica',
+      'bold'
+    );
 
     doc.text(
       'FOLLOWUP SYSTEM REPORT',
@@ -296,13 +496,16 @@ export class Reports {
     );
 
 
-    // ------------------------------------------
-    // DATE
-    // ------------------------------------------
+    // ===================================================
+    // GENERATED DATE
+    // ===================================================
 
     doc.setFontSize(9);
 
-    doc.setFont('helvetica', 'normal');
+    doc.setFont(
+      'helvetica',
+      'normal'
+    );
 
     doc.text(
       `Generated: ${new Date().toLocaleDateString()}`,
@@ -311,11 +514,9 @@ export class Reports {
     );
 
 
-    // ------------------------------------------
+    // ===================================================
     // SUMMARY
-    // ------------------------------------------
-
-    doc.setFontSize(9);
+    // ===================================================
 
     doc.text(
       `Total Users: ${this.totalUsers}`,
@@ -348,12 +549,12 @@ export class Reports {
     );
 
 
-    // ------------------------------------------
-    // TABLE DATA
-    // ------------------------------------------
+    // ===================================================
+    // PDF TABLE DATA
+    // ===================================================
 
     const tableData =
-      this.filteredUsers.map(
+      usersToExport.map(
         user => ([
 
           user.id,
@@ -372,15 +573,19 @@ export class Reports {
             ? 'Visited'
             : 'Not Visited',
 
-          user.visitDate || '-'
+          user.visitDate
+            ? new Date(
+                user.visitDate
+              ).toLocaleDateString()
+            : '-'
 
         ])
       );
 
 
-    // ------------------------------------------
+    // ===================================================
     // PDF TABLE
-    // ------------------------------------------
+    // ===================================================
 
     autoTable(
       doc,
@@ -400,7 +605,7 @@ export class Reports {
 
           'Type',
 
-          'Patient',
+          'Patient Name',
 
           'Status',
 
@@ -492,19 +697,20 @@ export class Reports {
     );
 
 
-    // ------------------------------------------
-    // SAVE
-    // ------------------------------------------
+    // ===================================================
+    // SAVE PDF
+    // ===================================================
 
     doc.save(
       'FollowUp-Report.pdf'
     );
+
   }
 
 
-  // ==========================================
+  // =====================================================
   // PRINT
-  // ==========================================
+  // =====================================================
 
   printReport(): void {
 
