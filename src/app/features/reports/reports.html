@@ -1,0 +1,476 @@
+<div class="reports-container">
+
+
+  <!-- PAGE HEADER -->
+
+  <div class="page-header">
+
+    <div>
+
+      <h1>
+        Reports
+      </h1>
+
+      <p>
+        User and visitor reports
+      </p>
+
+    </div>
+
+
+    <!-- REPORT ACTIONS -->
+
+    <div class="report-actions">
+
+      <button
+        type="button"
+        class="pdf-button"
+        (click)="exportPDF()"
+      >
+
+        📄 Export PDF
+
+      </button>
+
+
+      <button
+        type="button"
+        class="excel-button"
+        (click)="exportExcel()"
+      >
+
+        📊 Export Excel
+
+      </button>
+
+
+      <button
+        type="button"
+        class="print-button"
+        (click)="printReport()"
+      >
+
+        🖨️ Print
+
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- SUMMARY -->
+
+  <div class="summary-grid">
+
+
+    <!-- TOTAL -->
+
+    <div class="summary-card">
+
+      <span>
+        Total Users
+      </span>
+
+      <strong>
+        {{ totalUsers }}
+      </strong>
+
+    </div>
+
+
+    <!-- PATIENTS -->
+
+    <div class="summary-card">
+
+      <span>
+        Patients
+      </span>
+
+      <strong>
+        {{ totalPatients }}
+      </strong>
+
+    </div>
+
+
+    <!-- RELATIVES -->
+
+    <div class="summary-card">
+
+      <span>
+        Relatives
+      </span>
+
+      <strong>
+        {{ totalRelatives }}
+      </strong>
+
+    </div>
+
+
+    <!-- VISITED -->
+
+    <div class="summary-card">
+
+      <span>
+        Visited
+      </span>
+
+      <strong>
+        {{ totalVisited }}
+      </strong>
+
+    </div>
+
+
+    <!-- NOT VISITED -->
+
+    <div class="summary-card">
+
+      <span>
+        Not Visited
+      </span>
+
+      <strong>
+        {{ totalNotVisited }}
+      </strong>
+
+    </div>
+
+  </div>
+
+
+  <!-- FILTERS -->
+
+  <div class="filters">
+
+
+    <!-- SEARCH -->
+
+    <div class="search-box">
+
+      <input
+        type="text"
+        placeholder="Search by name..."
+        [(ngModel)]="searchText"
+      />
+
+    </div>
+
+
+    <!-- TYPE -->
+
+    <div class="filter-box">
+
+      <select
+        [(ngModel)]="selectedType"
+      >
+
+        <option value="All">
+          All Types
+        </option>
+
+        <option value="Patient">
+          Patients
+        </option>
+
+        <option value="Relative">
+          Relatives
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <!-- STATUS -->
+
+    <div class="filter-box">
+
+      <select
+        [(ngModel)]="selectedStatus"
+      >
+
+        <option value="All">
+          All Status
+        </option>
+
+        <option value="Visited">
+          Visited
+        </option>
+
+        <option value="Not Visited">
+          Not Visited
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <!-- DATE -->
+
+    <div class="date-filter">
+
+      <input
+        type="date"
+        [(ngModel)]="selectedDate"
+      />
+
+    </div>
+
+  </div>
+
+
+  <!-- REPORT TABLE -->
+
+  <div class="report-table">
+
+    <table id="reportTable">
+
+      <thead>
+
+        <tr>
+
+          <th>
+            #
+          </th>
+
+          <th>
+            Full Name
+          </th>
+
+          <th>
+            Patient Number
+          </th>
+
+          <th>
+            Ward
+          </th>
+
+          <th>
+            Type
+          </th>
+
+          <th>
+            Patient
+          </th>
+
+          <th>
+            Status
+          </th>
+
+          <th>
+            Visit Date
+          </th>
+
+        </tr>
+
+      </thead>
+
+
+      <tbody>
+
+        @for (
+          user of filteredUsers;
+          track user.id
+        ) {
+
+          <tr>
+
+
+            <!-- ID -->
+
+            <td>
+
+              {{ user.id }}
+
+            </td>
+
+
+            <!-- FULL NAME -->
+
+            <td>
+
+              <strong>
+
+                {{ user.firstName }}
+
+                {{ user.secondName }}
+
+                {{ user.lastName }}
+
+              </strong>
+
+            </td>
+
+
+            <!-- PATIENT NUMBER -->
+
+            <td>
+
+              @if (user.patientNumber) {
+
+                <span class="patient-number">
+
+                  {{ user.patientNumber }}
+
+                </span>
+
+              }
+
+              @else {
+
+                <span class="empty-value">
+
+                  -
+
+                </span>
+
+              }
+
+            </td>
+
+
+            <!-- WARD -->
+
+            <td>
+
+              @if (user.ward) {
+
+                <span class="ward-badge">
+
+                  {{ user.ward }}
+
+                </span>
+
+              }
+
+              @else {
+
+                <span class="empty-value">
+
+                  -
+
+                </span>
+
+              }
+
+            </td>
+
+
+            <!-- TYPE -->
+
+            <td>
+
+              @if (user.type === 'Patient') {
+
+                <span class="type-badge patient">
+
+                  Patient
+
+                </span>
+
+              }
+
+              @else {
+
+                <span class="type-badge relative">
+
+                  Relative
+
+                </span>
+
+              }
+
+            </td>
+
+
+            <!-- PATIENT -->
+
+            <td>
+
+              {{ user.patientName || '-' }}
+
+            </td>
+
+
+            <!-- STATUS -->
+
+            <td>
+
+              @if (user.visited) {
+
+                <span class="visited">
+
+                  Visited
+
+                </span>
+
+              }
+
+              @else {
+
+                <span class="not-visited">
+
+                  Not Visited
+
+                </span>
+
+              }
+
+            </td>
+
+
+            <!-- VISIT DATE -->
+
+            <td>
+
+              @if (user.visitDate) {
+
+                {{ user.visitDate | date:'dd/MM/yyyy' }}
+
+              }
+
+              @else {
+
+                <span class="empty-value">
+
+                  -
+
+                </span>
+
+              }
+
+            </td>
+
+          </tr>
+
+        }
+
+
+        @empty {
+
+          <tr>
+
+            <td
+              colspan="8"
+              class="no-data"
+            >
+
+              No report data found
+
+            </td>
+
+          </tr>
+
+        }
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>

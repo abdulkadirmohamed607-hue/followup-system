@@ -1,0 +1,542 @@
+/* =====================================================
+   VISITOR CHECK
+   BLUE THEME
+   ===================================================== */
+
+.visitor-page {
+
+  background-color: #f4f8fb;
+
+  min-height: 100vh;
+
+  color: #334155;
+
+}
+
+
+/* =====================================================
+   PAGE HEADER
+   ===================================================== */
+
+.page-title {
+
+  margin: 0;
+
+  color: #075985;
+
+  font-size: 30px;
+
+  font-weight: 700;
+
+}
+
+
+.page-subtitle {
+
+  color: #64748b;
+
+  margin-top: 8px;
+
+  font-size: 15px;
+
+}
+
+
+/* =====================================================
+   FILTER CARD
+   ===================================================== */
+
+.filter-card {
+
+  background-color: #ffffff;
+
+  border-radius: 12px;
+
+  border: 1px solid #dbeafe !important;
+
+  box-shadow:
+    0 3px 10px
+    rgba(15, 76, 129, 0.08);
+
+}
+
+
+.form-label {
+
+  color: #334155;
+
+}
+
+
+.input-group-text {
+
+  background-color: #e0f2fe;
+
+  border-color: #bae6fd;
+
+  color: #0369a1;
+
+}
+
+
+.form-control,
+
+.form-select {
+
+  border-color: #cbd5e1;
+
+}
+
+
+.form-control:focus,
+
+.form-select:focus {
+
+  border-color: #38bdf8;
+
+  box-shadow:
+    0 0 0 0.2rem
+    rgba(14, 165, 233, 0.15);
+
+}
+
+
+/* =====================================================
+   RESET BUTTON
+   ===================================================== */
+
+.btn-reset {
+
+  height: 38px;
+
+  border: 1px solid #0ea5e9;
+
+  color: #0369a1;
+
+  background-color: #ffffff;
+
+}
+
+
+.btn-reset:hover {
+
+  background-color: #e0f2fe;
+
+  color: #075985;
+
+}
+
+
+/* =====================================================
+   SUMMARY CARDS
+   ===================================================== */
+
+.summary-card {
+
+  background-color: #ffffff;
+
+  border-radius: 12px;
+
+  border: 1px solid #dbeafe !important;
+
+  box-shadow:
+    0 3px 10px
+    rgba(15, 76, 129, 0.08);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+
+}
+
+
+.summary-card:hover {
+
+  transform: translateY(-3px);
+
+  box-shadow:
+    0 7px 18px
+    rgba(15, 76, 129, 0.14);
+
+}
+
+
+.summary-label {
+
+  display: block;
+
+  color: #64748b;
+
+  font-size: 13px;
+
+  font-weight: 500;
+
+  margin-bottom: 5px;
+
+}
+
+
+.summary-number {
+
+  color: #075985;
+
+  font-size: 28px;
+
+  font-weight: 700;
+
+}
+
+
+.summary-icon {
+
+  width: 52px;
+
+  height: 52px;
+
+  border-radius: 10px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  background-color: #e0f2fe;
+
+  color: #0369a1;
+
+  font-size: 25px;
+
+}
+
+
+.visited-icon {
+
+  background-color: #dcfce7;
+
+  color: #15803d;
+
+}
+
+
+.pending-icon {
+
+  background-color: #fef3c7;
+
+  color: #b45309;
+
+}
+
+
+/* =====================================================
+   TABLE CARD
+   ===================================================== */
+
+.visitor-table-card {
+
+  background-color: #ffffff;
+
+  border-radius: 12px;
+
+  border: 1px solid #dbeafe !important;
+
+  box-shadow:
+    0 3px 10px
+    rgba(15, 76, 129, 0.08);
+
+  overflow: hidden;
+
+}
+
+
+/* =====================================================
+   TABLE HEADER
+   ===================================================== */
+
+.table-header {
+
+  background-color: #ffffff;
+
+  padding: 18px 20px;
+
+  border-bottom: 1px solid #dbeafe;
+
+}
+
+
+.table-header h5 {
+
+  color: #075985;
+
+  font-weight: 700;
+
+}
+
+
+.table-header small {
+
+  color: #64748b;
+
+}
+
+
+/* =====================================================
+   TABLE
+   ===================================================== */
+
+.table {
+
+  margin-bottom: 0;
+
+}
+
+
+.table thead {
+
+  background-color: #075985;
+
+}
+
+
+.table thead th {
+
+  background-color: #075985;
+
+  color: #ffffff;
+
+  border: none;
+
+  padding: 14px;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  white-space: nowrap;
+
+}
+
+
+.table tbody td {
+
+  padding: 14px;
+
+  border-bottom: 1px solid #e2e8f0;
+
+  color: #334155;
+
+  font-size: 14px;
+
+}
+
+
+.table tbody tr {
+
+  transition:
+    background-color 0.2s ease;
+
+}
+
+
+.table tbody tr:hover {
+
+  background-color: #f0f9ff;
+
+}
+
+
+/* =====================================================
+   USER TYPE BADGES
+   ===================================================== */
+
+.patient-badge {
+
+  background-color: #e0f2fe;
+
+  color: #0369a1;
+
+  padding: 6px 11px;
+
+  border-radius: 20px;
+
+  font-weight: 600;
+
+}
+
+
+.relative-badge {
+
+  background-color: #dbeafe;
+
+  color: #1d4ed8;
+
+  padding: 6px 11px;
+
+  border-radius: 20px;
+
+  font-weight: 600;
+
+}
+
+
+/* =====================================================
+   VISIT STATUS
+   ===================================================== */
+
+.visited-badge {
+
+  background-color: #dcfce7;
+
+  color: #15803d;
+
+  padding: 6px 11px;
+
+  border-radius: 20px;
+
+  font-weight: 600;
+
+}
+
+
+.not-visited-badge {
+
+  background-color: #fef3c7;
+
+  color: #b45309;
+
+  padding: 6px 11px;
+
+  border-radius: 20px;
+
+  font-weight: 600;
+
+}
+
+
+/* =====================================================
+   ACTION BUTTONS
+   ===================================================== */
+
+.action-button {
+
+  min-width: 145px;
+
+  font-weight: 500;
+
+  transition:
+    all 0.2s ease;
+
+}
+
+
+.btn-primary {
+
+  background-color: #0284c7;
+
+  border-color: #0284c7;
+
+}
+
+
+.btn-primary:hover {
+
+  background-color: #0369a1;
+
+  border-color: #0369a1;
+
+}
+
+
+.btn-outline-primary {
+
+  color: #0369a1;
+
+  border-color: #0284c7;
+
+}
+
+
+.btn-outline-primary:hover {
+
+  background-color: #0284c7;
+
+  border-color: #0284c7;
+
+  color: #ffffff;
+
+}
+
+
+/* =====================================================
+   EMPTY STATE
+   ===================================================== */
+
+.empty-icon {
+
+  font-size: 45px;
+
+  color: #94a3b8;
+
+}
+
+
+/* =====================================================
+   RESPONSIVE
+   ===================================================== */
+
+@media (max-width: 992px) {
+
+  .page-title {
+
+    font-size: 27px;
+
+  }
+
+}
+
+
+@media (max-width: 768px) {
+
+  .visitor-page {
+
+    padding-left: 15px !important;
+
+    padding-right: 15px !important;
+
+  }
+
+
+  .page-title {
+
+    font-size: 25px;
+
+  }
+
+
+  .action-button {
+
+    min-width: 125px;
+
+    font-size: 12px;
+
+  }
+
+}
+
+
+@media (max-width: 576px) {
+
+  .page-title {
+
+    font-size: 23px;
+
+  }
+
+
+  .summary-number {
+
+    font-size: 24px;
+
+  }
+
+}

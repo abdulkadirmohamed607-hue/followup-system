@@ -1,0 +1,447 @@
+<div class="users-container">
+
+
+  <!-- PAGE HEADER -->
+
+  <div class="page-header">
+
+    <div>
+
+      <h1>
+        Users
+      </h1>
+
+      <p>
+        Manage patients and relatives
+      </p>
+
+    </div>
+
+
+    <button
+      type="button"
+      class="add-button"
+      (click)="goToAddUser()"
+    >
+
+      <i class="bi bi-person-plus me-1"></i>
+
+      Add User
+
+    </button>
+
+  </div>
+
+
+
+  <!-- FILTERS -->
+
+  <div class="filters">
+
+
+    <!-- SEARCH -->
+
+    <div class="search-box">
+
+      <i class="bi bi-search"></i>
+
+      <input
+        type="text"
+        placeholder="Search by name, patient number or ward..."
+        [(ngModel)]="searchText"
+      />
+
+    </div>
+
+
+
+    <!-- TYPE -->
+
+    <div class="type-filter">
+
+      <select
+        [(ngModel)]="selectedType"
+      >
+
+        <option value="All">
+          All Users
+        </option>
+
+        <option value="Patient">
+          Patients
+        </option>
+
+        <option value="Relative">
+          Relatives
+        </option>
+
+      </select>
+
+    </div>
+
+
+
+    <!-- RESET -->
+
+    <button
+      type="button"
+      class="reset-button"
+      (click)="resetFilters()"
+      title="Reset filters"
+    >
+
+      <i class="bi bi-arrow-clockwise"></i>
+
+    </button>
+
+  </div>
+
+
+
+  <!-- TABLE CARD -->
+
+  <div class="table-card">
+
+
+    <!-- TABLE -->
+
+    <div class="table-responsive">
+
+      <table>
+
+
+        <thead>
+
+          <tr>
+
+            <th>
+              #
+            </th>
+
+            <th>
+              First Name
+            </th>
+
+            <th>
+              Second Name
+            </th>
+
+            <th>
+              Last Name
+            </th>
+
+            <th>
+              Type
+            </th>
+
+            <th>
+              Patient Number
+            </th>
+
+            <th>
+              Ward
+            </th>
+
+            <th>
+              Patient
+            </th>
+
+            <th>
+              Visited
+            </th>
+
+            <th>
+              Visit Date
+            </th>
+
+            <th class="text-center">
+              Action
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+
+        <tbody>
+
+
+          @for (
+            user of filteredUsers;
+            track user.id
+          ) {
+
+
+            <tr>
+
+
+              <!-- ID -->
+
+              <td>
+
+                {{ user.id }}
+
+              </td>
+
+
+
+              <!-- FIRST NAME -->
+
+              <td>
+
+                {{ user.firstName }}
+
+              </td>
+
+
+
+              <!-- SECOND NAME -->
+
+              <td>
+
+                {{ user.secondName }}
+
+              </td>
+
+
+
+              <!-- LAST NAME -->
+
+              <td>
+
+                {{ user.lastName }}
+
+              </td>
+
+
+
+              <!-- TYPE -->
+
+              <td>
+
+                @if (user.type === 'Patient') {
+
+                  <span class="badge patient">
+
+                    Patient
+
+                  </span>
+
+                }
+
+                @else {
+
+                  <span class="badge relative">
+
+                    Relative
+
+                  </span>
+
+                }
+
+              </td>
+
+
+
+              <!-- PATIENT NUMBER -->
+
+              <td>
+
+                <strong class="patient-number">
+
+                  {{ user.patientNumber }}
+
+                </strong>
+
+              </td>
+
+
+
+              <!-- WARD -->
+
+              <td>
+
+                <span class="ward">
+
+                  {{ user.ward }}
+
+                </span>
+
+              </td>
+
+
+
+              <!-- PATIENT -->
+
+              <td>
+
+                @if (user.type === 'Relative') {
+
+                  {{ user.patientName }}
+
+                }
+
+                @else {
+
+                  <span class="text-muted">
+
+                    -
+
+                  </span>
+
+                }
+
+              </td>
+
+
+
+              <!-- VISITED -->
+
+              <td>
+
+                @if (user.visited) {
+
+                  <span class="badge visited">
+
+                    <i class="bi bi-check-circle me-1"></i>
+
+                    Yes
+
+                  </span>
+
+                }
+
+                @else {
+
+                  <span class="badge not-visited">
+
+                    <i class="bi bi-clock me-1"></i>
+
+                    No
+
+                  </span>
+
+                }
+
+              </td>
+
+
+
+              <!-- VISIT DATE -->
+
+              <td>
+
+                @if (user.visitDate) {
+
+                  {{ user.visitDate | date:'dd/MM/yyyy' }}
+
+                }
+
+                @else {
+
+                  <span class="text-muted">
+
+                    -
+
+                  </span>
+
+                }
+
+              </td>
+
+
+
+              <!-- ACTION -->
+
+              <td class="action-cell">
+
+
+                <button
+                  type="button"
+                  class="action-button visit"
+                  [class.active]="user.visited"
+                  (click)="toggleVisited(user)"
+                  [title]="
+                    user.visited
+                      ? 'Mark as not visited'
+                      : 'Mark as visited'
+                  "
+                >
+
+                  @if (user.visited) {
+
+                    <i class="bi bi-x-circle"></i>
+
+                  }
+
+                  @else {
+
+                    <i class="bi bi-check-circle"></i>
+
+                  }
+
+                </button>
+
+
+
+                <button
+                  type="button"
+                  class="action-button delete"
+                  (click)="deleteUser(user.id)"
+                  title="Delete user"
+                >
+
+                  <i class="bi bi-trash"></i>
+
+                </button>
+
+
+              </td>
+
+
+            </tr>
+
+
+          }
+
+
+
+          <!-- EMPTY -->
+
+          @empty {
+
+            <tr>
+
+              <td
+                colspan="11"
+                class="no-data"
+              >
+
+                <i class="bi bi-inbox"></i>
+
+                <strong>
+                  No users found
+                </strong>
+
+                <span>
+                  Try changing your search or filter.
+                </span>
+
+              </td>
+
+            </tr>
+
+          }
+
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+
+</div>

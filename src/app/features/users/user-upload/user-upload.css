@@ -1,0 +1,703 @@
+/* =========================================================
+   UPLOAD EXCEL PAGE
+   ========================================================= */
+
+.upload-page {
+
+  padding: 30px;
+
+  min-height: 100vh;
+
+  background: #f5fafd;
+
+}
+
+
+/* =========================================================
+   PAGE HEADER
+   ========================================================= */
+
+.page-header {
+
+  margin-bottom: 25px;
+
+}
+
+
+.page-header h1 {
+
+  margin: 0;
+
+  color: #1f5f8b;
+
+  font-size: 28px;
+
+  font-weight: 600;
+
+}
+
+
+.page-header p {
+
+  margin: 6px 0 0;
+
+  color: #6c757d;
+
+}
+
+
+/* =========================================================
+   UPLOAD CARD
+   ========================================================= */
+
+.upload-card {
+
+  background: #ffffff;
+
+  border: 1px solid #c9e3f2;
+
+  border-radius: 12px;
+
+  padding: 30px;
+
+  box-shadow:
+
+    0 3px 12px
+
+    rgba(31, 95, 139, 0.08);
+
+  margin-bottom: 25px;
+
+}
+
+
+/* =========================================================
+   UPLOAD ICON
+   ========================================================= */
+
+.upload-icon {
+
+  width: 60px;
+
+  height: 60px;
+
+  border-radius: 12px;
+
+  background: #eaf5fb;
+
+  color: #2f80b7;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  margin-bottom: 18px;
+
+}
+
+
+.upload-icon i {
+
+  font-size: 30px;
+
+}
+
+
+/* =========================================================
+   CONTENT
+   ========================================================= */
+
+.upload-content h2 {
+
+  margin: 0;
+
+  color: #1f5f8b;
+
+  font-size: 21px;
+
+}
+
+
+.upload-content p {
+
+  color: #6c757d;
+
+  margin-top: 7px;
+
+}
+
+
+/* =========================================================
+   EXPECTED FORMAT
+   ========================================================= */
+
+.format-info {
+
+  display: flex;
+
+  align-items: center;
+
+  flex-wrap: wrap;
+
+  gap: 8px;
+
+  margin-top: 18px;
+
+}
+
+
+.format-info strong {
+
+  color: #343a40;
+
+}
+
+
+.format-info span {
+
+  background: #eaf5fb;
+
+  color: #1f5f8b;
+
+  border: 1px solid #c9e3f2;
+
+  padding: 5px 9px;
+
+  border-radius: 5px;
+
+  font-size: 13px;
+
+}
+
+
+/* =========================================================
+   FILE SECTION
+   ========================================================= */
+
+.file-section {
+
+  margin-top: 25px;
+
+  padding: 20px;
+
+  border: 2px dashed #9bc8df;
+
+  border-radius: 10px;
+
+  background: #f8fcfe;
+
+  text-align: center;
+
+}
+
+
+.file-section:hover {
+
+  background: #eaf5fb;
+
+  border-color: #2f80b7;
+
+}
+
+
+.file-label {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  background: #2f80b7;
+
+  color: white;
+
+  padding: 11px 18px;
+
+  border-radius: 7px;
+
+  cursor: pointer;
+
+  font-weight: 500;
+
+}
+
+
+.file-label:hover {
+
+  background: #1f5f8b;
+
+}
+
+
+.file-label i {
+
+  font-size: 18px;
+
+}
+
+
+.file-section input[type="file"] {
+
+  display: none;
+
+}
+
+
+/* =========================================================
+   SELECTED FILE
+   ========================================================= */
+
+.selected-file {
+
+  margin-top: 18px;
+
+  padding: 13px 15px;
+
+  background: #eaf5fb;
+
+  border: 1px solid #c9e3f2;
+
+  border-radius: 8px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+}
+
+
+.selected-file > i {
+
+  font-size: 25px;
+
+  color: #2f80b7;
+
+}
+
+
+.selected-file div {
+
+  display: flex;
+
+  flex-direction: column;
+
+}
+
+
+.selected-file strong {
+
+  color: #1f5f8b;
+
+}
+
+
+.selected-file small {
+
+  color: #6c757d;
+
+  margin-top: 2px;
+
+}
+
+
+/* =========================================================
+   SUCCESS MESSAGE
+   ========================================================= */
+
+.success-message {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  margin-top: 18px;
+
+  padding: 12px 15px;
+
+  background: #edf7f0;
+
+  color: #3f7652;
+
+  border: 1px solid #b9d9c2;
+
+  border-radius: 7px;
+
+}
+
+
+.success-message i {
+
+  font-size: 18px;
+
+}
+
+
+/* =========================================================
+   ERROR MESSAGE
+   ========================================================= */
+
+.error-message {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  margin-top: 18px;
+
+  padding: 12px 15px;
+
+  background: #fff1f1;
+
+  color: #a64b4b;
+
+  border: 1px solid #e2bcbc;
+
+  border-radius: 7px;
+
+}
+
+
+.error-message i {
+
+  font-size: 18px;
+
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.button-group {
+
+  display: flex;
+
+  gap: 10px;
+
+  margin-top: 22px;
+
+}
+
+
+.upload-button {
+
+  background: #2f80b7;
+
+  color: #ffffff;
+
+  border: none;
+
+  padding: 10px 20px;
+
+  border-radius: 7px;
+
+  cursor: pointer;
+
+  font-size: 15px;
+
+  font-weight: 500;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+}
+
+
+.upload-button:hover {
+
+  background: #1f5f8b;
+
+}
+
+
+.upload-button:disabled {
+
+  background: #a9cddd;
+
+  cursor: not-allowed;
+
+}
+
+
+.clear-button {
+
+  background: #ffffff;
+
+  color: #2f80b7;
+
+  border: 1px solid #2f80b7;
+
+  padding: 10px 20px;
+
+  border-radius: 7px;
+
+  cursor: pointer;
+
+  font-size: 15px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+}
+
+
+.clear-button:hover {
+
+  background: #eaf5fb;
+
+}
+
+
+/* =========================================================
+   PREVIEW CARD
+   ========================================================= */
+
+.preview-card {
+
+  background: #ffffff;
+
+  border: 1px solid #c9e3f2;
+
+  border-radius: 12px;
+
+  overflow: hidden;
+
+  box-shadow:
+
+    0 3px 12px
+
+    rgba(31, 95, 139, 0.06);
+
+}
+
+
+/* =========================================================
+   PREVIEW HEADER
+   ========================================================= */
+
+.preview-header {
+
+  padding: 20px 25px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  border-bottom: 1px solid #c9e3f2;
+
+}
+
+
+.preview-header h2 {
+
+  margin: 0;
+
+  color: #1f5f8b;
+
+  font-size: 20px;
+
+}
+
+
+.preview-header p {
+
+  margin: 5px 0 0;
+
+  color: #6c757d;
+
+}
+
+
+.count-badge {
+
+  background: #2f80b7;
+
+  color: white;
+
+  min-width: 35px;
+
+  height: 35px;
+
+  padding: 0 10px;
+
+  border-radius: 20px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  font-weight: 600;
+
+}
+
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+.table-container {
+
+  overflow-x: auto;
+
+}
+
+
+table {
+
+  width: 100%;
+
+  border-collapse: collapse;
+
+}
+
+
+thead {
+
+  background: #2f80b7;
+
+  color: white;
+
+}
+
+
+th {
+
+  padding: 13px 15px;
+
+  text-align: left;
+
+  font-weight: 600;
+
+  white-space: nowrap;
+
+}
+
+
+td {
+
+  padding: 12px 15px;
+
+  border-bottom: 1px solid #eaf5fb;
+
+  color: #343a40;
+
+}
+
+
+tbody tr:hover {
+
+  background: #f5fafd;
+
+}
+
+
+/* =========================================================
+   TYPE BADGES
+   ========================================================= */
+
+.type-badge {
+
+  display: inline-block;
+
+  padding: 5px 10px;
+
+  border-radius: 20px;
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+}
+
+
+.type-badge.patient {
+
+  background: #eaf5fb;
+
+  color: #1f5f8b;
+
+}
+
+
+.type-badge.relative {
+
+  background: #dceff8;
+
+  color: #2f80b7;
+
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+  .upload-page {
+
+    padding: 15px;
+
+  }
+
+
+  .upload-card {
+
+    padding: 20px;
+
+  }
+
+
+  .format-info {
+
+    align-items: flex-start;
+
+    flex-direction: column;
+
+  }
+
+
+  .button-group {
+
+    flex-direction: column;
+
+  }
+
+
+  .upload-button,
+
+  .clear-button {
+
+    width: 100%;
+
+    justify-content: center;
+
+  }
+
+
+  .preview-header {
+
+    padding: 15px;
+
+  }
+
+}

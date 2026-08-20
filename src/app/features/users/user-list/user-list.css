@@ -1,0 +1,634 @@
+.users-container {
+
+  padding: 30px;
+
+  background: #f4f8fb;
+
+  min-height: 100vh;
+
+}
+
+
+/* =========================
+   PAGE HEADER
+========================= */
+
+.page-header {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  margin-bottom: 25px;
+
+}
+
+
+.page-header h1 {
+
+  margin: 0;
+
+  color: #123b5d;
+
+  font-size: 28px;
+
+  font-weight: 700;
+
+}
+
+
+.page-header p {
+
+  margin: 6px 0 0;
+
+  color: #6c7a86;
+
+}
+
+
+/* =========================
+   ADD BUTTON
+========================= */
+
+.add-button {
+
+  border: none;
+
+  background: #2f80b7;
+
+  color: white;
+
+  padding: 11px 18px;
+
+  border-radius: 7px;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+
+}
+
+
+.add-button:hover {
+
+  background: #246b99;
+
+  transform: translateY(-1px);
+
+}
+
+
+.add-button i {
+
+  font-size: 15px;
+
+}
+
+
+/* =========================
+   FILTERS
+========================= */
+
+.filters {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  margin-bottom: 20px;
+
+}
+
+
+.search-box {
+
+  position: relative;
+
+  flex: 1;
+
+  max-width: 550px;
+
+}
+
+
+.search-box i {
+
+  position: absolute;
+
+  left: 14px;
+
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  color: #7d96a8;
+
+}
+
+
+.search-box input {
+
+  width: 100%;
+
+  box-sizing: border-box;
+
+  padding: 12px 15px 12px 40px;
+
+  border: 1px solid #cbdce7;
+
+  border-radius: 7px;
+
+  background: white;
+
+  font-size: 14px;
+
+  outline: none;
+
+}
+
+
+.search-box input:focus {
+
+  border-color: #5aa6d1;
+
+  box-shadow:
+    0 0 0 3px rgba(47, 128, 183, 0.10);
+
+}
+
+
+.type-filter select {
+
+  min-width: 180px;
+
+  padding: 12px 14px;
+
+  border: 1px solid #cbdce7;
+
+  border-radius: 7px;
+
+  background: white;
+
+  color: #34495e;
+
+  font-size: 14px;
+
+  outline: none;
+
+}
+
+
+.type-filter select:focus {
+
+  border-color: #5aa6d1;
+
+}
+
+
+/* =========================
+   RESET BUTTON
+========================= */
+
+.reset-button {
+
+  width: 43px;
+
+  height: 43px;
+
+  border: 1px solid #cbdce7;
+
+  background: white;
+
+  color: #46718d;
+
+  border-radius: 7px;
+
+  cursor: pointer;
+
+  font-size: 16px;
+
+}
+
+
+.reset-button:hover {
+
+  background: #eaf4fa;
+
+  color: #246b99;
+
+}
+
+
+/* =========================
+   TABLE CARD
+========================= */
+
+.table-card {
+
+  background: white;
+
+  border-radius: 10px;
+
+  box-shadow:
+    0 3px 12px rgba(30, 70, 100, 0.08);
+
+  overflow: hidden;
+
+  border: 1px solid #e1edf4;
+
+}
+
+
+.table-responsive {
+
+  width: 100%;
+
+  overflow-x: auto;
+
+}
+
+
+/* =========================
+   TABLE
+========================= */
+
+table {
+
+  width: 100%;
+
+  min-width: 1250px;
+
+  border-collapse: collapse;
+
+}
+
+
+thead {
+
+  background: #dcecf6;
+
+}
+
+
+th {
+
+  padding: 14px 13px;
+
+  text-align: left;
+
+  color: #164a6b;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+
+  border-bottom: 1px solid #c8dce9;
+
+}
+
+
+td {
+
+  padding: 14px 13px;
+
+  color: #394b59;
+
+  font-size: 13px;
+
+  border-bottom: 1px solid #edf2f5;
+
+  white-space: nowrap;
+
+}
+
+
+tbody tr {
+
+  transition: background 0.15s;
+
+}
+
+
+tbody tr:hover {
+
+  background: #f5faff;
+
+}
+
+
+tbody tr:last-child td {
+
+  border-bottom: none;
+
+}
+
+
+/* =========================
+   BADGES
+========================= */
+
+.badge {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 3px;
+
+  padding: 5px 10px;
+
+  border-radius: 20px;
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+}
+
+
+.badge.patient {
+
+  background: #dceef9;
+
+  color: #21658c;
+
+}
+
+
+.badge.relative {
+
+  background: #e8f0f5;
+
+  color: #526b7a;
+
+}
+
+
+.badge.visited {
+
+  background: #dff2ea;
+
+  color: #24734f;
+
+}
+
+
+.badge.not-visited {
+
+  background: #f1f4f6;
+
+  color: #71808b;
+
+}
+
+
+.patient-number {
+
+  color: #25658b;
+
+}
+
+
+.ward {
+
+  color: #4c6676;
+
+}
+
+
+.text-muted {
+
+  color: #9aa7b0;
+
+}
+
+
+/* =========================
+   ACTIONS
+========================= */
+
+.action-cell {
+
+  text-align: center;
+
+}
+
+
+.action-button {
+
+  width: 34px;
+
+  height: 34px;
+
+  border-radius: 6px;
+
+  border: 1px solid;
+
+  margin: 0 3px;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+
+  font-size: 14px;
+
+}
+
+
+.action-button.visit {
+
+  background: #eaf5fb;
+
+  border-color: #a9cfe4;
+
+  color: #28729c;
+
+}
+
+
+.action-button.visit:hover {
+
+  background: #d7edf8;
+
+  border-color: #6eafd0;
+
+}
+
+
+.action-button.visit.active {
+
+  background: #fff3e5;
+
+  border-color: #edc58e;
+
+  color: #a86b16;
+
+}
+
+
+.action-button.delete {
+
+  background: #fff0f0;
+
+  border-color: #e8b7b7;
+
+  color: #b94a48;
+
+}
+
+
+.action-button.delete:hover {
+
+  background: #ffe0e0;
+
+  border-color: #d98c8c;
+
+}
+
+
+/* =========================
+   EMPTY STATE
+========================= */
+
+.no-data {
+
+  text-align: center;
+
+  padding: 55px 20px !important;
+
+  color: #7d8d98;
+
+}
+
+
+.no-data i {
+
+  display: block;
+
+  font-size: 42px;
+
+  color: #9db9ca;
+
+  margin-bottom: 12px;
+
+}
+
+
+.no-data strong {
+
+  display: block;
+
+  font-size: 15px;
+
+  color: #526875;
+
+  margin-bottom: 5px;
+
+}
+
+
+.no-data span {
+
+  display: block;
+
+  font-size: 13px;
+
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 900px) {
+
+  .users-container {
+
+    padding: 20px;
+
+  }
+
+
+  .page-header {
+
+    align-items: flex-start;
+
+    gap: 15px;
+
+  }
+
+
+  .filters {
+
+    flex-wrap: wrap;
+
+  }
+
+
+  .search-box {
+
+    max-width: none;
+
+    width: 100%;
+
+    flex-basis: 100%;
+
+  }
+
+
+  .type-filter {
+
+    flex: 1;
+
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  .users-container {
+
+    padding: 15px;
+
+  }
+
+
+  .page-header {
+
+    flex-direction: column;
+
+  }
+
+
+  .add-button {
+
+    width: 100%;
+
+  }
+
+
+  .type-filter {
+
+    width: 100%;
+
+  }
+
+
+  .type-filter select {
+
+    width: 100%;
+
+  }
+
+}

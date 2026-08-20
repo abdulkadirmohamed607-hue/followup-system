@@ -1,0 +1,393 @@
+<div class="dashboard-container">
+
+  <!-- PAGE HEADER -->
+  <div class="dashboard-header">
+
+    <div>
+      <h1>
+        Dashboard
+      </h1>
+
+      <p>
+        FollowUp System Overview
+      </p>
+    </div>
+
+  </div>
+
+
+  <!-- SUMMARY CARDS -->
+  <div class="stats-grid">
+
+    <!-- TOTAL USERS -->
+    <div class="stat-card">
+
+      <div class="stat-icon">
+        👥
+      </div>
+
+      <div>
+
+        <span>
+          Total Users
+        </span>
+
+        <strong>
+          {{ totalUsers }}
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <!-- PATIENTS -->
+    <div class="stat-card">
+
+      <div class="stat-icon">
+        🏥
+      </div>
+
+      <div>
+
+        <span>
+          Patients
+        </span>
+
+        <strong>
+          {{ totalPatients }}
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <!-- RELATIVES -->
+    <div class="stat-card">
+
+      <div class="stat-icon">
+        👨‍👩‍👧
+      </div>
+
+      <div>
+
+        <span>
+          Relatives
+        </span>
+
+        <strong>
+          {{ totalRelatives }}
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <!-- VISITED -->
+    <div class="stat-card">
+
+      <div class="stat-icon">
+        ✅
+      </div>
+
+      <div>
+
+        <span>
+          Visited
+        </span>
+
+        <strong>
+          {{ totalVisited }}
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <!-- NOT VISITED -->
+    <div class="stat-card">
+
+      <div class="stat-icon">
+        ⏳
+      </div>
+
+      <div>
+
+        <span>
+          Not Visited
+        </span>
+
+        <strong>
+          {{ totalNotVisited }}
+        </strong>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- RECENT USERS -->
+  <div class="recent-section">
+
+    <div class="section-header">
+
+      <div>
+
+        <h2>
+          Recent Users
+        </h2>
+
+        <span>
+          Latest registered users
+        </span>
+
+      </div>
+
+    </div>
+
+
+    <!-- TABLE -->
+    <div class="table-container">
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>
+              #
+            </th>
+
+            <th>
+              Full Name
+            </th>
+
+            <th>
+              Patient Number
+            </th>
+
+            <th>
+              Ward
+            </th>
+
+            <th>
+              Type
+            </th>
+
+            <th>
+              Patient
+            </th>
+
+            <th>
+              Status
+            </th>
+
+            <th>
+              Visit Date
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          @for (
+
+            user of recentUsers;
+
+            track user.id
+
+          ) {
+
+            <tr>
+
+              <!-- ID -->
+              <td>
+
+                {{ user.id }}
+
+              </td>
+
+
+              <!-- FULL NAME -->
+              <td>
+
+                <strong>
+
+                  {{ user.firstName }}
+
+                  {{ user.secondName }}
+
+                  {{ user.lastName }}
+
+                </strong>
+
+              </td>
+
+
+              <!-- PATIENT NUMBER -->
+              <td>
+
+                @if (user.patientNumber) {
+
+                  <span class="patient-number">
+
+                    {{ user.patientNumber }}
+
+                  </span>
+
+                }
+
+                @else {
+
+                  <span class="empty-value">
+                    -
+                  </span>
+
+                }
+
+              </td>
+
+
+              <!-- WARD -->
+              <td>
+
+                @if (user.ward) {
+
+                  <span class="ward-badge">
+
+                    {{ user.ward }}
+
+                  </span>
+
+                }
+
+                @else {
+
+                  <span class="empty-value">
+                    -
+                  </span>
+
+                }
+
+              </td>
+
+
+              <!-- TYPE -->
+              <td>
+
+                @if (user.type === 'Patient') {
+
+                  <span class="type-badge patient">
+
+                    Patient
+
+                  </span>
+
+                }
+
+                @else {
+
+                  <span class="type-badge relative">
+
+                    Relative
+
+                  </span>
+
+                }
+
+              </td>
+
+
+              <!-- PATIENT -->
+              <td>
+
+                {{ user.patientName || '-' }}
+
+              </td>
+
+
+              <!-- STATUS -->
+              <td>
+
+                @if (user.visited) {
+
+                  <span class="visited">
+
+                    Visited
+
+                  </span>
+
+                }
+
+                @else {
+
+                  <span class="not-visited">
+
+                    Not Visited
+
+                  </span>
+
+                }
+
+              </td>
+
+
+              <!-- VISIT DATE -->
+              <td>
+
+                @if (user.visitDate) {
+
+                  {{ user.visitDate | date:'dd/MM/yyyy' }}
+
+                }
+
+                @else {
+
+                  <span class="empty-value">
+                    -
+                  </span>
+
+                }
+
+              </td>
+
+            </tr>
+
+          }
+
+
+          @empty {
+
+            <tr>
+
+              <td
+                colspan="8"
+                class="no-data"
+              >
+
+                No users available
+
+              </td>
+
+            </tr>
+
+          }
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</div>

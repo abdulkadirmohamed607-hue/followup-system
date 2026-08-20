@@ -1,0 +1,85 @@
+.add-user-container {
+  padding: 30px;
+  min-height: 100vh;
+  background: #f5fafd;
+}
+
+.page-header {
+  margin-bottom: 25px;
+}
+
+.page-header h1 {
+  margin: 0;
+  color: #1f5f8b;
+}
+
+.page-header p {
+  color: #6c757d;
+}
+
+.form-card {
+  max-width: 750px;
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  border: 1px solid #c9e3f2;
+  box-shadow: 0 2px 10px rgba(31, 95, 139, 0.08);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 7px;
+  font-weight: 600;
+  color: #343a40;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid #c9e3f2;
+  border-radius: 6px;
+  outline: none;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #2f80b7;
+  box-shadow: 0 0 0 3px rgba(47, 128, 183, 0.12);
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 25px;
+}
+
+.save-button {
+  background: #2f80b7;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.save-button:hover {
+  background: #1f5f8b;
+}
+
+.cancel-button {
+  background: white;
+  color: #2f80b7;
+  border: 1px solid #2f80b7;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.cancel-button:hover {
+  background: #eaf5fb;
+}

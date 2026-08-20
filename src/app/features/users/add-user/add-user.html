@@ -1,0 +1,212 @@
+<div class="add-user-container">
+
+  <!-- HEADER -->
+
+  <div class="page-header">
+
+    <div>
+
+      <h1>
+        Add User
+      </h1>
+
+      <p>
+        Add a new patient or relative
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <!-- FORM CARD -->
+
+  <div class="form-card">
+
+    <form
+      #userForm="ngForm"
+      (ngSubmit)="saveUser(userForm)"
+    >
+
+
+      <!-- FIRST NAME -->
+
+      <div class="form-group">
+
+        <label>
+          First Name
+        </label>
+
+        <input
+          type="text"
+          name="firstName"
+          [(ngModel)]="firstName"
+          required
+          placeholder="Enter first name"
+        />
+
+      </div>
+
+
+      <!-- SECOND NAME -->
+
+      <div class="form-group">
+
+        <label>
+          Second Name
+        </label>
+
+        <input
+          type="text"
+          name="secondName"
+          [(ngModel)]="secondName"
+          required
+          placeholder="Enter second name"
+        />
+
+      </div>
+
+
+      <!-- LAST NAME -->
+
+      <div class="form-group">
+
+        <label>
+          Last Name
+        </label>
+
+        <input
+          type="text"
+          name="lastName"
+          [(ngModel)]="lastName"
+          required
+          placeholder="Enter last name"
+        />
+
+      </div>
+
+
+      <!-- USER TYPE -->
+
+      <div class="form-group">
+
+        <label>
+          User Type
+        </label>
+
+        <select
+          name="type"
+          [(ngModel)]="type"
+          required
+        >
+
+          <option value="Patient">
+            Patient
+          </option>
+
+          <option value="Relative">
+            Relative
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- PATIENT NUMBER -->
+
+      <div class="form-group">
+
+        <label>
+          Patient Number
+        </label>
+
+        <input
+          type="text"
+          name="patientNumber"
+          [(ngModel)]="patientNumber"
+          required
+          placeholder="Enter patient number"
+        />
+
+      </div>
+
+
+      <!-- WARD -->
+
+      <div class="form-group">
+
+        <label>
+          Ward
+        </label>
+
+        <input
+          type="text"
+          name="ward"
+          [(ngModel)]="ward"
+          required
+          placeholder="Enter ward"
+        />
+
+      </div>
+
+
+      <!-- PATIENT NAME FOR RELATIVE -->
+
+      @if (type === 'Relative') {
+
+        <div class="form-group">
+
+          <label>
+            Patient Name
+          </label>
+
+          <input
+            type="text"
+            name="patientName"
+            [(ngModel)]="patientName"
+            required
+            placeholder="Enter patient name"
+          />
+
+        </div>
+
+      }
+
+
+      <!-- BUTTONS -->
+
+      <div class="form-actions">
+
+        <button
+          type="submit"
+          class="save-button"
+        >
+
+          <i class="bi bi-check-circle me-1"></i>
+
+          Save User
+
+        </button>
+
+
+        <button
+          type="button"
+          class="cancel-button"
+          (click)="cancel()"
+        >
+
+          <i class="bi bi-x-circle me-1"></i>
+
+          Cancel
+
+        </button>
+
+      </div>
+
+
+    </form>
+
+  </div>
+
+</div>

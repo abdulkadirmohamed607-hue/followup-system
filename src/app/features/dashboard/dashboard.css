@@ -1,0 +1,453 @@
+.dashboard-container {
+
+  padding: 30px;
+
+  background-color: #f4f9fc;
+
+  min-height: 100vh;
+
+}
+
+
+/* ================================
+   HEADER
+================================ */
+
+.dashboard-header {
+
+  margin-bottom: 25px;
+
+}
+
+
+.dashboard-header h1 {
+
+  margin: 0;
+
+  color: #164e70;
+
+  font-size: 30px;
+
+  font-weight: 700;
+
+}
+
+
+.dashboard-header p {
+
+  color: #6c7a86;
+
+  margin-top: 8px;
+
+  margin-bottom: 0;
+
+}
+
+
+/* ================================
+   STATISTICS
+================================ */
+
+.stats-grid {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(5, 1fr);
+
+  gap: 20px;
+
+  margin-bottom: 30px;
+
+}
+
+
+.stat-card {
+
+  background-color: #ffffff;
+
+  padding: 22px;
+
+  border-radius: 12px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 15px;
+
+  border: 1px solid #dcecf5;
+
+  box-shadow:
+    0 3px 10px
+    rgba(35, 105, 140, 0.08);
+
+}
+
+
+.stat-icon {
+
+  width: 52px;
+
+  height: 52px;
+
+  border-radius: 10px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  background-color: #e5f3fa;
+
+  font-size: 25px;
+
+}
+
+
+.stat-card span {
+
+  display: block;
+
+  color: #6c7a86;
+
+  font-size: 14px;
+
+  margin-bottom: 8px;
+
+}
+
+
+.stat-card strong {
+
+  font-size: 28px;
+
+  color: #164e70;
+
+}
+
+
+/* ================================
+   RECENT USERS
+================================ */
+
+.recent-section {
+
+  background-color: #ffffff;
+
+  padding: 25px;
+
+  border-radius: 12px;
+
+  border: 1px solid #dcecf5;
+
+  box-shadow:
+    0 3px 10px
+    rgba(35, 105, 140, 0.08);
+
+}
+
+
+.section-header {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  margin-bottom: 20px;
+
+}
+
+
+.section-header h2 {
+
+  margin: 0;
+
+  color: #164e70;
+
+  font-size: 21px;
+
+}
+
+
+.section-header span {
+
+  color: #71808c;
+
+  font-size: 14px;
+
+}
+
+
+/* ================================
+   TABLE
+================================ */
+
+.table-container {
+
+  width: 100%;
+
+  overflow-x: auto;
+
+}
+
+
+table {
+
+  width: 100%;
+
+  min-width: 1050px;
+
+  border-collapse: collapse;
+
+}
+
+
+thead {
+
+  background-color: #dceff8;
+
+  color: #164e70;
+
+}
+
+
+th {
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+
+}
+
+
+th,
+
+td {
+
+  padding: 14px;
+
+  text-align: left;
+
+  border-bottom: 1px solid #e5eef3;
+
+}
+
+
+td {
+
+  color: #44515a;
+
+  font-size: 14px;
+
+}
+
+
+tbody tr:hover {
+
+  background-color: #f5fbfe;
+
+}
+
+
+/* ================================
+   PATIENT NUMBER
+================================ */
+
+.patient-number {
+
+  font-weight: 600;
+
+  color: #17678d;
+
+}
+
+
+/* ================================
+   WARD
+================================ */
+
+.ward-badge {
+
+  display: inline-block;
+
+  padding: 5px 10px;
+
+  border-radius: 6px;
+
+  background-color: #e8f4fa;
+
+  color: #17678d;
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+}
+
+
+/* ================================
+   TYPE
+================================ */
+
+.type-badge {
+
+  display: inline-block;
+
+  padding: 5px 10px;
+
+  border-radius: 15px;
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+}
+
+
+.type-badge.patient {
+
+  background-color: #dff1fa;
+
+  color: #17678d;
+
+}
+
+
+.type-badge.relative {
+
+  background-color: #eef4f7;
+
+  color: #52636d;
+
+}
+
+
+/* ================================
+   VISIT STATUS
+================================ */
+
+.visited {
+
+  display: inline-block;
+
+  padding: 5px 10px;
+
+  border-radius: 15px;
+
+  background-color: #e1f3eb;
+
+  color: #28704e;
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+}
+
+
+.not-visited {
+
+  display: inline-block;
+
+  padding: 5px 10px;
+
+  border-radius: 15px;
+
+  background-color: #fff3df;
+
+  color: #93651e;
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+}
+
+
+/* ================================
+   EMPTY VALUE
+================================ */
+
+.empty-value {
+
+  color: #a3adb4;
+
+}
+
+
+/* ================================
+   NO DATA
+================================ */
+
+.no-data {
+
+  text-align: center;
+
+  padding: 35px;
+
+  color: #7c8992;
+
+}
+
+
+/* ================================
+   RESPONSIVE
+================================ */
+
+@media (max-width: 1100px) {
+
+  .stats-grid {
+
+    grid-template-columns:
+      repeat(3, 1fr);
+
+  }
+
+}
+
+
+@media (max-width: 700px) {
+
+  .dashboard-container {
+
+    padding: 20px;
+
+  }
+
+
+  .stats-grid {
+
+    grid-template-columns:
+      repeat(2, 1fr);
+
+  }
+
+
+  .section-header {
+
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    gap: 8px;
+
+  }
+
+}
+
+
+@media (max-width: 500px) {
+
+  .stats-grid {
+
+    grid-template-columns: 1fr;
+
+  }
+
+}

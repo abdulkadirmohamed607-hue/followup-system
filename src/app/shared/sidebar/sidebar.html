@@ -1,0 +1,199 @@
+<aside class="sidebar">
+
+  <!-- ========================= -->
+  <!-- SYSTEM BRAND -->
+  <!-- ========================= -->
+
+  <div class="sidebar-header">
+
+    <div class="sidebar-logo">
+
+      <i class="bi bi-hospital"></i>
+
+    </div>
+
+    <div class="sidebar-title">
+
+      <h5>
+        FollowUp
+      </h5>
+
+      <small>
+        System
+      </small>
+
+    </div>
+
+  </div>
+
+
+  <!-- ========================= -->
+  <!-- USER INFORMATION -->
+  <!-- ========================= -->
+
+  @if (currentUser) {
+
+    <div class="user-profile">
+
+      <div class="user-avatar">
+
+        <i class="bi bi-person"></i>
+
+      </div>
+
+      <div class="user-info">
+
+        <!-- <strong>
+          {{ currentUser.fullName }}
+        </strong>
+
+        <small>
+
+          @if (currentUser.role === 'admin') {
+
+            Administrator
+
+          }
+
+          @else {
+
+            User
+
+          }
+
+        </small> -->
+
+      </div>
+
+    </div>
+
+  }
+
+
+  <!-- ========================= -->
+  <!-- NAVIGATION -->
+  <!-- ========================= -->
+
+  <nav class="sidebar-nav">
+
+    <!-- DASHBOARD -->
+
+    <a
+      routerLink="/dashboard"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="nav-item"
+    >
+
+      <i class="bi bi-speedometer2"></i>
+
+      <span>
+        Dashboard
+      </span>
+
+    </a>
+
+
+    <!-- ========================= -->
+    <!-- ADMIN MODULES -->
+    <!-- ========================= -->
+
+    @if (isAdmin) {
+
+      <!-- USERS -->
+
+      <a
+        routerLink="/users"
+        routerLinkActive="active"
+        class="nav-item"
+      >
+
+        <i class="bi bi-people"></i>
+
+        <span>
+          Users
+        </span>
+
+      </a>
+
+
+      <!-- ADD USER -->
+
+      <a
+        routerLink="/users/add"
+        routerLinkActive="active"
+        class="nav-item"
+      >
+
+        <i class="bi bi-person-plus"></i>
+
+        <span>
+          Add User
+        </span>
+
+      </a>
+
+
+      <!-- UPLOAD USERS -->
+
+      <a
+        routerLink="/upload"
+        routerLinkActive="active"
+        class="nav-item"
+      >
+
+        <i class="bi bi-file-earmark-excel"></i>
+
+        <span>
+          Upload Users
+        </span>
+
+      </a>
+
+    }
+
+
+    <!-- ========================= -->
+    <!-- VISITOR CHECK -->
+    <!-- ========================= -->
+
+    <a
+      routerLink="/visitor-check"
+      routerLinkActive="active"
+      class="nav-item"
+    >
+
+      <i class="bi bi-person-check"></i>
+
+      <span>
+        Visitor Check
+      </span>
+
+    </a>
+
+
+    <!-- ========================= -->
+    <!-- REPORTS - ADMIN ONLY -->
+    <!-- ========================= -->
+
+    @if (isAdmin) {
+
+      <a
+        routerLink="/reports"
+        routerLinkActive="active"
+        class="nav-item"
+      >
+
+        <i class="bi bi-bar-chart"></i>
+
+        <span>
+          Reports
+        </span>
+
+      </a>
+
+    }
+
+  </nav>
+
+</aside>

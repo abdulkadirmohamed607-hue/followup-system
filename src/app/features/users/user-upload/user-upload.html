@@ -1,0 +1,334 @@
+<div class="container-fluid py-4">
+
+  <!-- HEADER -->
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+
+      <h1 class="h3 mb-1">
+        Upload Excel
+      </h1>
+
+      <p class="text-muted mb-0">
+        Import patients and relatives
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <!-- UPLOAD CARD -->
+
+  <div class="card border-0 shadow-sm mb-4">
+
+    <div class="card-body p-4">
+
+      <h5 class="mb-3">
+        Select Excel File
+      </h5>
+
+      <div class="mb-3">
+
+        <input
+          type="file"
+          class="form-control"
+          accept=".xlsx,.xls"
+          (change)="onFileSelected($event)"
+        />
+
+      </div>
+
+
+      @if (isReading) {
+
+        <div class="alert alert-info">
+
+          <span
+            class="spinner-border spinner-border-sm me-2"
+          ></span>
+
+          Reading Excel file...
+
+        </div>
+
+      }
+
+
+      @if (message) {
+
+        <div class="alert alert-success">
+
+          <i class="bi bi-check-circle me-2"></i>
+
+          {{ message }}
+
+        </div>
+
+      }
+
+
+      @if (errorMessage) {
+
+        <div class="alert alert-danger">
+
+          <i class="bi bi-exclamation-triangle me-2"></i>
+
+          <pre class="mb-0">{{ errorMessage }}</pre>
+
+        </div>
+
+      }
+
+
+      <div class="d-flex gap-2">
+
+        <button
+          type="button"
+          class="btn btn-primary"
+          [disabled]="
+            users.length === 0 ||
+            isReading ||
+            isUploading
+          "
+          (click)="uploadUsers()"
+        >
+
+          @if (isUploading) {
+
+            <span
+              class="spinner-border spinner-border-sm me-2"
+            ></span>
+
+            Uploading...
+
+          }
+          @else {
+
+            <i class="bi bi-cloud-upload me-1"></i>
+
+            Upload Users
+
+          }
+
+        </button>
+
+
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          [disabled]="isReading || isUploading"
+          (click)="clearData()"
+        >
+
+          <i class="bi bi-x-circle me-1"></i>
+
+          Clear
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- EXCEL FORMAT -->
+
+  <div class="card border-0 shadow-sm mb-4">
+
+    <div class="card-body">
+
+      <h5 class="mb-3">
+        Excel Format
+      </h5>
+
+      <div class="table-responsive">
+
+        <table class="table table-bordered table-hover">
+
+          <thead class="table-primary">
+
+            <tr>
+
+              <th>First Name</th>
+
+              <th>Second Name</th>
+
+              <th>Last Name</th>
+
+              <th>Type</th>
+
+              <th>Patient Name</th>
+
+              <th>Patient Number</th>
+
+              <th>Ward</th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            <tr>
+
+              <td>John</td>
+
+              <td>Peter</td>
+
+              <td>Smith</td>
+
+              <td>Patient</td>
+
+              <td>-</td>
+
+              <td>PT-00125</td>
+
+              <td>Medical Ward</td>
+
+            </tr>
+
+            <tr>
+
+              <td>Mary</td>
+
+              <td>James</td>
+
+              <td>Smith</td>
+
+              <td>Relative</td>
+
+              <td>John Peter Smith</td>
+
+              <td>PT-00125</td>
+
+              <td>Medical Ward</td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- PREVIEW -->
+
+  @if (users.length > 0) {
+
+    <div class="card border-0 shadow-sm">
+
+      <div class="card-header bg-white">
+
+        <h5 class="mb-0">
+          Preview
+        </h5>
+
+      </div>
+
+      <div class="card-body p-0">
+
+        <div class="table-responsive">
+
+          <table class="table table-hover align-middle mb-0">
+
+            <thead class="table-primary">
+
+              <tr>
+
+                <th>#</th>
+
+                <th>First Name</th>
+
+                <th>Second Name</th>
+
+                <th>Last Name</th>
+
+                <th>Type</th>
+
+                <th>Patient</th>
+
+                <th>Patient Number</th>
+
+                <th>Ward</th>
+
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              @for (
+                user of users;
+                track user.id
+              ) {
+
+                <tr>
+
+                  <td>
+                    {{ $index + 1 }}
+                  </td>
+
+                  <td>
+                    {{ user.firstName }}
+                  </td>
+
+                  <td>
+                    {{ user.secondName }}
+                  </td>
+
+                  <td>
+                    {{ user.lastName }}
+                  </td>
+
+                  <td>
+
+                    <span
+                      class="badge"
+                      [class.text-bg-primary]="user.type === 'Patient'"
+                      [class.text-bg-light]="user.type === 'Relative'"
+                    >
+
+                      {{ user.type }}
+
+                    </span>
+
+                  </td>
+
+                  <td>
+                    {{ user.patientName }}
+                  </td>
+
+                  <td>
+                    {{ user.patientNumber }}
+                  </td>
+
+                  <td>
+                    {{ user.ward }}
+                  </td>
+
+                </tr>
+
+              }
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  }
+
+</div>
