@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import {
+  RouterLink,
+  RouterLinkActive
+} from '@angular/router';
 
 import { AuthService } from '../../core/services/auth.service';
 
@@ -19,35 +22,71 @@ import { AuthService } from '../../core/services/auth.service';
 })
 export class Sidebar {
 
+  // =====================================================
+  // MENU STATE
+  // =====================================================
+
+  menuOpen = true;
+
+
   constructor(
     private authService: AuthService
   ) {}
 
-  /**
-   * Current logged-in user
-   */
+
+  // =====================================================
+  // CURRENT USER
+  // =====================================================
+
   get currentUser() {
+
     return this.authService.getCurrentUser();
+
   }
 
-  /**
-   * Check whether logged-in user is Admin
-   */
+
+  // =====================================================
+  // ADMIN CHECK
+  // =====================================================
+
   get isAdmin(): boolean {
+
     return this.authService.isAdmin();
+
   }
 
-  /**
-   * Check whether logged-in user is Normal User
-   */
+
+  // =====================================================
+  // NORMAL USER CHECK
+  // =====================================================
+
   get isUser(): boolean {
+
     return this.authService.isUser();
+
   }
 
-  /**
-   * Logout
-   */
-  logout(): void {
-    this.authService.logout();
+
+  // =====================================================
+  // TOGGLE MENU
+  // =====================================================
+
+  toggleMenu(): void {
+
+    this.menuOpen =
+      !this.menuOpen;
+
   }
+
+
+  // =====================================================
+  // LOGOUT
+  // =====================================================
+
+  logout(): void {
+
+    this.authService.logout();
+
+  }
+
 }

@@ -1,199 +1,151 @@
 <aside class="sidebar">
 
   <!-- ========================= -->
-  <!-- SYSTEM BRAND -->
+  <!-- MENU HEADER -->
   <!-- ========================= -->
 
-  <div class="sidebar-header">
+  <div
+  class="menu-header"
+  [class.active]="menuOpen"
+  (click)="toggleMenu()"
+  role="button"
+  tabindex="0"
+  (keydown.enter)="toggleMenu()"
+  (keydown.space)="toggleMenu()"
+>
 
-    <div class="sidebar-logo">
+  <span>
+    MENU
+  </span>
 
-      <i class="bi bi-hospital"></i>
+  <span
+    class="menu-arrow"
+    [class.open]="menuOpen"
+  >
+    ▼
+  </span>
 
-    </div>
-
-    <div class="sidebar-title">
-
-      <h5>
-        FollowUp
-      </h5>
-
-      <small>
-        System
-      </small>
-
-    </div>
-
-  </div>
+</div>
 
 
   <!-- ========================= -->
-  <!-- USER INFORMATION -->
+  <!-- NAVIGATION MODULES -->
   <!-- ========================= -->
 
-  @if (currentUser) {
+  @if (menuOpen) {
 
-    <div class="user-profile">
+    <nav class="sidebar-nav">
 
-      <div class="user-avatar">
+      <!-- ========================= -->
+      <!-- DASHBOARD -->
+      <!-- ========================= -->
 
-        <i class="bi bi-person"></i>
+      <a
+        routerLink="/dashboard"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="nav-item"
+      >
 
-      </div>
+        <span>
+          Dashboard
+        </span>
 
-      <div class="user-info">
+      </a>
 
-        <!-- <strong>
-          {{ currentUser.fullName }}
-        </strong>
 
-        <small>
+      <!-- ========================= -->
+      <!-- ADMIN MODULES -->
+      <!-- ========================= -->
 
-          @if (currentUser.role === 'admin') {
+      @if (isAdmin) {
 
-            Administrator
+        <!-- USERS -->
 
-          }
+        <a
+          routerLink="/users"
+          routerLinkActive="active"
+          class="nav-item"
+        >
 
-          @else {
+          <span>
+            Users
+          </span>
 
-            User
+        </a>
 
-          }
 
-        </small> -->
+        <!-- ADD USER -->
 
-      </div>
+        <a
+          routerLink="/users/add"
+          routerLinkActive="active"
+          class="nav-item"
+        >
 
-    </div>
+          <span>
+            Add User
+          </span>
+
+        </a>
+
+
+        <!-- UPLOAD USERS -->
+
+        <a
+          routerLink="/upload"
+          routerLinkActive="active"
+          class="nav-item"
+        >
+
+          <span>
+            Upload Users
+          </span>
+
+        </a>
+
+      }
+
+
+      <!-- ========================= -->
+      <!-- VISITOR CHECK -->
+      <!-- ========================= -->
+
+      <a
+        routerLink="/visitor-check"
+        routerLinkActive="active"
+        class="nav-item"
+      >
+
+        <span>
+          Visitor Check
+        </span>
+
+      </a>
+
+
+      <!-- ========================= -->
+      <!-- REPORTS -->
+      <!-- ========================= -->
+
+      @if (isAdmin) {
+
+        <a
+          routerLink="/reports"
+          routerLinkActive="active"
+          class="nav-item"
+        >
+
+          <span>
+            Reports
+          </span>
+
+        </a>
+
+      }
+
+    </nav>
 
   }
-
-
-  <!-- ========================= -->
-  <!-- NAVIGATION -->
-  <!-- ========================= -->
-
-  <nav class="sidebar-nav">
-
-    <!-- DASHBOARD -->
-
-    <a
-      routerLink="/dashboard"
-      routerLinkActive="active"
-      [routerLinkActiveOptions]="{ exact: true }"
-      class="nav-item"
-    >
-
-      <i class="bi bi-speedometer2"></i>
-
-      <span>
-        Dashboard
-      </span>
-
-    </a>
-
-
-    <!-- ========================= -->
-    <!-- ADMIN MODULES -->
-    <!-- ========================= -->
-
-    @if (isAdmin) {
-
-      <!-- USERS -->
-
-      <a
-        routerLink="/users"
-        routerLinkActive="active"
-        class="nav-item"
-      >
-
-        <i class="bi bi-people"></i>
-
-        <span>
-          Users
-        </span>
-
-      </a>
-
-
-      <!-- ADD USER -->
-
-      <a
-        routerLink="/users/add"
-        routerLinkActive="active"
-        class="nav-item"
-      >
-
-        <i class="bi bi-person-plus"></i>
-
-        <span>
-          Add User
-        </span>
-
-      </a>
-
-
-      <!-- UPLOAD USERS -->
-
-      <a
-        routerLink="/upload"
-        routerLinkActive="active"
-        class="nav-item"
-      >
-
-        <i class="bi bi-file-earmark-excel"></i>
-
-        <span>
-          Upload Users
-        </span>
-
-      </a>
-
-    }
-
-
-    <!-- ========================= -->
-    <!-- VISITOR CHECK -->
-    <!-- ========================= -->
-
-    <a
-      routerLink="/visitor-check"
-      routerLinkActive="active"
-      class="nav-item"
-    >
-
-      <i class="bi bi-person-check"></i>
-
-      <span>
-        Visitor Check
-      </span>
-
-    </a>
-
-
-    <!-- ========================= -->
-    <!-- REPORTS - ADMIN ONLY -->
-    <!-- ========================= -->
-
-    @if (isAdmin) {
-
-      <a
-        routerLink="/reports"
-        routerLinkActive="active"
-        class="nav-item"
-      >
-
-        <i class="bi bi-bar-chart"></i>
-
-        <span>
-          Reports
-        </span>
-
-      </a>
-
-    }
-
-  </nav>
 
 </aside>
