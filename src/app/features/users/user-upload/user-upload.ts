@@ -1,540 +1,252 @@
 import {
-  Component,
-  ChangeDetectorRef
+  ChangeDetectorRef,
+  Component
 } from '@angular/core';
 
-import { CommonModule } from '@angular/common';
+import {
+  FormsModule
+} from '@angular/forms';
 
 import * as XLSX from 'xlsx';
 
+import { Patient } from '../../../core/models/patient';
+
 import {
-  User,
-  UserService
-} from '../../../shared/services/user.service';
+  PatientService
+} from '../../../core/services/patient.service';
 
 
 @Component({
   selector: 'app-user-upload',
-
   standalone: true,
 
   imports: [
-    CommonModule
+    FormsModule
   ],
 
   templateUrl: './user-upload.html',
-
   styleUrl: './user-upload.css'
 })
-
-
 export class UserUpload {
 
-  // =====================================================
-  // VARIABLES
-  // =====================================================
+  selectedFile:
+    File | null = null;
 
-  selectedFile: File | null = null;
+  patients:
+    Patient[] = [];
 
-  users: User[] = [];
+  isReading =
+    false;
 
-  message = '';
+  isUploading =
+    false;
 
-  errorMessage = '';
+  message =
+    '';
 
-  isReading = false;
+  errorMessage =
+    '';
 
-  isUploading = false;
-
-
-  // =====================================================
-  // CONSTRUCTOR
-  // =====================================================
 
   constructor(
-    private userService: UserService,
+    private patientService: PatientService,
     private cdr: ChangeDetectorRef
   ) {}
 
 
   // =====================================================
-  // FILE SELECTED
+  // FILE SELECT
   // =====================================================
 
-  onFileSelected(event: Event): void {
+  onFileSelected(
+    event: Event
+  ): void {
+
+    this.message = '';
+
+    this.errorMessage = '';
 
     const input =
       event.target as HTMLInputElement;
-
 
     if (
       !input.files ||
       input.files.length === 0
     ) {
 
+      this.selectedFile = null;
+
       return;
 
     }
 
-
-    const file =
+    this.selectedFile =
       input.files[0];
 
-
-    console.log('=================================');
-
-    console.log(
-      'FILE SELECTED'
-    );
-
-    console.log(
-      'Name:',
-      file.name
-    );
-
-    console.log(
-      'Size:',
-      file.size
-    );
-
-    console.log(
-      'Type:',
-      file.type
-    );
-
-    console.log('=================================');
-
-
-    this.selectedFile =
-      file;
-
-    this.users =
-      [];
-
-    this.message =
-      '';
-
-    this.errorMessage =
-      '';
-
-
-    this.readExcelFile(
-      file
-    );
+    this.readExcel();
 
   }
 
 
   // =====================================================
-  // READ EXCEL FILE
+  // READ EXCEL
   // =====================================================
 
-  readExcelFile(
-    file: File
-  ): void {
+  private readExcel(): void {
 
-
-    // Prevent double processing
-
-    if (this.isReading) {
+    if (!this.selectedFile) {
 
       return;
 
     }
 
+    this.isReading = true;
 
-    this.isReading =
-      true;
-
-    this.message =
-      '';
-
-    this.errorMessage =
-      '';
-
-
-    // Force UI update
-
-    this.cdr.detectChanges();
-
-
-    console.log(
-      'START READING EXCEL'
-    );
-
+    this.patients = [];
 
     const reader =
       new FileReader();
 
 
-    // ===================================================
-    // FILE READER SUCCESS
-    // ===================================================
-
     reader.onload = (
       event: ProgressEvent<FileReader>
     ) => {
 
-
-      console.log(
-        'FILEREADER ONLOAD'
-      );
-
-
       try {
 
-
-        const result =
-          event.target?.result;
-
-
-        // -----------------------------------------------
-        // CHECK RESULT
-        // -----------------------------------------------
-
-        if (
-          !(result instanceof ArrayBuffer)
-        ) {
-
-          throw new Error(
-            'Unable to read Excel file.'
-          );
-
-        }
-
-
-        console.log(
-          'ArrayBuffer size:',
-          result.byteLength
-        );
-
-
-        // -----------------------------------------------
-        // CONVERT TO UINT8ARRAY
-        // -----------------------------------------------
-
         const data =
-          new Uint8Array(
-            result
-          );
-
-
-        console.log(
-          'Calling XLSX.read...'
-        );
-
-
-        // -----------------------------------------------
-        // READ WORKBOOK
-        // -----------------------------------------------
+          event.target?.result;
 
         const workbook =
           XLSX.read(
             data,
             {
-
-              type: 'array',
-
-              cellDates: false,
-
-              cellNF: false,
-
-              cellStyles: false,
-
-              sheetRows: 5000
-
+              type: 'array'
             }
           );
 
+        const firstSheetName =
+          workbook.SheetNames[0];
 
-        console.log(
-          'XLSX.READ FINISHED'
-        );
-
-
-        // -----------------------------------------------
-        // CHECK WORKSHEETS
-        // -----------------------------------------------
-
-        if (
-          !workbook.SheetNames ||
-          workbook.SheetNames.length === 0
-        ) {
+        if (!firstSheetName) {
 
           throw new Error(
-            'Excel file contains no worksheet.'
+            'Excel file does not contain a worksheet.'
           );
 
         }
-
-
-        const sheetName =
-          workbook.SheetNames[0];
-
-
-        console.log(
-          'Worksheet:',
-          sheetName
-        );
-
 
         const worksheet =
           workbook.Sheets[
-            sheetName
+            firstSheetName
           ];
 
-
-        if (!worksheet) {
-
-          throw new Error(
-            'Unable to open worksheet.'
-          );
-
-        }
-
-
-        // -----------------------------------------------
-        // CONVERT EXCEL TO JSON
-        // -----------------------------------------------
-
-        const excelData =
+        const rows =
           XLSX.utils.sheet_to_json<any>(
             worksheet,
             {
-
-              defval: '',
-
-              raw: false
-
+              defval: ''
             }
           );
 
 
-        console.log(
-          'Excel rows:',
-          excelData.length
-        );
-
-
-        if (
-          excelData.length === 0
-        ) {
+        if (rows.length === 0) {
 
           throw new Error(
-            'Excel file contains no data.'
+            'The Excel sheet is empty.'
           );
 
         }
 
 
-        // =================================================
-        // REQUIRED COLUMNS
-        // =================================================
-
-        const requiredColumns = [
-
-          'First Name',
-
-          'Second Name',
-
-          'Last Name',
-
-          'Type',
-
-          'Patient Name',
-
-          'Patient Number',
-
-          'Ward'
-
-        ];
+        const importedPatients:
+          Patient[] = [];
 
 
-        const firstRow =
-          excelData[0];
-
-
-        const missingColumns =
-          requiredColumns.filter(
-            column =>
-              !(column in firstRow)
-          );
-
-
-        if (
-          missingColumns.length > 0
-        ) {
-
-          throw new Error(
-            'Missing columns: ' +
-            missingColumns.join(', ')
-          );
-
-        }
-
-
-        // =================================================
-        // PARSE USERS
-        // =================================================
-
-        const parsedUsers: User[] =
-          [];
-
-        const errors: string[] =
-          [];
-
-
-        excelData.forEach(
-          (
-            row: any,
-            index: number
-          ) => {
-
-
-            const rowNumber =
-              index + 2;
-
-
-            // ---------------------------------------------
-            // READ VALUES
-            // ---------------------------------------------
+        rows.forEach(
+          (row: any, index: number) => {
 
             const firstName =
-              String(
-                row['First Name'] ?? ''
-              ).trim();
-
+              this.getValue(
+                row,
+                [
+                  'First Name',
+                  'firstName',
+                  'FirstName'
+                ]
+              );
 
             const secondName =
-              String(
-                row['Second Name'] ?? ''
-              ).trim();
-
+              this.getValue(
+                row,
+                [
+                  'Second Name',
+                  'secondName',
+                  'SecondName',
+                  'Middle Name'
+                ]
+              );
 
             const lastName =
-              String(
-                row['Last Name'] ?? ''
-              ).trim();
-
-
-            const typeValue =
-              String(
-                row['Type'] ?? ''
-              ).trim();
-
-
-            const patientName =
-              String(
-                row['Patient Name'] ?? ''
-              ).trim();
-
+              this.getValue(
+                row,
+                [
+                  'Last Name',
+                  'lastName',
+                  'LastName'
+                ]
+              );
 
             const patientNumber =
-              String(
-                row['Patient Number'] ?? ''
-              ).trim();
-
+              this.getValue(
+                row,
+                [
+                  'Patient Number',
+                  'patientNumber',
+                  'PatientNumber'
+                ]
+              );
 
             const ward =
-              String(
-                row['Ward'] ?? ''
-              ).trim();
+              this.getValue(
+                row,
+                [
+                  'Ward',
+                  'ward'
+                ]
+              );
 
+            const admissionDate =
+              this.getValue(
+                row,
+                [
+                  'Admission Date',
+                  'admissionDate',
+                  'AdmissionDate'
+                ]
+              );
 
-            // ---------------------------------------------
-            // VALIDATE NAME
-            // ---------------------------------------------
 
             if (
               !firstName ||
               !secondName ||
-              !lastName
+              !lastName ||
+              !patientNumber ||
+              !ward
             ) {
 
-              errors.push(
-                `Row ${rowNumber}: Name fields are required.`
+              throw new Error(
+                `Row ${index + 2} is missing required patient information.`
               );
-
-              return;
 
             }
 
 
-            // ---------------------------------------------
-            // VALIDATE TYPE
-            // ---------------------------------------------
-
-            if (
-              typeValue !== 'Patient' &&
-              typeValue !== 'Relative'
-            ) {
-
-              errors.push(
-                `Row ${rowNumber}: Type must be Patient or Relative.`
-              );
-
-              return;
-
-            }
-
-
-            // ---------------------------------------------
-            // VALIDATE PATIENT NUMBER
-            // ---------------------------------------------
-
-            if (!patientNumber) {
-
-              errors.push(
-                `Row ${rowNumber}: Patient Number is required.`
-              );
-
-              return;
-
-            }
-
-
-            // ---------------------------------------------
-            // VALIDATE WARD
-            // ---------------------------------------------
-
-            if (!ward) {
-
-              errors.push(
-                `Row ${rowNumber}: Ward is required.`
-              );
-
-              return;
-
-            }
-
-
-            // ---------------------------------------------
-            // VALIDATE RELATIVE
-            // ---------------------------------------------
-
-            if (
-              typeValue === 'Relative' &&
-              !patientName
-            ) {
-
-              errors.push(
-                `Row ${rowNumber}: Patient Name is required for Relative.`
-              );
-
-              return;
-
-            }
-
-
-            // ---------------------------------------------
-            // CREATE USER
-            // ---------------------------------------------
-
-            parsedUsers.push({
+            importedPatients.push({
 
               id:
-                Date.now() +
-                index,
+                this.patientService.generateId()
+                + index,
 
               firstName,
 
@@ -542,21 +254,20 @@ export class UserUpload {
 
               lastName,
 
-              type:
-                typeValue === 'Relative'
-                  ? 'Relative'
-                  : 'Patient',
-
-              patientName:
-                patientName || '-',
-
               patientNumber,
 
               ward,
 
-              visited: false,
+              admissionDate:
+                this.normalizeDate(
+                  admissionDate
+                ),
 
-              visitDate: null
+              status:
+                'Admitted',
+
+              createdAt:
+                new Date().toISOString()
 
             });
 
@@ -564,132 +275,23 @@ export class UserUpload {
         );
 
 
-        // =================================================
-        // RESULTS
-        // =================================================
+        this.patients =
+          importedPatients;
 
-        console.log(
-          'VALID USERS:',
-          parsedUsers.length
-        );
+        this.message =
+          `${this.patients.length} patient(s) loaded successfully. Review the preview before uploading.`;
 
+      } catch (error: any) {
 
-        console.log(
-          'INVALID ROWS:',
-          errors.length
-        );
-
-
-        // -----------------------------------------------
-        // SAVE USERS TO COMPONENT
-        // -----------------------------------------------
-
-        this.users =
-          parsedUsers;
-
-
-        // -----------------------------------------------
-        // SUCCESS MESSAGE
-        // -----------------------------------------------
-
-        if (
-          parsedUsers.length > 0
-        ) {
-
-          this.message =
-            `${parsedUsers.length} users loaded successfully.`;
-
-        }
-
-
-        // -----------------------------------------------
-        // ERROR MESSAGE
-        // -----------------------------------------------
-
-        if (
-          errors.length > 0
-        ) {
-
-          this.errorMessage =
-            errors
-              .slice(0, 10)
-              .join('\n');
-
-
-          if (
-            errors.length > 10
-          ) {
-
-            this.errorMessage +=
-              `\n...and ${
-                errors.length - 10
-              } more errors.`;
-
-          }
-
-        }
-
-
-        // -----------------------------------------------
-        // NO USERS
-        // -----------------------------------------------
-
-        if (
-          parsedUsers.length === 0
-        ) {
-
-          this.errorMessage =
-            'No valid users found in the Excel file.';
-
-        }
-
-
-      }
-
-      // ==================================================
-      // ERROR
-      // ==================================================
-
-      catch (
-        error: any
-      ) {
-
-
-        console.error(
-          'EXCEL ERROR:',
-          error
-        );
-
-
-        this.users =
-          [];
-
+        this.patients = [];
 
         this.errorMessage =
           error?.message ||
-          'Failed to process Excel file.';
+          'Failed to read Excel file.';
 
-      }
+      } finally {
 
-
-      // ==================================================
-      // FINALLY
-      // ==================================================
-
-      finally {
-
-
-        this.isReading =
-          false;
-
-
-        console.log(
-          'EXCEL PROCESS FINISHED'
-        );
-
-
-        // VERY IMPORTANT
-        // Force Angular to update the UI
+        this.isReading = false;
 
         this.cdr.detectChanges();
 
@@ -698,142 +300,154 @@ export class UserUpload {
     };
 
 
-    // =====================================================
-    // FILE READER ERROR
-    // =====================================================
+    reader.onerror = () => {
 
-    reader.onerror =
-      () => {
+      this.isReading = false;
 
+      this.errorMessage =
+        'Unable to read the selected Excel file.';
 
-        console.error(
-          'FILE READER ERROR'
-        );
+      this.cdr.detectChanges();
 
+    };
 
-        this.isReading =
-          false;
-
-
-        this.errorMessage =
-          'Failed to read the selected Excel file.';
-
-
-        // Force UI update
-
-        this.cdr.detectChanges();
-
-      };
-
-
-    // =====================================================
-    // START READING
-    // =====================================================
 
     reader.readAsArrayBuffer(
-      file
+      this.selectedFile
     );
 
   }
 
 
   // =====================================================
-  // UPLOAD USERS
+  // GET VALUE
   // =====================================================
 
-  uploadUsers(): void {
+  private getValue(
+    row: any,
+    keys: string[]
+  ): string {
+
+    for (const key of keys) {
+
+      if (
+        row[key] !== undefined &&
+        row[key] !== null
+      ) {
+
+        return String(
+          row[key]
+        ).trim();
+
+      }
+
+    }
+
+    return '';
+
+  }
+
+
+  // =====================================================
+  // NORMALIZE DATE
+  // =====================================================
+
+  private normalizeDate(
+    value: any
+  ): string {
+
+    if (!value) {
+
+      return new Date()
+        .toISOString()
+        .split('T')[0];
+
+    }
 
 
     if (
-      this.isUploading ||
-      this.users.length === 0
+      typeof value === 'number'
+    ) {
+
+      const date =
+        XLSX.SSF.parse_date_code(
+          value
+        );
+
+      if (date) {
+
+        return [
+          date.y,
+          String(date.m).padStart(2, '0'),
+          String(date.d).padStart(2, '0')
+        ].join('-');
+
+      }
+
+    }
+
+
+    const parsed =
+      new Date(value);
+
+    if (!isNaN(
+      parsed.getTime()
+    )) {
+
+      return parsed
+        .toISOString()
+        .split('T')[0];
+
+    }
+
+
+    return String(value);
+
+  }
+
+
+  // =====================================================
+  // UPLOAD
+  // =====================================================
+
+  uploadPatients(): void {
+
+    if (
+      this.patients.length === 0
     ) {
 
       return;
 
     }
 
+    this.isUploading = true;
 
-    this.isUploading =
-      true;
+    this.message = '';
 
-
-    this.message =
-      '';
-
-
-    this.errorMessage =
-      '';
-
-
-    // Force UI update
-
-    this.cdr.detectChanges();
+    this.errorMessage = '';
 
 
     try {
 
-
-      // -----------------------------------------------
-      // SAVE TO USER SERVICE
-      // -----------------------------------------------
-
-      this.userService.addUsers(
-        this.users
+      this.patientService.addPatients(
+        this.patients
       );
-
-
-      const count =
-        this.users.length;
-
 
       this.message =
-        `${count} users uploaded successfully.`;
+        `${this.patients.length} patient(s) uploaded successfully.`;
 
+      this.patients = [];
 
-      // -----------------------------------------------
-      // CLEAR PREVIEW
-      // -----------------------------------------------
+      this.selectedFile = null;
 
-      this.users =
-        [];
-
-
-      this.selectedFile =
-        null;
-
-
-      console.log(
-        `${count} users uploaded successfully.`
-      );
-
-
-    }
-
-    catch (
-      error
-    ) {
-
-
-      console.error(
-        'UPLOAD ERROR:',
-        error
-      );
-
+    } catch {
 
       this.errorMessage =
-        'Failed to upload users.';
+        'Failed to upload patients.';
 
-    }
+    } finally {
 
-    finally {
-
-
-      this.isUploading =
-        false;
-
-
-      // Force UI update
+      this.isUploading = false;
 
       this.cdr.detectChanges();
 
@@ -843,37 +457,22 @@ export class UserUpload {
 
 
   // =====================================================
-  // CLEAR DATA
+  // CLEAR
   // =====================================================
 
   clearData(): void {
 
+    this.selectedFile = null;
 
-    this.selectedFile =
-      null;
+    this.patients = [];
 
+    this.message = '';
 
-    this.users =
-      [];
+    this.errorMessage = '';
 
+    this.isReading = false;
 
-    this.message =
-      '';
-
-
-    this.errorMessage =
-      '';
-
-
-    this.isReading =
-      false;
-
-
-    this.isUploading =
-      false;
-
-
-    // Force UI update
+    this.isUploading = false;
 
     this.cdr.detectChanges();
 

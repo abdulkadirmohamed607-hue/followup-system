@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
-import { FormsModule, NgForm } from '@angular/forms';
+import {
+  FormsModule,
+  NgForm
+} from '@angular/forms';
 import { Router } from '@angular/router';
 
-import {
-  User,
-  UserService
-} from '../../../shared/services/user.service';
+import { Patient } from '../../../core/models/patient';
+import { PatientService } from '../../../core/services/patient.service';
 
 @Component({
   selector: 'app-add-user',
@@ -26,42 +27,54 @@ export class AddUser {
 
   lastName = '';
 
-  type: 'Patient' | 'Relative' = 'Patient';
-
   patientNumber = '';
 
   ward = '';
 
-  patientName = '';
+  admissionDate =
+    new Date().toISOString().split('T')[0];
+
+  status:
+    'Admitted' | 'Discharged'
+    = 'Admitted';
 
 
   constructor(
     private router: Router,
-    private userService: UserService
+    private patientService: PatientService
   ) {}
 
 
-  saveUser(form: NgForm): void {
+  // =====================================================
+  // SAVE PATIENT
+  // =====================================================
+
+  savePatient(form: NgForm): void {
 
     if (form.invalid) {
 
-      alert('Please fill all required fields.');
+      alert(
+        'Please fill all required patient fields.'
+      );
 
       return;
+
     }
 
 
-    const newUser: User = {
+    const patient: Patient = {
 
-      id: this.generateUserId(),
+      id:
+        this.patientService.generateId(),
 
-      firstName: this.firstName.trim(),
+      firstName:
+        this.firstName.trim(),
 
-      secondName: this.secondName.trim(),
+      secondName:
+        this.secondName.trim(),
 
-      lastName: this.lastName.trim(),
-
-      type: this.type,
+      lastName:
+        this.lastName.trim(),
 
       patientNumber:
         this.patientNumber.trim(),
@@ -69,53 +82,44 @@ export class AddUser {
       ward:
         this.ward.trim(),
 
-      patientName:
-        this.type === 'Relative'
-          ? this.patientName.trim()
-          : '-',
+      admissionDate:
+        this.admissionDate,
 
-      visited: false,
+      status:
+        this.status,
 
-      visitDate: null
+      createdAt:
+        new Date().toISOString()
 
     };
 
 
-    this.userService.addUser(newUser);
+    this.patientService.addPatient(
+      patient
+    );
 
 
-    alert('User added successfully!');
+    alert(
+      'Patient added successfully!'
+    );
 
 
-    this.router.navigate(['/users']);
-
-  }
-
-
-  private generateUserId(): number {
-
-    const users = this.userService.getUsers();
-
-
-    if (users.length === 0) {
-
-      return 1;
-
-    }
-
-
-    return Math.max(
-
-      ...users.map(user => user.id)
-
-    ) + 1;
+    this.router.navigate(
+      ['/users']
+    );
 
   }
 
+
+  // =====================================================
+  // CANCEL
+  // =====================================================
 
   cancel(): void {
 
-    this.router.navigate(['/users']);
+    this.router.navigate(
+      ['/users']
+    );
 
   }
 

@@ -1,11 +1,7 @@
 .reports-container {
-
   padding: 30px;
-
   background-color: #f4f9fc;
-
   min-height: 100vh;
-
 }
 
 
@@ -14,39 +10,23 @@
 ================================ */
 
 .page-header {
-
   display: flex;
-
   justify-content: space-between;
-
   align-items: center;
-
   margin-bottom: 25px;
-
 }
-
 
 .page-header h1 {
-
   margin: 0;
-
   color: #164e70;
-
   font-size: 30px;
-
   font-weight: 700;
-
 }
 
-
 .page-header p {
-
   margin-top: 8px;
-
   margin-bottom: 0;
-
   color: #6c7a86;
-
 }
 
 
@@ -55,65 +35,35 @@
 ================================ */
 
 .report-actions {
-
   display: flex;
-
   gap: 10px;
-
   flex-wrap: wrap;
-
 }
-
 
 .report-actions button {
-
   border: none;
-
   padding: 11px 16px;
-
   border-radius: 7px;
-
   color: white;
-
   cursor: pointer;
-
   font-size: 14px;
-
   font-weight: 600;
-
-  transition:
-    0.2s ease;
-
 }
-
 
 .pdf-button {
-
-  background-color: #2f7395;
-
+  background: #2f7395;
 }
-
 
 .excel-button {
-
-  background-color: #4383a0;
-
+  background: #4383a0;
 }
-
 
 .print-button {
-
-  background-color: #5c8da3;
-
+  background: #5c8da3;
 }
 
-
 .report-actions button:hover {
-
-  transform: translateY(-1px);
-
   opacity: 0.9;
-
 }
 
 
@@ -122,55 +72,30 @@
 ================================ */
 
 .summary-grid {
-
   display: grid;
-
-  grid-template-columns:
-    repeat(5, 1fr);
-
-  gap: 20px;
-
+  grid-template-columns: repeat(5, 1fr);
+  gap: 18px;
   margin-bottom: 25px;
-
 }
-
 
 .summary-card {
-
   background-color: white;
-
-  padding: 22px;
-
+  padding: 20px;
   border-radius: 10px;
-
   border: 1px solid #dcecf5;
-
-  box-shadow:
-    0 3px 10px
-    rgba(35, 105, 140, 0.08);
-
+  box-shadow: 0 3px 10px rgba(35, 105, 140, 0.08);
 }
-
 
 .summary-card span {
-
   display: block;
-
   color: #6c7a86;
-
   margin-bottom: 10px;
-
-  font-size: 14px;
-
+  font-size: 13px;
 }
 
-
 .summary-card strong {
-
-  font-size: 28px;
-
+  font-size: 27px;
   color: #164e70;
-
 }
 
 
@@ -179,274 +104,143 @@
 ================================ */
 
 .filters {
-
   display: flex;
-
-  gap: 15px;
-
+  gap: 12px;
   margin-bottom: 25px;
-
   flex-wrap: wrap;
-
 }
-
 
 .search-box input,
-
 .filter-box select,
-
 .date-filter input {
-
   padding: 11px 13px;
-
   border: 1px solid #cbdde7;
-
   border-radius: 7px;
-
   font-size: 14px;
-
   background-color: white;
-
   color: #40515c;
-
 }
-
 
 .search-box input {
-
-  width: 280px;
-
+  width: 300px;
 }
-
 
 .filter-box select {
-
-  min-width: 160px;
-
+  min-width: 150px;
 }
-
 
 .date-filter input {
-
   min-width: 160px;
-
 }
 
-
-.search-box input:focus,
-
-.filter-box select:focus,
-
-.date-filter input:focus {
-
-  outline: none;
-
-  border-color: #5b9fbd;
-
-  box-shadow:
-    0 0 0 3px
-    rgba(91, 159, 189, 0.12);
-
+.reset-button {
+  width: 43px;
+  border: 1px solid #cbdde7;
+  background: white;
+  color: #46718d;
+  border-radius: 7px;
+  cursor: pointer;
 }
 
 
 /* ================================
-   REPORT TABLE
+   TABLE
 ================================ */
 
 .report-table {
-
   background-color: white;
-
   border-radius: 10px;
-
   overflow-x: auto;
-
   border: 1px solid #dcecf5;
-
-  box-shadow:
-    0 3px 10px
-    rgba(35, 105, 140, 0.08);
-
+  box-shadow: 0 3px 10px rgba(35, 105, 140, 0.08);
 }
-
 
 .report-table table {
-
   width: 100%;
-
-  min-width: 1050px;
-
+  min-width: 1500px;
   border-collapse: collapse;
-
 }
-
 
 .report-table thead {
-
   background-color: #dceff8;
-
-  color: #164e70;
-
 }
-
-
-.report-table th {
-
-  font-size: 13px;
-
-  font-weight: 700;
-
-  white-space: nowrap;
-
-}
-
 
 .report-table th,
-
 .report-table td {
-
-  padding: 14px;
-
+  padding: 13px;
   text-align: left;
-
   border-bottom: 1px solid #e5eef3;
-
+  white-space: nowrap;
 }
 
+.report-table th {
+  color: #164e70;
+  font-size: 13px;
+  font-weight: 700;
+}
 
 .report-table td {
-
   color: #44515a;
-
-  font-size: 14px;
-
+  font-size: 13px;
 }
-
 
 .report-table tbody tr:hover {
-
   background-color: #f5fbfe;
-
 }
 
 
 /* ================================
-   PATIENT NUMBER
+   BADGES
 ================================ */
 
 .patient-number {
-
-  font-weight: 600;
-
   color: #17678d;
-
+  font-weight: 600;
 }
-
-
-/* ================================
-   WARD
-================================ */
 
 .ward-badge {
-
   display: inline-block;
-
-  padding: 5px 10px;
-
+  padding: 5px 9px;
   border-radius: 6px;
-
   background-color: #e8f4fa;
-
   color: #17678d;
-
   font-size: 12px;
-
   font-weight: 600;
-
 }
 
-
-/* ================================
-   TYPE
-================================ */
-
-.type-badge {
-
+.session-badge {
   display: inline-block;
-
-  padding: 5px 10px;
-
+  padding: 5px 9px;
   border-radius: 15px;
-
-  font-size: 12px;
-
-  font-weight: 600;
-
-}
-
-
-.type-badge.patient {
-
-  background-color: #dff1fa;
-
+  background: #e8f4fa;
   color: #17678d;
-
+  font-size: 12px;
+  font-weight: 600;
 }
 
-
-.type-badge.relative {
-
-  background-color: #eef4f7;
-
-  color: #52636d;
-
+.session-badge.evening {
+  background: #eef0f7;
+  color: #53627b;
 }
 
-
-/* ================================
-   VISITED
-================================ */
-
-.visited {
-
+.completed {
   display: inline-block;
-
-  padding: 5px 10px;
-
+  padding: 5px 9px;
   border-radius: 15px;
-
-  background-color: #e1f3eb;
-
+  background: #e1f3eb;
   color: #28704e;
-
   font-size: 12px;
-
   font-weight: 600;
-
 }
 
-
-/* ================================
-   NOT VISITED
-================================ */
-
-.not-visited {
-
+.checked-in {
   display: inline-block;
-
-  padding: 5px 10px;
-
+  padding: 5px 9px;
   border-radius: 15px;
-
-  background-color: #fff3df;
-
+  background: #fff3df;
   color: #93651e;
-
   font-size: 12px;
-
   font-weight: 600;
-
 }
 
 
@@ -454,25 +248,17 @@
    EMPTY
 ================================ */
 
-.empty-value {
-
-  color: #a3adb4;
-
+.no-data {
+  text-align: center;
+  padding: 45px !important;
+  color: #7c8992;
 }
 
-
-/* ================================
-   NO DATA
-================================ */
-
-.no-data {
-
-  text-align: center;
-
-  padding: 35px;
-
-  color: #7c8992;
-
+.no-data i {
+  display: block;
+  font-size: 38px;
+  margin-bottom: 10px;
+  color: #9db9ca;
 }
 
 
@@ -483,72 +269,45 @@
 @media (max-width: 1100px) {
 
   .summary-grid {
-
-    grid-template-columns:
-      repeat(3, 1fr);
-
+    grid-template-columns: repeat(3, 1fr);
   }
 
 }
-
 
 @media (max-width: 800px) {
 
   .page-header {
-
     flex-direction: column;
-
     align-items: flex-start;
-
     gap: 20px;
-
   }
-
 
   .summary-grid {
-
-    grid-template-columns:
-      repeat(2, 1fr);
-
+    grid-template-columns: repeat(2, 1fr);
   }
 
-
   .search-box input {
-
     width: 100%;
-
   }
 
 }
 
-
 @media (max-width: 600px) {
 
   .reports-container {
-
     padding: 20px;
-
   }
-
 
   .summary-grid {
-
     grid-template-columns: 1fr;
-
   }
-
 
   .report-actions {
-
     width: 100%;
-
   }
 
-
   .report-actions button {
-
     flex: 1;
-
   }
 
 }

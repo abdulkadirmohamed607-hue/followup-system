@@ -1,121 +1,169 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import {
+  Component,
+  computed,
+  signal
+} from '@angular/core';
 
 import {
-  User,
-  UserService
-} from '../../../shared/services/user.service';
+  FormsModule
+} from '@angular/forms';
+
+import {
+  Router
+} from '@angular/router';
+
+import {
+  Patient
+} from '../../../core/models/patient';
+
+import {
+  PatientService
+} from '../../../core/services/patient.service';
 
 
 @Component({
   selector: 'app-user-list',
-
   standalone: true,
 
   imports: [
-    CommonModule,
     FormsModule
   ],
 
   templateUrl: './user-list.html',
-
   styleUrl: './user-list.css'
 })
 export class UserList {
 
-  searchText = '';
+  searchTerm =
+    signal('');
 
-  selectedType = 'All';
+  selectedStatus =
+    signal<'All' | 'Admitted' | 'Discharged'>(
+      'All'
+    );
 
 
   constructor(
-    private userService: UserService,
+    private patientService: PatientService,
     private router: Router
   ) {}
 
 
-  get users(): User[] {
+  // =====================================================
+  // PATIENTS
+  // =====================================================
 
-    return this.userService.getUsers();
+  get patients(): Patient[] {
+
+    return this.patientService.getPatients();
 
   }
 
 
-  get filteredUsers(): User[] {
+  // =====================================================
+  // FILTERED PATIENTS
+  // =====================================================
 
-    const search =
-      this.searchText
-        .toLowerCase()
-        .trim();
+  filteredPatients =
+    computed(() => {
 
-
-    return this.users.filter(user => {
-
-      const fullName =
-        `${user.firstName} ${user.secondName} ${user.lastName}`
+      const search =
+        this.searchTerm()
+          .trim()
           .toLowerCase();
 
-
-      const matchesSearch =
-        fullName.includes(search) ||
-
-        user.patientNumber
-          .toLowerCase()
-          .includes(search) ||
-
-        user.ward
-          .toLowerCase()
-          .includes(search) ||
-
-        user.patientName
-          .toLowerCase()
-          .includes(search);
+      const status =
+        this.selectedStatus();
 
 
-      const matchesType =
-        this.selectedType === 'All' ||
+      return this.patients.filter(
+        patient => {
 
-        user.type === this.selectedType;
+          const fullName =
+            `${patient.firstName} ${patient.secondName} ${patient.lastName}`
+              .toLowerCase();
+
+          const matchesSearch =
+            !search ||
+            fullName.includes(search) ||
+            patient.patientNumber
+              .toLowerCase()
+              .includes(search) ||
+            patient.ward
+              .toLowerCase()
+              .includes(search);
 
 
-      return matchesSearch && matchesType;
+          const matchesStatus =
+            status === 'All' ||
+            patient.status === status;
+
+
+          return (
+            matchesSearch &&
+            matchesStatus
+          );
+
+        }
+      );
 
     });
 
+
+  // =====================================================
+  // COUNTS
+  // =====================================================
+
+  get totalPatients(): number {
+
+    return this.patients.length;
+
   }
 
 
-  goToAddUser(): void {
+  get admittedPatients(): number {
 
-    this.router.navigate([
-      '/users/add'
-    ]);
+    return this.patients.filter(
+      patient =>
+        patient.status === 'Admitted'
+    ).length;
 
   }
 
 
-  deleteUser(id: number): void {
+  get dischargedPatients(): number {
 
-    const user =
-      this.users.find(
-        item => item.id === id
-      );
+    return this.patients.filter(
+      patient =>
+        patient.status === 'Discharged'
+    ).length;
+
+  }
 
 
-    if (!user) {
+  // =====================================================
+  // ADD
+  // =====================================================
 
-      return;
+  addPatient(): void {
 
-    }
+    this.router.navigate(
+      ['/users/add']
+    );
 
+  }
+
+
+  // =====================================================
+  // DELETE
+  // =====================================================
+
+  deletePatient(id: number): void {
 
     const confirmed =
       confirm(
-        `Are you sure you want to delete ${user.firstName} ${user.lastName}?`
+        'Are you sure you want to delete this patient?'
       );
-
 
     if (!confirmed) {
 
@@ -123,26 +171,65 @@ export class UserList {
 
     }
 
-
-    this.userService.deleteUser(id);
-
-  }
-
-
-  toggleVisited(user: User): void {
-
-    this.userService.toggleVisited(
-      user.id
+    this.patientService.deletePatient(
+      id
     );
 
   }
 
 
+  // =====================================================
+  // RESET
+  // =====================================================
+
   resetFilters(): void {
 
-    this.searchText = '';
+    this.searchTerm.set('');
 
-    this.selectedType = 'All';
+    this.selectedStatus.set(
+      'All'
+    );
+
+  }
+
+
+  // =====================================================
+  // UPDATE SEARCH
+  // =====================================================
+
+  onSearchChange(
+    value: string
+  ): void {
+
+    this.searchTerm.set(value);
+
+  }
+
+
+  // =====================================================
+  // UPDATE STATUS
+  // =====================================================
+
+  onStatusChange(
+    value: string
+  ): void {
+
+    if (
+      value === 'Admitted' ||
+      value === 'Discharged'
+    ) {
+
+      this.selectedStatus.set(
+        value
+      );
+
+    } else {
+
+      this.selectedStatus.set(
+        'All'
+      );
+
+    }
 
   }
 

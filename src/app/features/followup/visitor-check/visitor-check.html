@@ -1,506 +1,657 @@
-<div class="container-fluid py-4 visitor-page">
+<div class="visitor-container">
 
-  <!-- PAGE HEADER -->
-  <div class="d-flex justify-content-between align-items-center mb-4">
+  <!-- HEADER -->
+
+  <div class="page-header">
 
     <div>
-      <h1 class="page-title">
-        Visitor Check
+
+      <h1>
+        Visit Check
       </h1>
 
-      <p class="page-subtitle mb-0">
-        Check and manage daily visitors
+      <p>
+        Check and manage patient visitors
       </p>
+
     </div>
 
   </div>
 
 
-  <!-- FILTERS -->
-  <div class="card filter-card border-0 mb-4">
+  <!-- MESSAGE -->
 
-    <div class="card-body">
+  @if (message) {
 
-      <div class="row g-3">
+    <div class="alert alert-success">
 
-        <!-- SEARCH -->
-        <div class="col-md-5">
+      <i class="bi bi-check-circle me-2"></i>
 
-          <label class="form-label fw-semibold">
-            Search User
-          </label>
+      {{ message }}
 
-          <div class="input-group">
+    </div>
 
-            <span class="input-group-text">
-              <i class="bi bi-search"></i>
-            </span>
+  }
 
-            <input
-              type="text"
-              class="form-control"
-              placeholder="Search by name..."
-              [(ngModel)]="searchText"
-            />
+
+  @if (errorMessage) {
+
+    <div class="alert alert-danger">
+
+      <i class="bi bi-exclamation-triangle me-2"></i>
+
+      {{ errorMessage }}
+
+    </div>
+
+  }
+
+
+  <!-- SESSION -->
+
+  <div class="session-card">
+
+    <div>
+
+      <span class="session-title">
+        Visiting Session
+      </span>
+
+      <small>
+        Maximum 2 visitors per patient per session
+      </small>
+
+    </div>
+
+
+    <div class="session-buttons">
+
+      <button
+        type="button"
+        [class.active]="selectedSession === 'Day'"
+        (click)="selectSession('Day')"
+      >
+
+        <i class="bi bi-sun me-1"></i>
+
+        Day
+
+      </button>
+
+
+      <button
+        type="button"
+        [class.active]="selectedSession === 'Evening'"
+        (click)="selectSession('Evening')"
+      >
+
+        <i class="bi bi-moon-stars me-1"></i>
+
+        Evening
+
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- SEARCH -->
+
+  <div class="search-card">
+
+    <div class="search-box">
+
+      <i class="bi bi-search"></i>
+
+      <input
+        type="text"
+        [(ngModel)]="searchText"
+        placeholder="Search patient by name, number or ward..."
+      />
+
+    </div>
+
+  </div>
+
+
+  <!-- PATIENT LIST -->
+
+  <div class="patients-card">
+
+    <div class="card-header">
+
+      <div>
+
+        <h3>
+          Patients
+        </h3>
+
+        <span>
+          {{ today }}
+        </span>
+
+      </div>
+
+      <span class="session-label">
+
+        @if (selectedSession === 'Day') {
+          Day
+        }
+        @else {
+          Evening
+        }
+
+      </span>
+
+    </div>
+
+
+    <div class="table-responsive">
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>#</th>
+
+            <th>Patient</th>
+
+            <th>Patient Number</th>
+
+            <th>Ward</th>
+
+            <th>Visitor 1</th>
+
+            <th>Visitor 2</th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          @for (
+            patient of filteredPatients;
+            track patient.id
+          ) {
+
+            <tr>
+
+              <td>
+                {{ $index + 1 }}
+              </td>
+
+
+              <td>
+
+                <strong>
+
+                  {{ getPatientName(patient) }}
+
+                </strong>
+
+              </td>
+
+
+              <td>
+
+                <span class="patient-number">
+
+                  {{ patient.patientNumber }}
+
+                </span>
+
+              </td>
+
+
+              <td>
+
+                <span class="ward">
+
+                  {{ patient.ward }}
+
+                </span>
+
+              </td>
+
+
+              <!-- VISITOR 1 -->
+
+              <td>
+
+                @if (
+                  !isSlotUsed(patient, 1)
+                ) {
+
+                  <button
+                    type="button"
+                    class="visitor-button"
+                    (click)="openVisitorForm(patient, 1)"
+                  >
+
+                    <i class="bi bi-person-plus"></i>
+
+                    Check Visitor 1
+
+                  </button>
+
+                }
+                @else {
+
+                  <div
+                    class="visitor-status"
+                    [class.completed]="
+                      !isCheckedIn(patient, 1)
+                    "
+                  >
+
+                    @if (
+                      isCheckedIn(patient, 1)
+                    ) {
+
+                      <span>
+                        <i class="bi bi-person-check"></i>
+                        Checked In
+                      </span>
+
+                      <button
+                        type="button"
+                        (click)="checkout(getSlot(patient, 1)!)"
+                      >
+
+                        Check Out
+
+                      </button>
+
+                    }
+                    @else {
+
+                      <span>
+
+                        <i class="bi bi-check-circle"></i>
+
+                        Completed
+
+                      </span>
+
+                    }
+
+                  </div>
+
+                }
+
+              </td>
+
+
+              <!-- VISITOR 2 -->
+
+              <td>
+
+                @if (
+                  !isSlotUsed(patient, 2)
+                ) {
+
+                  <button
+                    type="button"
+                    class="visitor-button"
+                    (click)="openVisitorForm(patient, 2)"
+                  >
+
+                    <i class="bi bi-person-plus"></i>
+
+                    Check Visitor 2
+
+                  </button>
+
+                }
+                @else {
+
+                  <div
+                    class="visitor-status"
+                    [class.completed]="
+                      !isCheckedIn(patient, 2)
+                    "
+                  >
+
+                    @if (
+                      isCheckedIn(patient, 2)
+                    ) {
+
+                      <span>
+                        <i class="bi bi-person-check"></i>
+                        Checked In
+                      </span>
+
+                      <button
+                        type="button"
+                        (click)="checkout(getSlot(patient, 2)!)"
+                      >
+
+                        Check Out
+
+                      </button>
+
+                    }
+                    @else {
+
+                      <span>
+
+                        <i class="bi bi-check-circle"></i>
+
+                        Completed
+
+                      </span>
+
+                    }
+
+                  </div>
+
+                }
+
+              </td>
+
+            </tr>
+
+          }
+
+
+          @empty {
+
+            <tr>
+
+              <td
+                colspan="6"
+                class="no-data"
+              >
+
+                <i class="bi bi-person-x"></i>
+
+                <strong>
+                  No admitted patients found
+                </strong>
+
+              </td>
+
+            </tr>
+
+          }
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+
+  <!-- VISITOR FORM -->
+
+  @if (
+    showVisitorForm &&
+    selectedPatient
+  ) {
+
+    <div class="modal-backdrop-custom">
+
+      <div class="visitor-modal">
+
+        <div class="modal-header">
+
+          <div>
+
+            <h2>
+              Check Visitor
+            </h2>
+
+            <p>
+              Visitor {{ selectedSlot }}
+            </p>
 
           </div>
 
-        </div>
-
-
-        <!-- TYPE FILTER -->
-        <div class="col-md-3">
-
-          <label class="form-label fw-semibold">
-            User Type
-          </label>
-
-          <select
-            class="form-select"
-            [(ngModel)]="selectedType"
-          >
-
-            <option value="All">
-              All Users
-            </option>
-
-            <option value="Patient">
-              Patients
-            </option>
-
-            <option value="Relative">
-              Relatives
-            </option>
-
-          </select>
-
-        </div>
-
-
-        <!-- STATUS FILTER -->
-        <div class="col-md-3">
-
-          <label class="form-label fw-semibold">
-            Visit Status
-          </label>
-
-          <select
-            class="form-select"
-            [(ngModel)]="selectedStatus"
-          >
-
-            <option value="All">
-              All Status
-            </option>
-
-            <option value="Visited">
-              Visited
-            </option>
-
-            <option value="Not Visited">
-              Not Visited
-            </option>
-
-          </select>
-
-        </div>
-
-
-        <!-- RESET -->
-        <div class="col-md-1 d-flex align-items-end">
 
           <button
             type="button"
-            class="btn btn-reset w-100"
-            (click)="resetFilters()"
-            title="Reset Filters"
+            class="close-button"
+            (click)="closeForm()"
           >
 
-            <i class="bi bi-arrow-clockwise"></i>
+            <i class="bi bi-x-lg"></i>
 
           </button>
 
         </div>
 
-      </div>
 
-    </div>
+        <!-- PATIENT INFORMATION -->
 
-  </div>
+        <div class="patient-info">
+
+          <div>
+
+            <span>
+              Patient
+            </span>
+
+            <strong>
+              {{ getPatientName(selectedPatient) }}
+            </strong>
+
+          </div>
 
 
-  <!-- SUMMARY -->
-  <div class="row g-3 mb-4">
+          <div>
 
-    <!-- TOTAL -->
-    <div class="col-md-4">
+            <span>
+              Patient Number
+            </span>
 
-      <div class="card summary-card border-0">
+            <strong>
+              {{ selectedPatient.patientNumber }}
+            </strong>
 
-        <div class="card-body">
+          </div>
 
-          <div class="d-flex justify-content-between align-items-center">
 
-            <div>
+          <div>
 
-              <small class="summary-label">
-                Total Users
-              </small>
+            <span>
+              Ward
+            </span>
 
-              <h3 class="summary-number mb-0">
-                {{ users.length }}
-              </h3>
+            <strong>
+              {{ selectedPatient.ward }}
+            </strong>
 
-            </div>
+          </div>
 
-            <div class="summary-icon">
-              <i class="bi bi-people"></i>
-            </div>
+
+          <div>
+
+            <span>
+              Session
+            </span>
+
+            <strong>
+
+              @if (selectedSession === 'Day') {
+                Day
+              }
+              @else {
+                Evening
+              }
+
+            </strong>
 
           </div>
 
         </div>
 
-      </div>
 
-    </div>
+        <!-- FORM -->
 
+        <form
+          #visitorForm="ngForm"
+          (ngSubmit)="saveVisitor(visitorForm)"
+        >
 
-    <!-- VISITED -->
-    <div class="col-md-4">
-
-      <div class="card summary-card border-0">
-
-        <div class="card-body">
-
-          <div class="d-flex justify-content-between align-items-center">
-
-            <div>
-
-              <small class="summary-label">
-                Visited
-              </small>
-
-              <h3 class="summary-number mb-0">
-                {{ visitedCount }}
-              </h3>
-
-            </div>
-
-            <div class="summary-icon visited-icon">
-              <i class="bi bi-check-circle"></i>
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </div>
+          <div class="form-grid">
 
 
-    <!-- NOT VISITED -->
-    <div class="col-md-4">
+            <!-- FIRST -->
 
-      <div class="card summary-card border-0">
+            <div class="form-group">
 
-        <div class="card-body">
-
-          <div class="d-flex justify-content-between align-items-center">
-
-            <div>
-
-              <small class="summary-label">
-                Not Visited
-              </small>
-
-              <h3 class="summary-number mb-0">
-                {{ notVisitedCount }}
-              </h3>
-
-            </div>
-
-            <div class="summary-icon pending-icon">
-              <i class="bi bi-clock"></i>
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </div>
-
-  </div>
-
-
-  <!-- TABLE -->
-  <div class="card visitor-table-card border-0">
-
-    <div class="card-header table-header">
-
-      <div>
-
-        <h5 class="mb-1">
-          Visitor Records
-        </h5>
-
-        <small>
-          Daily visitor monitoring
-        </small>
-
-      </div>
-
-    </div>
-
-
-    <div class="card-body p-0">
-
-      <div class="table-responsive">
-
-        <table class="table table-hover align-middle mb-0">
-
-          <thead>
-
-            <tr>
-
-              <th class="px-3">
-                #
-              </th>
-
-              <th>
+              <label>
                 First Name
-              </th>
+              </label>
 
-              <th>
+              <input
+                type="text"
+                name="visitorFirstName"
+                [(ngModel)]="visitorFirstName"
+                required
+                placeholder="Visitor first name"
+              />
+
+            </div>
+
+
+            <!-- SECOND -->
+
+            <div class="form-group">
+
+              <label>
                 Second Name
-              </th>
+              </label>
 
-              <th>
+              <input
+                type="text"
+                name="visitorSecondName"
+                [(ngModel)]="visitorSecondName"
+                required
+                placeholder="Visitor second name"
+              />
+
+            </div>
+
+
+            <!-- LAST -->
+
+            <div class="form-group">
+
+              <label>
                 Last Name
-              </th>
+              </label>
 
-              <th>
-                Type
-              </th>
+              <input
+                type="text"
+                name="visitorLastName"
+                [(ngModel)]="visitorLastName"
+                required
+                placeholder="Visitor last name"
+              />
 
-              <th>
-                Patient
-              </th>
+            </div>
 
-              <th>
-                Visit Status
-              </th>
 
-              <th>
-                Visit Date
-              </th>
+            <!-- PHONE -->
 
-              <th class="text-center">
-                Action
-              </th>
+            <div class="form-group">
 
-            </tr>
+              <label>
+                Phone Number
+              </label>
 
-          </thead>
+              <input
+                type="tel"
+                name="visitorPhone"
+                [(ngModel)]="visitorPhone"
+                required
+                placeholder="e.g. 0712345678"
+              />
 
+            </div>
 
-          <tbody>
 
-            @for (
+            <!-- CHECK IN -->
 
-              user of filteredUsers;
+            <div class="form-group">
 
-              track user.id
+              <label>
+                Check-in Time
+              </label>
 
-            ) {
+              <input
+                type="datetime-local"
+                name="checkIn"
+                [(ngModel)]="checkIn"
+                required
+              />
 
-              <tr>
+            </div>
 
-                <td class="px-3">
-                  {{ user.id }}
-                </td>
 
+            <!-- SESSION -->
 
-                <td>
-                  {{ user.firstName }}
-                </td>
+            <div class="form-group">
 
+              <label>
+                Visiting Session
+              </label>
 
-                <td>
-                  {{ user.secondName }}
-                </td>
+              <input
+                type="text"
+                [value]="
+                  selectedSession === 'Day'
+                    ? 'Day'
+                    : 'Evening'
+                "
+                readonly
+              />
 
+            </div>
 
-                <td>
-                  {{ user.lastName }}
-                </td>
+          </div>
 
 
-                <!-- TYPE -->
-                <td>
+          <div class="form-actions">
 
-                  @if (user.type === 'Patient') {
+            <button
+              type="button"
+              class="cancel-button"
+              (click)="closeForm()"
+            >
 
-                    <span class="badge patient-badge">
+              Cancel
 
-                      Patient
+            </button>
 
-                    </span>
 
-                  }
+            <button
+              type="submit"
+              class="save-button"
+            >
 
-                  @else {
+              <i class="bi bi-person-check me-1"></i>
 
-                    <span class="badge relative-badge">
+              Check Visitor
 
-                      Relative
+            </button>
 
-                    </span>
+          </div>
 
-                  }
-
-                </td>
-
-
-                <!-- PATIENT -->
-                <td>
-                  {{ user.patientName }}
-                </td>
-
-
-                <!-- STATUS -->
-                <td>
-
-                  @if (user.visited) {
-
-                    <span class="badge visited-badge">
-
-                      <i class="bi bi-check-circle me-1"></i>
-
-                      Visited
-
-                    </span>
-
-                  }
-
-                  @else {
-
-                    <span class="badge not-visited-badge">
-
-                      <i class="bi bi-clock me-1"></i>
-
-                      Not Visited
-
-                    </span>
-
-                  }
-
-                </td>
-
-
-                <!-- DATE -->
-                <td>
-
-                  @if (user.visitDate) {
-
-                    {{ user.visitDate | date:'dd/MM/yyyy' }}
-
-                  }
-
-                  @else {
-
-                    <span class="text-muted">
-                      -
-                    </span>
-
-                  }
-
-                </td>
-
-
-                <!-- ACTION -->
-                <td class="text-center">
-
-                  @if (user.visited) {
-
-                    <button
-
-                      type="button"
-
-                      class="btn btn-sm btn-outline-primary action-button"
-
-                      (click)="toggleVisited(user)"
-
-                    >
-
-                      <i class="bi bi-x-circle me-1"></i>
-
-                      Mark Not Visited
-
-                    </button>
-
-                  }
-
-                  @else {
-
-                    <button
-
-                      type="button"
-
-                      class="btn btn-sm btn-primary action-button"
-
-                      (click)="toggleVisited(user)"
-
-                    >
-
-                      <i class="bi bi-check-circle me-1"></i>
-
-                      Mark Visited
-
-                    </button>
-
-                  }
-
-                </td>
-
-              </tr>
-
-            }
-
-
-            @empty {
-
-              <tr>
-
-                <td
-
-                  colspan="9"
-
-                  class="text-center text-muted py-5"
-
-                >
-
-                  <i class="bi bi-inbox empty-icon d-block mb-2"></i>
-
-                  No users found
-
-                </td>
-
-              </tr>
-
-            }
-
-          </tbody>
-
-        </table>
+        </form>
 
       </div>
 
     </div>
 
-  </div>
+  }
 
 </div>

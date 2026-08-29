@@ -1,18 +1,17 @@
 <div class="users-container">
 
-
-  <!-- PAGE HEADER -->
+  <!-- HEADER -->
 
   <div class="page-header">
 
     <div>
 
       <h1>
-        Users
+        Patients
       </h1>
 
       <p>
-        Manage patients and relatives
+        Manage patients currently registered in the system
       </p>
 
     </div>
@@ -21,25 +20,66 @@
     <button
       type="button"
       class="add-button"
-      (click)="goToAddUser()"
+      (click)="addPatient()"
     >
 
       <i class="bi bi-person-plus me-1"></i>
 
-      Add User
+      Add Patient
 
     </button>
 
   </div>
 
 
+  <!-- SUMMARY -->
+
+  <div class="patient-summary">
+
+    <div class="summary-card">
+
+      <span>
+        Total Patients
+      </span>
+
+      <strong>
+        {{ totalPatients }}
+      </strong>
+
+    </div>
+
+
+    <div class="summary-card">
+
+      <span>
+        Admitted
+      </span>
+
+      <strong>
+        {{ admittedPatients }}
+      </strong>
+
+    </div>
+
+
+    <div class="summary-card">
+
+      <span>
+        Discharged
+      </span>
+
+      <strong>
+        {{ dischargedPatients }}
+      </strong>
+
+    </div>
+
+  </div>
+
 
   <!-- FILTERS -->
 
   <div class="filters">
-
-
-    <!-- SEARCH -->
 
     <div class="search-box">
 
@@ -47,41 +87,37 @@
 
       <input
         type="text"
-        placeholder="Search by name, patient number or ward..."
-        [(ngModel)]="searchText"
+        placeholder="Search patient, number or ward..."
+        [value]="searchTerm()"
+        (input)="onSearchChange($any($event.target).value)"
       />
 
     </div>
 
 
-
-    <!-- TYPE -->
-
     <div class="type-filter">
 
       <select
-        [(ngModel)]="selectedType"
+        [value]="selectedStatus()"
+        (change)="onStatusChange($any($event.target).value)"
       >
 
         <option value="All">
-          All Users
+          All Status
         </option>
 
-        <option value="Patient">
-          Patients
+        <option value="Admitted">
+          Admitted
         </option>
 
-        <option value="Relative">
-          Relatives
+        <option value="Discharged">
+          Discharged
         </option>
 
       </select>
 
     </div>
 
-
-
-    <!-- RESET -->
 
     <button
       type="button"
@@ -97,62 +133,33 @@
   </div>
 
 
-
-  <!-- TABLE CARD -->
+  <!-- TABLE -->
 
   <div class="table-card">
-
-
-    <!-- TABLE -->
 
     <div class="table-responsive">
 
       <table>
 
-
         <thead>
 
           <tr>
 
-            <th>
-              #
-            </th>
+            <th>#</th>
 
-            <th>
-              First Name
-            </th>
+            <th>First Name</th>
 
-            <th>
-              Second Name
-            </th>
+            <th>Second Name</th>
 
-            <th>
-              Last Name
-            </th>
+            <th>Last Name</th>
 
-            <th>
-              Type
-            </th>
+            <th>Patient Number</th>
 
-            <th>
-              Patient Number
-            </th>
+            <th>Ward</th>
 
-            <th>
-              Ward
-            </th>
+            <th>Admission Date</th>
 
-            <th>
-              Patient
-            </th>
-
-            <th>
-              Visited
-            </th>
-
-            <th>
-              Visit Date
-            </th>
+            <th>Status</th>
 
             <th class="text-center">
               Action
@@ -163,162 +170,87 @@
         </thead>
 
 
-
         <tbody>
 
-
           @for (
-            user of filteredUsers;
-            track user.id
+            patient of filteredPatients();
+            track patient.id
           ) {
-
 
             <tr>
 
-
-              <!-- ID -->
-
               <td>
-
-                {{ user.id }}
-
+                {{ patient.id }}
               </td>
 
 
-
-              <!-- FIRST NAME -->
-
               <td>
-
-                {{ user.firstName }}
-
+                {{ patient.firstName }}
               </td>
 
 
-
-              <!-- SECOND NAME -->
-
               <td>
-
-                {{ user.secondName }}
-
+                {{ patient.secondName }}
               </td>
 
 
-
-              <!-- LAST NAME -->
-
               <td>
-
-                {{ user.lastName }}
-
+                {{ patient.lastName }}
               </td>
 
-
-
-              <!-- TYPE -->
-
-              <td>
-
-                @if (user.type === 'Patient') {
-
-                  <span class="badge patient">
-
-                    Patient
-
-                  </span>
-
-                }
-
-                @else {
-
-                  <span class="badge relative">
-
-                    Relative
-
-                  </span>
-
-                }
-
-              </td>
-
-
-
-              <!-- PATIENT NUMBER -->
 
               <td>
 
                 <strong class="patient-number">
 
-                  {{ user.patientNumber }}
+                  {{ patient.patientNumber }}
 
                 </strong>
 
               </td>
 
 
-
-              <!-- WARD -->
-
               <td>
 
                 <span class="ward">
 
-                  {{ user.ward }}
+                  {{ patient.ward }}
 
                 </span>
 
               </td>
 
 
+              <td>
 
-              <!-- PATIENT -->
+                {{ patient.admissionDate }}
+
+              </td>
+
 
               <td>
 
-                @if (user.type === 'Relative') {
+                @if (
+                  patient.status === 'Admitted'
+                ) {
 
-                  {{ user.patientName }}
+                  <span class="badge admitted">
 
-                }
+                    <i class="bi bi-hospital me-1"></i>
 
-                @else {
-
-                  <span class="text-muted">
-
-                    -
+                    Admitted
 
                   </span>
 
                 }
 
-              </td>
+                @else {
 
-
-
-              <!-- VISITED -->
-
-              <td>
-
-                @if (user.visited) {
-
-                  <span class="badge visited">
+                  <span class="badge discharged">
 
                     <i class="bi bi-check-circle me-1"></i>
 
-                    Yes
-
-                  </span>
-
-                }
-
-                @else {
-
-                  <span class="badge not-visited">
-
-                    <i class="bi bi-clock me-1"></i>
-
-                    No
+                    Discharged
 
                   </span>
 
@@ -326,102 +258,40 @@
 
               </td>
 
-
-
-              <!-- VISIT DATE -->
-
-              <td>
-
-                @if (user.visitDate) {
-
-                  {{ user.visitDate | date:'dd/MM/yyyy' }}
-
-                }
-
-                @else {
-
-                  <span class="text-muted">
-
-                    -
-
-                  </span>
-
-                }
-
-              </td>
-
-
-
-              <!-- ACTION -->
 
               <td class="action-cell">
-
-
-                <button
-                  type="button"
-                  class="action-button visit"
-                  [class.active]="user.visited"
-                  (click)="toggleVisited(user)"
-                  [title]="
-                    user.visited
-                      ? 'Mark as not visited'
-                      : 'Mark as visited'
-                  "
-                >
-
-                  @if (user.visited) {
-
-                    <i class="bi bi-x-circle"></i>
-
-                  }
-
-                  @else {
-
-                    <i class="bi bi-check-circle"></i>
-
-                  }
-
-                </button>
-
-
 
                 <button
                   type="button"
                   class="action-button delete"
-                  (click)="deleteUser(user.id)"
-                  title="Delete user"
+                  (click)="deletePatient(patient.id)"
+                  title="Delete patient"
                 >
 
                   <i class="bi bi-trash"></i>
 
                 </button>
 
-
               </td>
-
 
             </tr>
 
-
           }
 
-
-
-          <!-- EMPTY -->
 
           @empty {
 
             <tr>
 
               <td
-                colspan="11"
+                colspan="9"
                 class="no-data"
               >
 
-                <i class="bi bi-inbox"></i>
+                <i class="bi bi-person-x"></i>
 
                 <strong>
-                  No users found
+                  No patients found
                 </strong>
 
                 <span>
@@ -434,7 +304,6 @@
 
           }
 
-
         </tbody>
 
       </table>
@@ -442,6 +311,5 @@
     </div>
 
   </div>
-
 
 </div>

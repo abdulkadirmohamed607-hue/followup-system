@@ -7,11 +7,11 @@
     <div>
 
       <h1 class="h3 mb-1">
-        Upload Excel
+        Upload Patients
       </h1>
 
       <p class="text-muted mb-0">
-        Import patients and relatives
+        Import patients currently admitted in the hospital
       </p>
 
     </div>
@@ -26,36 +26,37 @@
     <div class="card-body p-4">
 
       <h5 class="mb-3">
-        Select Excel File
+        Select Patient Excel File
       </h5>
+
 
       <div class="mb-3">
 
         <input
-        #fileInput
-        type="file"
-        class="form-control"
-        accept=".xlsx,.xls"
-        [disabled]="isReading || isUploading"
-        (change)="onFileSelected($event)"
-         />
+          #fileInput
+          type="file"
+          class="form-control"
+          accept=".xlsx,.xls"
+          [disabled]="isReading || isUploading"
+          (change)="onFileSelected($event)"
+        />
 
       </div>
 
 
       @if (isReading) {
 
-  <div class="alert alert-info mt-3">
+        <div class="alert alert-info mt-3">
 
-    <span
-      class="spinner-border spinner-border-sm me-2"
-    ></span>
+          <span
+            class="spinner-border spinner-border-sm me-2"
+          ></span>
 
-    Reading Excel file, please wait...
+          Reading patient Excel file, please wait...
 
-      </div>
+        </div>
 
-    }
+      }
 
 
       @if (message) {
@@ -77,7 +78,7 @@
 
           <i class="bi bi-exclamation-triangle me-2"></i>
 
-          <pre class="mb-0">{{ errorMessage }}</pre>
+          {{ errorMessage }}
 
         </div>
 
@@ -90,11 +91,11 @@
           type="button"
           class="btn btn-primary"
           [disabled]="
-            users.length === 0 ||
+            patients.length === 0 ||
             isReading ||
             isUploading
           "
-          (click)="uploadUsers()"
+          (click)="uploadPatients()"
         >
 
           @if (isUploading) {
@@ -110,7 +111,7 @@
 
             <i class="bi bi-cloud-upload me-1"></i>
 
-            Upload Users
+            Upload Patients
 
           }
 
@@ -147,6 +148,11 @@
         Excel Format
       </h5>
 
+      <p class="text-muted">
+        Your Excel file should contain patient information only.
+      </p>
+
+
       <div class="table-responsive">
 
         <table class="table table-bordered table-hover">
@@ -161,17 +167,16 @@
 
               <th>Last Name</th>
 
-              <th>Type</th>
-
-              <th>Patient Name</th>
-
               <th>Patient Number</th>
 
               <th>Ward</th>
 
+              <th>Admission Date</th>
+
             </tr>
 
           </thead>
+
 
           <tbody>
 
@@ -183,31 +188,27 @@
 
               <td>Smith</td>
 
-              <td>Patient</td>
-
-              <td>-</td>
-
               <td>PT-00125</td>
 
               <td>Medical Ward</td>
+
+              <td>2026-08-29</td>
 
             </tr>
 
             <tr>
 
-              <td>Mary</td>
+              <td>Ahmed</td>
 
-              <td>James</td>
+              <td>Mohamed</td>
 
-              <td>Smith</td>
+              <td>Ali</td>
 
-              <td>Relative</td>
+              <td>PT-00126</td>
 
-              <td>John Peter Smith</td>
+              <td>Surgical Ward</td>
 
-              <td>PT-00125</td>
-
-              <td>Medical Ward</td>
+              <td>2026-08-29</td>
 
             </tr>
 
@@ -224,17 +225,18 @@
 
   <!-- PREVIEW -->
 
-  @if (users.length > 0) {
+  @if (patients.length > 0) {
 
     <div class="card border-0 shadow-sm">
 
       <div class="card-header bg-white">
 
         <h5 class="mb-0">
-          Preview
+          Patient Preview
         </h5>
 
       </div>
+
 
       <div class="card-body p-0">
 
@@ -254,23 +256,22 @@
 
                 <th>Last Name</th>
 
-                <th>Type</th>
-
-                <th>Patient</th>
-
                 <th>Patient Number</th>
 
                 <th>Ward</th>
+
+                <th>Admission Date</th>
 
               </tr>
 
             </thead>
 
+
             <tbody>
 
               @for (
-                user of users;
-                track user.id
+                patient of patients;
+                track patient.id
               ) {
 
                 <tr>
@@ -280,41 +281,29 @@
                   </td>
 
                   <td>
-                    {{ user.firstName }}
+                    {{ patient.firstName }}
                   </td>
 
                   <td>
-                    {{ user.secondName }}
+                    {{ patient.secondName }}
                   </td>
 
                   <td>
-                    {{ user.lastName }}
+                    {{ patient.lastName }}
                   </td>
 
                   <td>
-
-                    <span
-                      class="badge"
-                      [class.text-bg-primary]="user.type === 'Patient'"
-                      [class.text-bg-light]="user.type === 'Relative'"
-                    >
-
-                      {{ user.type }}
-
-                    </span>
-
+                    <strong>
+                      {{ patient.patientNumber }}
+                    </strong>
                   </td>
 
                   <td>
-                    {{ user.patientName }}
+                    {{ patient.ward }}
                   </td>
 
                   <td>
-                    {{ user.patientNumber }}
-                  </td>
-
-                  <td>
-                    {{ user.ward }}
+                    {{ patient.admissionDate }}
                   </td>
 
                 </tr>

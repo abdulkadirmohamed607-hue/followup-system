@@ -7,11 +7,11 @@
     <div>
 
       <h1>
-        Add User
+        Add Patient
       </h1>
 
       <p>
-        Add a new patient or relative
+        Add a new patient manually
       </p>
 
     </div>
@@ -24,8 +24,8 @@
   <div class="form-card">
 
     <form
-      #userForm="ngForm"
-      (ngSubmit)="saveUser(userForm)"
+      #patientForm="ngForm"
+      (ngSubmit)="savePatient(patientForm)"
     >
 
 
@@ -86,33 +86,6 @@
       </div>
 
 
-      <!-- USER TYPE -->
-
-      <div class="form-group">
-
-        <label>
-          User Type
-        </label>
-
-        <select
-          name="type"
-          [(ngModel)]="type"
-          required
-        >
-
-          <option value="Patient">
-            Patient
-          </option>
-
-          <option value="Relative">
-            Relative
-          </option>
-
-        </select>
-
-      </div>
-
-
       <!-- PATIENT NUMBER -->
 
       <div class="form-group">
@@ -151,27 +124,49 @@
       </div>
 
 
-      <!-- PATIENT NAME FOR RELATIVE -->
+      <!-- ADMISSION DATE -->
 
-      @if (type === 'Relative') {
+      <div class="form-group">
 
-        <div class="form-group">
+        <label>
+          Admission Date
+        </label>
 
-          <label>
-            Patient Name
-          </label>
+        <input
+          type="date"
+          name="admissionDate"
+          [(ngModel)]="admissionDate"
+          required
+        />
 
-          <input
-            type="text"
-            name="patientName"
-            [(ngModel)]="patientName"
-            required
-            placeholder="Enter patient name"
-          />
+      </div>
 
-        </div>
 
-      }
+      <!-- STATUS -->
+
+      <div class="form-group">
+
+        <label>
+          Patient Status
+        </label>
+
+        <select
+          name="status"
+          [(ngModel)]="status"
+          required
+        >
+
+          <option value="Admitted">
+            Admitted
+          </option>
+
+          <option value="Discharged">
+            Discharged
+          </option>
+
+        </select>
+
+      </div>
 
 
       <!-- BUTTONS -->
@@ -183,9 +178,9 @@
           class="save-button"
         >
 
-          <i class="bi bi-check-circle me-1"></i>
+          <i class="bi bi-person-plus me-1"></i>
 
-          Save User
+          Save Patient
 
         </button>
 
@@ -203,7 +198,6 @@
         </button>
 
       </div>
-
 
     </form>
 

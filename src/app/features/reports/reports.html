@@ -1,24 +1,21 @@
 <div class="reports-container">
 
-
-  <!-- PAGE HEADER -->
+  <!-- HEADER -->
 
   <div class="page-header">
 
     <div>
 
       <h1>
-        Reports
+        Visit Reports
       </h1>
 
       <p>
-        User and visitor reports
+        Patient visitor attendance and visit duration
       </p>
 
     </div>
 
-
-    <!-- REPORT ACTIONS -->
 
     <div class="report-actions">
 
@@ -64,27 +61,10 @@
   <div class="summary-grid">
 
 
-    <!-- TOTAL -->
-
     <div class="summary-card">
 
       <span>
-        Total Users
-      </span>
-
-      <strong>
-        {{ totalUsers }}
-      </strong>
-
-    </div>
-
-
-    <!-- PATIENTS -->
-
-    <div class="summary-card">
-
-      <span>
-        Patients
+        Total Patients Visited
       </span>
 
       <strong>
@@ -94,46 +74,53 @@
     </div>
 
 
-    <!-- RELATIVES -->
-
     <div class="summary-card">
 
       <span>
-        Relatives
+        Total Visits
       </span>
 
       <strong>
-        {{ totalRelatives }}
+        {{ totalVisits }}
       </strong>
 
     </div>
 
 
-    <!-- VISITED -->
-
     <div class="summary-card">
 
       <span>
-        Visited
+        Day Visits
       </span>
 
       <strong>
-        {{ totalVisited }}
+        {{ dayVisits }}
       </strong>
 
     </div>
 
 
-    <!-- NOT VISITED -->
+    <div class="summary-card">
+
+      <span>
+        Evening Visits
+      </span>
+
+      <strong>
+        {{ eveningVisits }}
+      </strong>
+
+    </div>
+
 
     <div class="summary-card">
 
       <span>
-        Not Visited
+        Completed
       </span>
 
       <strong>
-        {{ totalNotVisited }}
+        {{ completedVisits }}
       </strong>
 
     </div>
@@ -146,45 +133,39 @@
   <div class="filters">
 
 
-    <!-- SEARCH -->
-
     <div class="search-box">
 
       <input
         type="text"
-        placeholder="Search by name..."
+        placeholder="Search patient, visitor, phone or ward..."
         [(ngModel)]="searchText"
       />
 
     </div>
 
 
-    <!-- TYPE -->
-
     <div class="filter-box">
 
       <select
-        [(ngModel)]="selectedType"
+        [(ngModel)]="selectedSession"
       >
 
         <option value="All">
-          All Types
+          All Sessions
         </option>
 
-        <option value="Patient">
-          Patients
+        <option value="Day">
+          Day
         </option>
 
-        <option value="Relative">
-          Relatives
+        <option value="Evening">
+          Evening
         </option>
 
       </select>
 
     </div>
 
-
-    <!-- STATUS -->
 
     <div class="filter-box">
 
@@ -196,20 +177,18 @@
           All Status
         </option>
 
-        <option value="Visited">
-          Visited
+        <option value="Checked In">
+          Checked In
         </option>
 
-        <option value="Not Visited">
-          Not Visited
+        <option value="Completed">
+          Completed
         </option>
 
       </select>
 
     </div>
 
-
-    <!-- DATE -->
 
     <div class="date-filter">
 
@@ -219,6 +198,17 @@
       />
 
     </div>
+
+
+    <button
+      type="button"
+      class="reset-button"
+      (click)="resetFilters()"
+    >
+
+      <i class="bi bi-arrow-clockwise"></i>
+
+    </button>
 
   </div>
 
@@ -233,37 +223,31 @@
 
         <tr>
 
-          <th>
-            #
-          </th>
+          <th>#</th>
 
-          <th>
-            Full Name
-          </th>
+          <th>Patient</th>
 
-          <th>
-            Patient Number
-          </th>
+          <th>Patient Number</th>
 
-          <th>
-            Ward
-          </th>
+          <th>Ward</th>
 
-          <th>
-            Type
-          </th>
+          <th>Visitor</th>
 
-          <th>
-            Patient Name
-          </th>
+          <th>Phone</th>
 
-          <th>
-            Status
-          </th>
+          <th>Session</th>
 
-          <th>
-            Visit Date
-          </th>
+          <th>Slot</th>
+
+          <th>Date</th>
+
+          <th>Check In</th>
+
+          <th>Check Out</th>
+
+          <th>Duration</th>
+
+          <th>Status</th>
 
         </tr>
 
@@ -273,171 +257,135 @@
       <tbody>
 
         @for (
-          user of filteredUsers;
-          track user.id
+          visit of filteredVisits;
+          track visit.id
         ) {
 
           <tr>
 
+            <td>
+              {{ $index + 1 }}
+            </td>
 
-            <!-- ID -->
 
             <td>
 
-              {{ user.id }}
+              <strong>
+                {{ visit.patientName }}
+              </strong>
 
             </td>
 
 
-            <!-- FULL NAME -->
+            <td>
+
+              <span class="patient-number">
+
+                {{ visit.patientNumber }}
+
+              </span>
+
+            </td>
+
+
+            <td>
+
+              <span class="ward-badge">
+
+                {{ visit.ward }}
+
+              </span>
+
+            </td>
+
+
+            <td>
+
+              {{ visitorName(visit) }}
+
+            </td>
+
+
+            <td>
+
+              {{ visit.visitorPhone }}
+
+            </td>
+
+
+            <td>
+
+              <span
+                class="session-badge"
+                [class.evening]="
+                  visit.session === 'Evening'
+                "
+              >
+
+                {{ visit.session }}
+
+              </span>
+
+            </td>
+
+
+            <td>
+
+              Visitor {{ visit.slot }}
+
+            </td>
+
+
+            <td>
+
+              {{ visit.visitDate }}
+
+            </td>
+
+
+            <td>
+
+              {{ formatTime(visit.checkIn) }}
+
+            </td>
+
+
+            <td>
+
+              {{ formatTime(visit.checkOut) }}
+
+            </td>
+
 
             <td>
 
               <strong>
 
-                {{ user.firstName }}
-
-                {{ user.secondName }}
-
-                {{ user.lastName }}
+                {{ formatDuration(visit.durationMinutes) }}
 
               </strong>
 
             </td>
 
 
-            <!-- PATIENT NUMBER -->
-
             <td>
 
-              @if (user.patientNumber) {
+              @if (
+                visit.status === 'Completed'
+              ) {
 
-                <span class="patient-number">
+                <span class="completed">
 
-                  {{ user.patientNumber }}
+                  Completed
 
                 </span>
 
               }
-
               @else {
 
-                <span class="empty-value">
+                <span class="checked-in">
 
-                  -
-
-                </span>
-
-              }
-
-            </td>
-
-
-            <!-- WARD -->
-
-            <td>
-
-              @if (user.ward) {
-
-                <span class="ward-badge">
-
-                  {{ user.ward }}
-
-                </span>
-
-              }
-
-              @else {
-
-                <span class="empty-value">
-
-                  -
-
-                </span>
-
-              }
-
-            </td>
-
-
-            <!-- TYPE -->
-
-            <td>
-
-              @if (user.type === 'Patient') {
-
-                <span class="type-badge patient">
-
-                  Patient
-
-                </span>
-
-              }
-
-              @else {
-
-                <span class="type-badge relative">
-
-                  Relative
-
-                </span>
-
-              }
-
-            </td>
-
-
-            <!-- PATIENT -->
-
-            <td>
-
-              {{ user.patientName || '-' }}
-
-            </td>
-
-
-            <!-- STATUS -->
-
-            <td>
-
-              @if (user.visited) {
-
-                <span class="visited">
-
-                  Visited
-
-                </span>
-
-              }
-
-              @else {
-
-                <span class="not-visited">
-
-                  Not Visited
-
-                </span>
-
-              }
-
-            </td>
-
-
-            <!-- VISIT DATE -->
-
-            <td>
-
-              @if (user.visitDate) {
-
-                {{ user.visitDate | date:'dd/MM/yyyy' }}
-
-              }
-
-              @else {
-
-                <span class="empty-value">
-
-                  -
+                  Checked In
 
                 </span>
 
@@ -455,11 +403,13 @@
           <tr>
 
             <td
-              colspan="8"
+              colspan="13"
               class="no-data"
             >
 
-              No report data found
+              <i class="bi bi-clipboard-x"></i>
+
+              No visit records found
 
             </td>
 
