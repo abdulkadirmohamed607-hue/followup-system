@@ -37,21 +37,20 @@
   width: 60px;
   height: 60px;
 
-  margin: 0 auto 15px;
-
-  border-radius: 50%;
-
-  background-color: #666;
-
-  color: white;
+  margin: 0 auto 12px;
 
   display: flex;
-
   align-items: center;
-
   justify-content: center;
+}
 
-  font-size: 28px;
+.logo img {
+  width: 55px;
+  height: 55px;
+
+  object-fit: contain;
+
+  border-radius: 8px;
 }
 
 
