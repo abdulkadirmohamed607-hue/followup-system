@@ -1,29 +1,107 @@
 <div class="visitor-container">
 
-  <!-- HEADER -->
+
+  <!-- =====================================================
+       PAGE HEADER
+  ====================================================== -->
 
   <div class="page-header">
 
+    <h1>
+      Visitor Check
+    </h1>
+
+    <p>
+      Manage patient visitors and visiting sessions
+    </p>
+
+  </div>
+
+
+  <!-- =====================================================
+       SESSION CARD
+  ====================================================== -->
+
+  <div class="session-card">
+
     <div>
 
-      <h1>
-        Visit Check
-      </h1>
+      <span class="session-title">
+        Visiting Session
+      </span>
 
-      <p>
-        Check and manage patient visitors
-      </p>
+      <small>
+        Select the current visiting session
+      </small>
+
+    </div>
+
+
+    <div class="session-buttons">
+
+
+      <!-- MORNING -->
+
+      <button
+        type="button"
+        [class.active]="
+          selectedSession === 'Morning'
+        "
+        (click)="selectSession('Morning')"
+      >
+
+        <i class="bi bi-sunrise me-1"></i>
+
+        Morning
+
+      </button>
+
+
+      <!-- DAY -->
+
+      <button
+        type="button"
+        [class.active]="
+          selectedSession === 'Day'
+        "
+        (click)="selectSession('Day')"
+      >
+
+        <i class="bi bi-sun me-1"></i>
+
+        Day
+
+      </button>
+
+
+      <!-- EVENING -->
+
+      <button
+        type="button"
+        [class.active]="
+          selectedSession === 'Evening'
+        "
+        (click)="selectSession('Evening')"
+      >
+
+        <i class="bi bi-sunset me-1"></i>
+
+        Evening
+
+      </button>
 
     </div>
 
   </div>
 
 
-  <!-- MESSAGE -->
+  <!-- =====================================================
+       MESSAGE
+  ====================================================== -->
 
   @if (message) {
 
-    <div class="alert alert-success">
+    <div class="alert-message success">
 
       <i class="bi bi-check-circle me-2"></i>
 
@@ -36,7 +114,7 @@
 
   @if (errorMessage) {
 
-    <div class="alert alert-danger">
+    <div class="alert-message error">
 
       <i class="bi bi-exclamation-triangle me-2"></i>
 
@@ -47,56 +125,9 @@
   }
 
 
-  <!-- SESSION -->
-
-  <div class="session-card">
-
-    <div>
-
-      <span class="session-title">
-        Visiting Session
-      </span>
-
-      <small>
-        Maximum 2 visitors per patient per session
-      </small>
-
-    </div>
-
-
-    <div class="session-buttons">
-
-      <button
-        type="button"
-        [class.active]="selectedSession === 'Day'"
-        (click)="selectSession('Day')"
-      >
-
-        <i class="bi bi-sun me-1"></i>
-
-        Day
-
-      </button>
-
-
-      <button
-        type="button"
-        [class.active]="selectedSession === 'Evening'"
-        (click)="selectSession('Evening')"
-      >
-
-        <i class="bi bi-moon-stars me-1"></i>
-
-        Evening
-
-      </button>
-
-    </div>
-
-  </div>
-
-
-  <!-- SEARCH -->
+  <!-- =====================================================
+       SEARCH
+  ====================================================== -->
 
   <div class="search-card">
 
@@ -106,8 +137,8 @@
 
       <input
         type="text"
-        [(ngModel)]="searchText"
         placeholder="Search patient by name, number or ward..."
+        [(ngModel)]="searchText"
       />
 
     </div>
@@ -115,9 +146,14 @@
   </div>
 
 
-  <!-- PATIENT LIST -->
+  <!-- =====================================================
+       PATIENT TABLE
+  ====================================================== -->
 
   <div class="patients-card">
+
+
+    <!-- HEADER -->
 
     <div class="card-header">
 
@@ -133,13 +169,29 @@
 
       </div>
 
+
       <span class="session-label">
 
-        @if (selectedSession === 'Day') {
-          Day
+        @if (
+          selectedSession === 'Morning'
+        ) {
+
+          Morning
+
         }
+
+        @else if (
+          selectedSession === 'Day'
+        ) {
+
+          Day
+
+        }
+
         @else {
+
           Evening
+
         }
 
       </span>
@@ -155,17 +207,33 @@
 
           <tr>
 
-            <th>#</th>
+            <th>
+              #
+            </th>
 
-            <th>Patient</th>
+            <th>
+              Patient
+            </th>
 
-            <th>Patient Number</th>
+            <th>
+              Patient Number
+            </th>
 
-            <th>Ward</th>
+            <th>
+              Ward
+            </th>
 
-            <th>Visitor 1</th>
+            <th>
+              Visitor 1
+            </th>
 
-            <th>Visitor 2</th>
+            <th>
+              Visitor 2
+            </th>
+
+            <th>
+              Visitor 3
+            </th>
 
           </tr>
 
@@ -181,21 +249,26 @@
 
             <tr>
 
+
+              <!-- NUMBER -->
+
               <td>
                 {{ $index + 1 }}
               </td>
 
 
+              <!-- PATIENT -->
+
               <td>
 
                 <strong>
-
                   {{ getPatientName(patient) }}
-
                 </strong>
 
               </td>
 
+
+              <!-- PATIENT NUMBER -->
 
               <td>
 
@@ -208,6 +281,8 @@
               </td>
 
 
+              <!-- WARD -->
+
               <td>
 
                 <span class="ward">
@@ -219,7 +294,9 @@
               </td>
 
 
-              <!-- VISITOR 1 -->
+              <!-- ==========================================
+                   VISITOR 1
+              =========================================== -->
 
               <td>
 
@@ -230,7 +307,9 @@
                   <button
                     type="button"
                     class="visitor-button"
-                    (click)="openVisitorForm(patient, 1)"
+                    (click)="
+                      openVisitorForm(patient, 1)
+                    "
                   >
 
                     <i class="bi bi-person-plus"></i>
@@ -240,6 +319,7 @@
                   </button>
 
                 }
+
                 @else {
 
                   <div
@@ -254,13 +334,20 @@
                     ) {
 
                       <span>
+
                         <i class="bi bi-person-check"></i>
+
                         Checked In
+
                       </span>
 
                       <button
                         type="button"
-                        (click)="checkout(getSlot(patient, 1)!)"
+                        (click)="
+                          checkout(
+                            getSlot(patient, 1)!
+                          )
+                        "
                       >
 
                         Check Out
@@ -268,6 +355,7 @@
                       </button>
 
                     }
+
                     @else {
 
                       <span>
@@ -287,7 +375,9 @@
               </td>
 
 
-              <!-- VISITOR 2 -->
+              <!-- ==========================================
+                   VISITOR 2
+              =========================================== -->
 
               <td>
 
@@ -298,7 +388,9 @@
                   <button
                     type="button"
                     class="visitor-button"
-                    (click)="openVisitorForm(patient, 2)"
+                    (click)="
+                      openVisitorForm(patient, 2)
+                    "
                   >
 
                     <i class="bi bi-person-plus"></i>
@@ -308,6 +400,7 @@
                   </button>
 
                 }
+
                 @else {
 
                   <div
@@ -322,13 +415,20 @@
                     ) {
 
                       <span>
+
                         <i class="bi bi-person-check"></i>
+
                         Checked In
+
                       </span>
 
                       <button
                         type="button"
-                        (click)="checkout(getSlot(patient, 2)!)"
+                        (click)="
+                          checkout(
+                            getSlot(patient, 2)!
+                          )
+                        "
                       >
 
                         Check Out
@@ -336,6 +436,102 @@
                       </button>
 
                     }
+
+                    @else {
+
+                      <span>
+
+                        <i class="bi bi-check-circle"></i>
+
+                        Completed
+
+                      </span>
+
+                    }
+
+                  </div>
+
+                }
+
+              </td>
+
+
+              <!-- ==========================================
+                   VISITOR 3
+              =========================================== -->
+
+              <td>
+
+                @if (
+                  selectedSession !== 'Evening'
+                ) {
+
+                  <div class="slot-not-available">
+
+                    <i class="bi bi-lock"></i>
+
+                    Evening Only
+
+                  </div>
+
+                }
+
+                @else if (
+                  !isSlotUsed(patient, 3)
+                ) {
+
+                  <button
+                    type="button"
+                    class="visitor-button visitor-three"
+                    (click)="
+                      openVisitorForm(patient, 3)
+                    "
+                  >
+
+                    <i class="bi bi-person-plus"></i>
+
+                    Check Visitor 3
+
+                  </button>
+
+                }
+
+                @else {
+
+                  <div
+                    class="visitor-status"
+                    [class.completed]="
+                      !isCheckedIn(patient, 3)
+                    "
+                  >
+
+                    @if (
+                      isCheckedIn(patient, 3)
+                    ) {
+
+                      <span>
+
+                        <i class="bi bi-person-check"></i>
+
+                        Checked In
+
+                      </span>
+
+                      <button
+                        type="button"
+                        (click)="
+                          checkout(
+                            getSlot(patient, 3)!
+                          )
+                        "
+                      >
+
+                        Check Out
+
+                      </button>
+
+                    }
+
                     @else {
 
                       <span>
@@ -359,12 +555,14 @@
           }
 
 
+          <!-- EMPTY -->
+
           @empty {
 
             <tr>
 
               <td
-                colspan="6"
+                colspan="7"
                 class="no-data"
               >
 
@@ -389,7 +587,9 @@
   </div>
 
 
-  <!-- VISITOR FORM -->
+  <!-- =====================================================
+       VISITOR FORM MODAL
+  ====================================================== -->
 
   @if (
     showVisitorForm &&
@@ -399,6 +599,9 @@
     <div class="modal-backdrop-custom">
 
       <div class="visitor-modal">
+
+
+        <!-- MODAL HEADER -->
 
         <div class="modal-header">
 
@@ -428,9 +631,12 @@
         </div>
 
 
-        <!-- PATIENT INFORMATION -->
+        <!-- =================================================
+             PATIENT INFORMATION
+        ================================================== -->
 
         <div class="patient-info">
+
 
           <div>
 
@@ -479,12 +685,22 @@
 
             <strong>
 
-              @if (selectedSession === 'Day') {
-                Day
-              }
-              @else {
-                Evening
-              }
+              {{ selectedSession }}
+
+            </strong>
+
+          </div>
+
+
+          <div>
+
+            <span>
+              Visitor Slot
+            </span>
+
+            <strong>
+
+              Visitor {{ selectedSlot }}
 
             </strong>
 
@@ -493,17 +709,21 @@
         </div>
 
 
-        <!-- FORM -->
+        <!-- =================================================
+             FORM
+        ================================================== -->
 
         <form
           #visitorForm="ngForm"
-          (ngSubmit)="saveVisitor(visitorForm)"
+          (ngSubmit)="
+            saveVisitor(visitorForm)
+          "
         >
 
           <div class="form-grid">
 
 
-            <!-- FIRST -->
+            <!-- FIRST NAME -->
 
             <div class="form-group">
 
@@ -514,7 +734,9 @@
               <input
                 type="text"
                 name="visitorFirstName"
-                [(ngModel)]="visitorFirstName"
+                [(ngModel)]="
+                  visitorFirstName
+                "
                 required
                 placeholder="Visitor first name"
               />
@@ -522,7 +744,7 @@
             </div>
 
 
-            <!-- SECOND -->
+            <!-- SECOND NAME -->
 
             <div class="form-group">
 
@@ -533,7 +755,9 @@
               <input
                 type="text"
                 name="visitorSecondName"
-                [(ngModel)]="visitorSecondName"
+                [(ngModel)]="
+                  visitorSecondName
+                "
                 required
                 placeholder="Visitor second name"
               />
@@ -541,7 +765,7 @@
             </div>
 
 
-            <!-- LAST -->
+            <!-- LAST NAME -->
 
             <div class="form-group">
 
@@ -552,9 +776,32 @@
               <input
                 type="text"
                 name="visitorLastName"
-                [(ngModel)]="visitorLastName"
+                [(ngModel)]="
+                  visitorLastName
+                "
                 required
                 placeholder="Visitor last name"
+              />
+
+            </div>
+
+
+            <!-- CARD NUMBER -->
+
+            <div class="form-group">
+
+              <label>
+                Card Number
+              </label>
+
+              <input
+                type="text"
+                name="visitorCardNumber"
+                [(ngModel)]="
+                  visitorCardNumber
+                "
+                required
+                placeholder="Enter visitor card number"
               />
 
             </div>
@@ -571,7 +818,9 @@
               <input
                 type="tel"
                 name="visitorPhone"
-                [(ngModel)]="visitorPhone"
+                [(ngModel)]="
+                  visitorPhone
+                "
                 required
                 placeholder="e.g. 0712345678"
               />
@@ -607,10 +856,46 @@
 
               <input
                 type="text"
+                [value]="selectedSession"
+                readonly
+              />
+
+            </div>
+
+
+            <!-- PATIENT -->
+
+            <div class="form-group">
+
+              <label>
+                Patient
+              </label>
+
+              <input
+                type="text"
                 [value]="
-                  selectedSession === 'Day'
-                    ? 'Day'
-                    : 'Evening'
+                  getPatientName(
+                    selectedPatient
+                  )
+                "
+                readonly
+              />
+
+            </div>
+
+
+            <!-- WARD -->
+
+            <div class="form-group">
+
+              <label>
+                Ward
+              </label>
+
+              <input
+                type="text"
+                [value]="
+                  selectedPatient.ward
                 "
                 readonly
               />
@@ -619,6 +904,8 @@
 
           </div>
 
+
+          <!-- ACTIONS -->
 
           <div class="form-actions">
 

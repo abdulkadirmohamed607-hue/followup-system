@@ -1,6 +1,17 @@
-export type VisitSession = 'Day' | 'Evening';
+export type VisitSession =
+  | 'Morning'
+  | 'Day'
+  | 'Evening';
+
+
+export type VisitSlot =
+  | 1
+  | 2
+  | 3;
+
 
 export interface Visit {
+
   id: number;
 
   patientId: number;
@@ -11,17 +22,29 @@ export interface Visit {
 
   ward: string;
 
+
+  // =========================
+  // VISITOR INFORMATION
+  // =========================
+
   visitorFirstName: string;
 
   visitorSecondName: string;
 
   visitorLastName: string;
 
+  visitorCardNumber: string;
+
   visitorPhone: string;
+
+
+  // =========================
+  // VISIT INFORMATION
+  // =========================
 
   session: VisitSession;
 
-  slot: 1 | 2;
+  slot: VisitSlot;
 
   visitDate: string;
 
@@ -31,5 +54,8 @@ export interface Visit {
 
   durationMinutes: number | null;
 
-  status: 'Checked In' | 'Completed';
+  status:
+    | 'Checked In'
+    | 'Completed';
+
 }

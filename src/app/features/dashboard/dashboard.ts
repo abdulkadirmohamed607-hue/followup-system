@@ -1,11 +1,27 @@
-import { Component } from '@angular/core';
-
-import { CommonModule } from '@angular/common';
+import {
+  Component,
+  OnInit
+} from '@angular/core';
 
 import {
-  User,
-  UserService
-} from '../../shared/services/user.service';
+  CommonModule
+} from '@angular/common';
+
+import {
+  Patient
+} from '../../core/models/patient';
+
+import {
+  Visit
+} from '../../core/models/visit';
+
+import {
+  PatientService
+} from '../../core/services/patient.service';
+
+import {
+  VisitService
+} from '../../core/services/visit.service';
 
 
 @Component({
@@ -15,9 +31,7 @@ import {
   standalone: true,
 
   imports: [
-
     CommonModule
-
   ],
 
   templateUrl: './dashboard.html',
@@ -27,108 +41,295 @@ import {
 })
 
 
-export class Dashboard {
+export class Dashboard implements OnInit {
 
 
-  users: User[] = [];
+  // =====================================================
+  // DATA
+  // =====================================================
 
+  patients: Patient[] = [];
+
+  visits: Visit[] = [];
+
+
+  // =====================================================
+  // TODAY
+  // =====================================================
+
+  today = this.getToday();
+
+
+  // =====================================================
+  // CONSTRUCTOR
+  // =====================================================
 
   constructor(
 
-    private userService: UserService
+    private patientService: PatientService,
 
-  ) {
+    private visitService: VisitService
+
+  ) {}
 
 
-    this.users =
+  // =====================================================
+  // INIT
+  // =====================================================
 
-      this.userService.getUsers();
+  ngOnInit(): void {
+
+    this.loadDashboardData();
+
+  }
+
+
+  // =====================================================
+  // LOAD DATA
+  // =====================================================
+
+  loadDashboardData(): void {
+
+    this.patients =
+      this.patientService.getAdmittedPatients();
+
+    this.visits =
+      this.visitService.getVisits();
 
   }
 
 
-  get totalUsers(): number {
-
-
-    return this.users.length;
-
-  }
-
+  // =====================================================
+  // TOTAL PATIENTS
+  // =====================================================
 
   get totalPatients(): number {
 
+    return this.patients.length;
 
-    return this.users.filter(
+  }
 
-      user =>
 
-        user.type === 'Patient'
+  // =====================================================
+  // TODAY'S VISITS
+  // =====================================================
+
+  get todayVisits(): Visit[] {
+
+    return this.visits.filter(
+
+      visit =>
+        visit.visitDate === this.today
+
+    );
+
+  }
+
+
+  // =====================================================
+  // TOTAL VISITORS TODAY
+  // =====================================================
+
+  get totalVisitorsToday(): number {
+
+    return this.todayVisits.length;
+
+  }
+
+
+  // =====================================================
+  // CHECKED IN
+  // =====================================================
+
+  get totalCheckedIn(): number {
+
+    return this.todayVisits.filter(
+
+      visit =>
+        visit.status === 'Checked In'
 
     ).length;
 
   }
 
 
-  get totalRelatives(): number {
+  // =====================================================
+  // COMPLETED
+  // =====================================================
 
+  get totalCompleted(): number {
 
-    return this.users.filter(
+    return this.todayVisits.filter(
 
-      user =>
-
-        user.type === 'Relative'
-
-    ).length;
-
-  }
-
-
-  get totalVisited(): number {
-
-
-    return this.users.filter(
-
-      user =>
-
-        user.visited
+      visit =>
+        visit.status === 'Completed'
 
     ).length;
 
   }
 
 
-  get totalNotVisited(): number {
+  // =====================================================
+  // DAY VISITS
+  // =====================================================
 
+  get totalDayVisits(): number {
 
-    return this.users.filter(
+    return this.todayVisits.filter(
 
-      user =>
-
-        !user.visited
+      visit =>
+        visit.session === 'Day'
 
     ).length;
 
   }
 
 
-  get recentUsers(): User[] {
+  // =====================================================
+  // EVENING VISITS
+  // =====================================================
+
+  get totalEveningVisits(): number {
+
+    return this.todayVisits.filter(
+
+      visit =>
+        visit.session === 'Evening'
+
+    ).length;
+
+  }
 
 
-    return this.users
+  // =====================================================
+  // RECENT VISITS
+  // =====================================================
+
+  get recentVisits(): Visit[] {
+
+    return this.todayVisits
 
       .slice()
 
-      .reverse()
+      .sort(
+
+        (a, b) => {
+
+          return (
+            new Date(b.checkIn).getTime() -
+            new Date(a.checkIn).getTime()
+          );
+
+        }
+
+      )
 
       .slice(
 
         0,
 
-        5
+        10
 
       );
 
   }
 
+
+  // =====================================================
+  // VISITOR FULL NAME
+  // =====================================================
+
+  getVisitorName(
+    visit: Visit
+  ): string {
+
+    return [
+
+      visit.visitorFirstName,
+
+      visit.visitorSecondName,
+
+      visit.visitorLastName
+
+    ]
+
+      .filter(Boolean)
+
+      .join(' ');
+
+  }
+
+
+  // =====================================================
+  // FORMAT TIME
+  // =====================================================
+
+  formatTime(
+    value: string | null
+  ): string {
+
+    if (!value) {
+
+      return '-';
+
+    }
+
+
+    const date =
+      new Date(value);
+
+
+    return date.toLocaleTimeString(
+
+      [],
+
+      {
+
+        hour: '2-digit',
+
+        minute: '2-digit'
+
+      }
+
+    );
+
+  }
+
+
+  // =====================================================
+  // TODAY
+  // =====================================================
+
+  private getToday(): string {
+
+    const now =
+      new Date();
+
+
+    const year =
+      now.getFullYear();
+
+
+    const month =
+      String(
+        now.getMonth() + 1
+      ).padStart(
+        2,
+        '0'
+      );
+
+
+    const day =
+      String(
+        now.getDate()
+      ).padStart(
+        2,
+        '0'
+      );
+
+
+    return `${year}-${month}-${day}`;
+
+  }
 
 }

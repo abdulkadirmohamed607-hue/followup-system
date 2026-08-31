@@ -1,17 +1,22 @@
 import { Injectable } from '@angular/core';
+
 import {
   Visit,
-  VisitSession
+  VisitSession,
+  VisitSlot
 } from '../models/visit';
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class VisitService {
 
-  private readonly storageKey = 'followup_visits';
+  private readonly storageKey =
+    'followup_visits';
 
   private visits: Visit[] = [];
+
 
   constructor() {
 
@@ -21,31 +26,38 @@ export class VisitService {
 
 
   // =====================================================
-  // LOAD
+  // LOAD VISITS
   // =====================================================
 
   private loadVisits(): void {
 
     const stored =
-      localStorage.getItem(this.storageKey);
+      localStorage.getItem(
+        this.storageKey
+      );
 
     if (!stored) {
 
       this.visits = [];
 
       return;
+
     }
+
 
     try {
 
-      const parsed = JSON.parse(stored);
+      const parsed =
+        JSON.parse(stored);
 
       this.visits =
         Array.isArray(parsed)
           ? parsed
           : [];
 
-    } catch {
+    }
+
+    catch {
 
       this.visits = [];
 
@@ -62,7 +74,9 @@ export class VisitService {
 
     localStorage.setItem(
       this.storageKey,
-      JSON.stringify(this.visits)
+      JSON.stringify(
+        this.visits
+      )
     );
 
   }
@@ -74,7 +88,9 @@ export class VisitService {
 
   getVisits(): Visit[] {
 
-    return [...this.visits];
+    return [
+      ...this.visits
+    ];
 
   }
 
@@ -112,13 +128,31 @@ export class VisitService {
 
 
   // =====================================================
+  // GET VISITS BY PATIENT + DATE
+  // =====================================================
+
+  getPatientVisitsByDate(
+    patientId: number,
+    date: string
+  ): Visit[] {
+
+    return this.visits.filter(
+      visit =>
+        visit.patientId === patientId &&
+        visit.visitDate === date
+    );
+
+  }
+
+
+  // =====================================================
   // GET SPECIFIC SLOT
   // =====================================================
 
   getSlotVisit(
     patientId: number,
     session: VisitSession,
-    slot: 1 | 2,
+    slot: VisitSlot,
     date: string
   ): Visit | undefined {
 
@@ -134,13 +168,13 @@ export class VisitService {
 
 
   // =====================================================
-  // CHECK IF SLOT AVAILABLE
+  // CHECK SLOT AVAILABLE
   // =====================================================
 
   isSlotAvailable(
     patientId: number,
     session: VisitSession,
-    slot: 1 | 2,
+    slot: VisitSlot,
     date: string
   ): boolean {
 
@@ -155,10 +189,74 @@ export class VisitService {
 
 
   // =====================================================
+  // MAX VISITORS PER SESSION
+  // =====================================================
+
+  getMaxSlots(
+    session: VisitSession
+  ): number {
+
+    switch (session) {
+
+      case 'Evening':
+        return 3;
+
+      case 'Morning':
+      case 'Day':
+      default:
+        return 2;
+
+    }
+
+  }
+
+
+  // =====================================================
+  // GET USED SLOTS
+  // =====================================================
+
+  getUsedSlots(
+    patientId: number,
+    session: VisitSession,
+    date: string
+  ): Visit[] {
+
+    return this.visits.filter(
+      visit =>
+        visit.patientId === patientId &&
+        visit.session === session &&
+        visit.visitDate === date
+    );
+
+  }
+
+
+  // =====================================================
+  // COUNT VISITORS
+  // =====================================================
+
+  countPatientSessionVisits(
+    patientId: number,
+    session: VisitSession,
+    date: string
+  ): number {
+
+    return this.getUsedSlots(
+      patientId,
+      session,
+      date
+    ).length;
+
+  }
+
+
+  // =====================================================
   // ADD VISIT
   // =====================================================
 
-  addVisit(visit: Visit): boolean {
+  addVisit(
+    visit: Visit
+  ): boolean {
 
     const exists =
       this.getSlotVisit(
@@ -174,12 +272,47 @@ export class VisitService {
 
     }
 
+
+    const maxSlots =
+      this.getMaxSlots(
+        visit.session
+      );
+
+
+    if (
+      visit.slot > maxSlots
+    ) {
+
+      return false;
+
+    }
+
+
+    const currentCount =
+      this.countPatientSessionVisits(
+        visit.patientId,
+        visit.session,
+        visit.visitDate
+      );
+
+
+    if (
+      currentCount >= maxSlots
+    ) {
+
+      return false;
+
+    }
+
+
     this.visits = [
       ...this.visits,
       visit
     ];
 
+
     this.persist();
+
 
     return true;
 
@@ -197,8 +330,10 @@ export class VisitService {
 
     const visit =
       this.visits.find(
-        item => item.id === visitId
+        item =>
+          item.id === visitId
       );
+
 
     if (!visit) {
 
@@ -206,32 +341,44 @@ export class VisitService {
 
     }
 
+
     const checkIn =
-      new Date(visit.checkIn);
+      new Date(
+        visit.checkIn
+      );
 
     const checkOut =
-      new Date(checkoutTime);
+      new Date(
+        checkoutTime
+      );
+
 
     const duration =
       Math.max(
         0,
         Math.round(
-          (checkOut.getTime() -
-            checkIn.getTime()) /
-          60000
+          (
+            checkOut.getTime() -
+            checkIn.getTime()
+          ) / 60000
         )
       );
+
 
     visit.checkOut =
       checkoutTime;
 
+
     visit.durationMinutes =
       duration;
+
 
     visit.status =
       'Completed';
 
+
     this.persist();
+
 
     return true;
 
@@ -242,12 +389,16 @@ export class VisitService {
   // DELETE
   // =====================================================
 
-  deleteVisit(id: number): void {
+  deleteVisit(
+    id: number
+  ): void {
 
     this.visits =
       this.visits.filter(
-        visit => visit.id !== id
+        visit =>
+          visit.id !== id
       );
+
 
     this.persist();
 
@@ -260,15 +411,19 @@ export class VisitService {
 
   generateId(): number {
 
-    if (this.visits.length === 0) {
+    if (
+      this.visits.length === 0
+    ) {
 
       return 1;
 
     }
 
+
     return Math.max(
       ...this.visits.map(
-        visit => visit.id
+        visit =>
+          visit.id
       )
     ) + 1;
 

@@ -51,6 +51,10 @@ export class AddUser {
 
   savePatient(form: NgForm): void {
 
+    // -----------------------------------------------
+    // VALIDATE FORM
+    // -----------------------------------------------
+
     if (form.invalid) {
 
       alert(
@@ -61,6 +65,39 @@ export class AddUser {
 
     }
 
+
+    // -----------------------------------------------
+    // CLEAN PATIENT NUMBER
+    // -----------------------------------------------
+
+    const cleanPatientNumber =
+      this.patientNumber
+        .trim()
+        .toUpperCase();
+
+
+    // -----------------------------------------------
+    // CHECK DUPLICATE PATIENT
+    // -----------------------------------------------
+
+    if (
+      this.patientService.patientExists(
+        cleanPatientNumber
+      )
+    ) {
+
+      alert(
+        `Patient Number "${cleanPatientNumber}" already exists. Please use a different Patient Number.`
+      );
+
+      return;
+
+    }
+
+
+    // -----------------------------------------------
+    // CREATE PATIENT
+    // -----------------------------------------------
 
     const patient: Patient = {
 
@@ -77,7 +114,7 @@ export class AddUser {
         this.lastName.trim(),
 
       patientNumber:
-        this.patientNumber.trim(),
+        cleanPatientNumber,
 
       ward:
         this.ward.trim(),
@@ -94,6 +131,10 @@ export class AddUser {
     };
 
 
+    // -----------------------------------------------
+    // SAVE
+    // -----------------------------------------------
+
     this.patientService.addPatient(
       patient
     );
@@ -103,6 +144,10 @@ export class AddUser {
       'Patient added successfully!'
     );
 
+
+    // -----------------------------------------------
+    // GO BACK TO PATIENTS
+    // -----------------------------------------------
 
     this.router.navigate(
       ['/users']

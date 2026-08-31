@@ -1,8 +1,13 @@
+
 <div class="container-fluid py-4">
 
-  <!-- HEADER -->
+  <!-- =====================================================
+       HEADER
+  ====================================================== -->
 
-  <div class="d-flex justify-content-between align-items-center mb-4">
+  <div
+    class="d-flex justify-content-between align-items-center mb-4"
+  >
 
     <div>
 
@@ -19,7 +24,9 @@
   </div>
 
 
-  <!-- UPLOAD CARD -->
+  <!-- =====================================================
+       UPLOAD CARD
+  ====================================================== -->
 
   <div class="card border-0 shadow-sm mb-4">
 
@@ -44,6 +51,8 @@
       </div>
 
 
+      <!-- READING -->
+
       @if (isReading) {
 
         <div class="alert alert-info mt-3">
@@ -59,6 +68,8 @@
       }
 
 
+      <!-- SUCCESS / INFORMATION -->
+
       @if (message) {
 
         <div class="alert alert-success">
@@ -72,6 +83,8 @@
       }
 
 
+      <!-- ERROR -->
+
       @if (errorMessage) {
 
         <div class="alert alert-danger">
@@ -84,6 +97,33 @@
 
       }
 
+
+      <!-- DUPLICATE INFORMATION -->
+
+      @if (duplicateCount > 0) {
+
+        <div class="alert alert-warning">
+
+          <i class="bi bi-exclamation-circle me-2"></i>
+
+          <strong>
+            {{ duplicateCount }}
+          </strong>
+
+          duplicate patient(s) were found and skipped.
+
+          <br>
+
+          <small>
+            Patient Number is used as the unique identifier.
+          </small>
+
+        </div>
+
+      }
+
+
+      <!-- BUTTONS -->
 
       <div class="d-flex gap-2">
 
@@ -121,7 +161,10 @@
         <button
           type="button"
           class="btn btn-outline-secondary"
-          [disabled]="isReading || isUploading"
+          [disabled]="
+            isReading ||
+            isUploading
+          "
           (click)="clearData()"
         >
 
@@ -138,7 +181,9 @@
   </div>
 
 
-  <!-- EXCEL FORMAT -->
+  <!-- =====================================================
+       EXCEL FORMAT
+  ====================================================== -->
 
   <div class="card border-0 shadow-sm mb-4">
 
@@ -148,30 +193,54 @@
         Excel Format
       </h5>
 
+
       <p class="text-muted">
-        Your Excel file should contain patient information only.
+
+        Your Excel file should contain patient information.
+
+        <strong>
+          Patient Number must be unique.
+        </strong>
+
+        If a patient with the same Patient Number already
+        exists, the patient will not be added again.
+
       </p>
 
 
       <div class="table-responsive">
 
-        <table class="table table-bordered table-hover">
+        <table
+          class="table table-bordered table-hover"
+        >
 
           <thead class="table-primary">
 
             <tr>
 
-              <th>First Name</th>
+              <th>
+                First Name
+              </th>
 
-              <th>Second Name</th>
+              <th>
+                Second Name
+              </th>
 
-              <th>Last Name</th>
+              <th>
+                Last Name
+              </th>
 
-              <th>Patient Number</th>
+              <th>
+                Patient Number
+              </th>
 
-              <th>Ward</th>
+              <th>
+                Ward
+              </th>
 
-              <th>Admission Date</th>
+              <th>
+                Admission Date
+              </th>
 
             </tr>
 
@@ -182,33 +251,62 @@
 
             <tr>
 
-              <td>John</td>
+              <td>
+                John
+              </td>
 
-              <td>Peter</td>
+              <td>
+                Peter
+              </td>
 
-              <td>Smith</td>
+              <td>
+                Smith
+              </td>
 
-              <td>PT-00125</td>
+              <td>
+                <strong>
+                  PT-00125
+                </strong>
+              </td>
 
-              <td>Medical Ward</td>
+              <td>
+                Medical Ward
+              </td>
 
-              <td>2026-08-29</td>
+              <td>
+                2026-08-29
+              </td>
 
             </tr>
 
+
             <tr>
 
-              <td>Ahmed</td>
+              <td>
+                Ahmed
+              </td>
 
-              <td>Mohamed</td>
+              <td>
+                Mohamed
+              </td>
 
-              <td>Ali</td>
+              <td>
+                Ali
+              </td>
 
-              <td>PT-00126</td>
+              <td>
+                <strong>
+                  PT-00126
+                </strong>
+              </td>
 
-              <td>Surgical Ward</td>
+              <td>
+                Surgical Ward
+              </td>
 
-              <td>2026-08-29</td>
+              <td>
+                2026-08-29
+              </td>
 
             </tr>
 
@@ -223,7 +321,9 @@
   </div>
 
 
-  <!-- PREVIEW -->
+  <!-- =====================================================
+       PREVIEW
+  ====================================================== -->
 
   @if (patients.length > 0) {
 
@@ -242,25 +342,41 @@
 
         <div class="table-responsive">
 
-          <table class="table table-hover align-middle mb-0">
+          <table
+            class="table table-hover align-middle mb-0"
+          >
 
             <thead class="table-primary">
 
               <tr>
 
-                <th>#</th>
+                <th>
+                  #
+                </th>
 
-                <th>First Name</th>
+                <th>
+                  First Name
+                </th>
 
-                <th>Second Name</th>
+                <th>
+                  Second Name
+                </th>
 
-                <th>Last Name</th>
+                <th>
+                  Last Name
+                </th>
 
-                <th>Patient Number</th>
+                <th>
+                  Patient Number
+                </th>
 
-                <th>Ward</th>
+                <th>
+                  Ward
+                </th>
 
-                <th>Admission Date</th>
+                <th>
+                  Admission Date
+                </th>
 
               </tr>
 
@@ -280,27 +396,37 @@
                     {{ $index + 1 }}
                   </td>
 
+
                   <td>
                     {{ patient.firstName }}
                   </td>
+
 
                   <td>
                     {{ patient.secondName }}
                   </td>
 
+
                   <td>
                     {{ patient.lastName }}
                   </td>
 
+
                   <td>
+
                     <strong>
+
                       {{ patient.patientNumber }}
+
                     </strong>
+
                   </td>
+
 
                   <td>
                     {{ patient.ward }}
                   </td>
+
 
                   <td>
                     {{ patient.admissionDate }}
@@ -317,6 +443,32 @@
         </div>
 
       </div>
+
+    </div>
+
+  }
+
+
+  <!-- =====================================================
+       NO NEW PATIENTS
+  ====================================================== -->
+
+  @if (
+    !isReading &&
+    !isUploading &&
+    selectedFile &&
+    patients.length === 0 &&
+    !errorMessage
+  ) {
+
+    <div class="alert alert-warning mt-3">
+
+      <i class="bi bi-info-circle me-2"></i>
+
+      No new patients are available for upload.
+
+      All patients in this Excel file may already exist
+      in the system.
 
     </div>
 

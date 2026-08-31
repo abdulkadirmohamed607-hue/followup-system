@@ -1,9 +1,14 @@
 <div class="dashboard-container">
 
-  <!-- PAGE HEADER -->
+
+  <!-- =====================================================
+       PAGE HEADER
+  ====================================================== -->
+
   <div class="dashboard-header">
 
     <div>
+
       <h1>
         Dashboard
       </h1>
@@ -11,47 +16,44 @@
       <p>
         FollowUp System Overview
       </p>
+
+    </div>
+
+
+    <div class="today-info">
+
+      <i class="bi bi-calendar3"></i>
+
+      {{ today | date:'dd/MM/yyyy' }}
+
     </div>
 
   </div>
 
 
-  <!-- SUMMARY CARDS -->
+
+  <!-- =====================================================
+       STATISTICS
+  ====================================================== -->
+
   <div class="stats-grid">
 
-    <!-- TOTAL USERS -->
+
+    <!-- TOTAL PATIENTS -->
+
     <div class="stat-card">
 
       <div class="stat-icon">
-        👥
+
+        <i class="bi bi-hospital"></i>
+
       </div>
+
 
       <div>
 
         <span>
-          Total Users
-        </span>
-
-        <strong>
-          {{ totalUsers }}
-        </strong>
-
-      </div>
-
-    </div>
-
-
-    <!-- PATIENTS -->
-    <div class="stat-card">
-
-      <div class="stat-icon">
-        🏥
-      </div>
-
-      <div>
-
-        <span>
-          Patients
+          Total Patients
         </span>
 
         <strong>
@@ -63,21 +65,26 @@
     </div>
 
 
-    <!-- RELATIVES -->
+
+    <!-- TODAY VISITORS -->
+
     <div class="stat-card">
 
       <div class="stat-icon">
-        👨‍👩‍👧
+
+        <i class="bi bi-people"></i>
+
       </div>
+
 
       <div>
 
         <span>
-          Relatives
+          Today's Visitors
         </span>
 
         <strong>
-          {{ totalRelatives }}
+          {{ totalVisitorsToday }}
         </strong>
 
       </div>
@@ -85,21 +92,26 @@
     </div>
 
 
-    <!-- VISITED -->
+
+    <!-- CHECKED IN -->
+
     <div class="stat-card">
 
       <div class="stat-icon">
-        ✅
+
+        <i class="bi bi-person-check"></i>
+
       </div>
+
 
       <div>
 
         <span>
-          Visited
+          Checked In
         </span>
 
         <strong>
-          {{ totalVisited }}
+          {{ totalCheckedIn }}
         </strong>
 
       </div>
@@ -107,21 +119,53 @@
     </div>
 
 
-    <!-- NOT VISITED -->
+
+    <!-- COMPLETED -->
+
     <div class="stat-card">
 
       <div class="stat-icon">
-        ⏳
+
+        <i class="bi bi-check-circle"></i>
+
       </div>
+
 
       <div>
 
         <span>
-          Not Visited
+          Completed
         </span>
 
         <strong>
-          {{ totalNotVisited }}
+          {{ totalCompleted }}
+        </strong>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- DAY VISITS -->
+
+    <div class="stat-card">
+
+      <div class="stat-icon">
+
+        <i class="bi bi-sun"></i>
+
+      </div>
+
+
+      <div>
+
+        <span>
+          Day Visits
+        </span>
+
+        <strong>
+          {{ totalDayVisits }}
         </strong>
 
       </div>
@@ -131,19 +175,24 @@
   </div>
 
 
-  <!-- RECENT USERS -->
-  <div class="recent-section">
 
-    <div class="section-header">
+  <!-- =====================================================
+       VISIT SUMMARY
+  ====================================================== -->
+
+  <div class="visit-summary">
+
+
+    <div class="summary-header">
 
       <div>
 
         <h2>
-          Recent Users
+          Today's Visit Summary
         </h2>
 
         <span>
-          Latest registered users
+          Visitor activity for today
         </span>
 
       </div>
@@ -151,10 +200,160 @@
     </div>
 
 
-    <!-- TABLE -->
+    <div class="summary-items">
+
+
+      <!-- TODAY -->
+
+      <div class="summary-item">
+
+        <div class="summary-item-icon">
+
+          <i class="bi bi-people"></i>
+
+        </div>
+
+        <div>
+
+          <span>
+            Total Visitors
+          </span>
+
+          <strong>
+            {{ totalVisitorsToday }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- DAY -->
+
+      <div class="summary-item">
+
+        <div class="summary-item-icon">
+
+          <i class="bi bi-sun"></i>
+
+        </div>
+
+        <div>
+
+          <span>
+            Day Session
+          </span>
+
+          <strong>
+            {{ totalDayVisits }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- EVENING -->
+
+      <div class="summary-item">
+
+        <div class="summary-item-icon">
+
+          <i class="bi bi-moon"></i>
+
+        </div>
+
+        <div>
+
+          <span>
+            Evening Session
+          </span>
+
+          <strong>
+            {{ totalEveningVisits }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- CHECKED IN -->
+
+      <div class="summary-item">
+
+        <div class="summary-item-icon">
+
+          <i class="bi bi-person-check"></i>
+
+        </div>
+
+        <div>
+
+          <span>
+            Currently Inside
+          </span>
+
+          <strong>
+            {{ totalCheckedIn }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       RECENT VISITS
+  ====================================================== -->
+
+  <div class="recent-section">
+
+
+    <div class="section-header">
+
+      <div>
+
+        <h2>
+          Today's Recent Visits
+        </h2>
+
+        <span>
+          Latest visitor activity
+        </span>
+
+      </div>
+
+
+      <div class="visit-count">
+
+        {{ totalVisitorsToday }}
+
+        Visits
+
+      </div>
+
+    </div>
+
+
+
+    <!-- ===================================================
+         TABLE
+    ==================================================== -->
+
     <div class="table-container">
 
       <table>
+
 
         <thead>
 
@@ -165,7 +364,15 @@
             </th>
 
             <th>
-              Full Name
+              Visitor
+            </th>
+
+            <th>
+              Phone
+            </th>
+
+            <th>
+              Patient
             </th>
 
             <th>
@@ -177,19 +384,19 @@
             </th>
 
             <th>
-              Type
+              Session
             </th>
 
             <th>
-              Patient
+              Check In
+            </th>
+
+            <th>
+              Check Out
             </th>
 
             <th>
               Status
-            </th>
-
-            <th>
-              Visit Date
             </th>
 
           </tr>
@@ -197,132 +404,160 @@
         </thead>
 
 
+
         <tbody>
+
 
           @for (
 
-            user of recentUsers;
+            visit of recentVisits;
 
-            track user.id
+            track visit.id
 
           ) {
 
+
             <tr>
 
+
               <!-- ID -->
+
               <td>
 
-                {{ user.id }}
+                {{ $index + 1 }}
 
               </td>
 
 
-              <!-- FULL NAME -->
+
+              <!-- VISITOR -->
+
               <td>
 
                 <strong>
 
-                  {{ user.firstName }}
-
-                  {{ user.secondName }}
-
-                  {{ user.lastName }}
+                  {{ getVisitorName(visit) }}
 
                 </strong>
 
               </td>
 
 
-              <!-- PATIENT NUMBER -->
+
+              <!-- PHONE -->
+
               <td>
 
-                @if (user.patientNumber) {
-
-                  <span class="patient-number">
-
-                    {{ user.patientNumber }}
-
-                  </span>
-
-                }
-
-                @else {
-
-                  <span class="empty-value">
-                    -
-                  </span>
-
-                }
+                {{ visit.visitorPhone }}
 
               </td>
 
-
-              <!-- WARD -->
-              <td>
-
-                @if (user.ward) {
-
-                  <span class="ward-badge">
-
-                    {{ user.ward }}
-
-                  </span>
-
-                }
-
-                @else {
-
-                  <span class="empty-value">
-                    -
-                  </span>
-
-                }
-
-              </td>
-
-
-              <!-- TYPE -->
-              <td>
-
-                @if (user.type === 'Patient') {
-
-                  <span class="type-badge patient">
-
-                    Patient
-
-                  </span>
-
-                }
-
-                @else {
-
-                  <span class="type-badge relative">
-
-                    Relative
-
-                  </span>
-
-                }
-
-              </td>
 
 
               <!-- PATIENT -->
+
               <td>
 
-                {{ user.patientName || '-' }}
+                {{ visit.patientName }}
 
               </td>
+
+
+
+              <!-- PATIENT NUMBER -->
+
+              <td>
+
+                <span class="patient-number">
+
+                  {{ visit.patientNumber }}
+
+                </span>
+
+              </td>
+
+
+
+              <!-- WARD -->
+
+              <td>
+
+                <span class="ward-badge">
+
+                  {{ visit.ward }}
+
+                </span>
+
+              </td>
+
+
+
+              <!-- SESSION -->
+
+              <td>
+
+
+                @if (visit.session === 'Day') {
+
+                  <span class="session-badge day">
+
+                    <i class="bi bi-sun"></i>
+
+                    Day
+
+                  </span>
+
+                }
+
+                @else {
+
+                  <span class="session-badge evening">
+
+                    <i class="bi bi-moon"></i>
+
+                    Evening
+
+                  </span>
+
+                }
+
+
+              </td>
+
+
+
+              <!-- CHECK IN -->
+
+              <td>
+
+                {{ formatTime(visit.checkIn) }}
+
+              </td>
+
+
+
+              <!-- CHECK OUT -->
+
+              <td>
+
+                {{ formatTime(visit.checkOut) }}
+
+              </td>
+
 
 
               <!-- STATUS -->
+
               <td>
 
-                @if (user.visited) {
 
-                  <span class="visited">
+                @if (visit.status === 'Checked In') {
 
-                    Visited
+                  <span class="status-badge checked-in">
+
+                    <i class="bi bi-person-check"></i>
+
+                    Checked In
 
                   </span>
 
@@ -330,57 +565,57 @@
 
                 @else {
 
-                  <span class="not-visited">
+                  <span class="status-badge completed">
 
-                    Not Visited
+                    <i class="bi bi-check-circle"></i>
+
+                    Completed
 
                   </span>
 
                 }
 
-              </td>
-
-
-              <!-- VISIT DATE -->
-              <td>
-
-                @if (user.visitDate) {
-
-                  {{ user.visitDate | date:'dd/MM/yyyy' }}
-
-                }
-
-                @else {
-
-                  <span class="empty-value">
-                    -
-                  </span>
-
-                }
 
               </td>
+
 
             </tr>
 
           }
 
 
+
+          <!-- =================================================
+               EMPTY
+          ================================================== -->
+
           @empty {
+
 
             <tr>
 
               <td
-                colspan="8"
+                colspan="10"
                 class="no-data"
               >
 
-                No users available
+                <i class="bi bi-calendar-x"></i>
+
+                <strong>
+                  No visits today
+                </strong>
+
+                <span>
+                  Visitor records will appear here after a visitor is checked in.
+                </span>
 
               </td>
 
             </tr>
 
+
           }
+
 
         </tbody>
 
@@ -389,5 +624,6 @@
     </div>
 
   </div>
+
 
 </div>

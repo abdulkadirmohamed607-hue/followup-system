@@ -17,7 +17,8 @@ import {
 
 import {
   Visit,
-  VisitSession
+  VisitSession,
+  VisitSlot
 } from '../../../core/models/visit';
 
 import {
@@ -31,6 +32,7 @@ import {
 
 @Component({
   selector: 'app-visitor-check',
+
   standalone: true,
 
   imports: [
@@ -38,18 +40,36 @@ import {
     FormsModule
   ],
 
-  templateUrl: './visitor-check.html',
-  styleUrl: './visitor-check.css'
+  templateUrl:
+    './visitor-check.html',
+
+  styleUrl:
+    './visitor-check.css'
 })
-export class VisitorCheck implements OnInit {
+export class VisitorCheck
+  implements OnInit {
+
+
+  // =====================================================
+  // PATIENTS
+  // =====================================================
 
   patients: Patient[] = [];
 
   searchText = '';
 
+
+  // =====================================================
+  // SESSION
+  // =====================================================
+
   selectedSession:
     VisitSession = 'Day';
 
+
+  // =====================================================
+  // VISITOR FORM
+  // =====================================================
 
   showVisitorForm = false;
 
@@ -57,7 +77,7 @@ export class VisitorCheck implements OnInit {
     Patient | null = null;
 
   selectedSlot:
-    1 | 2 = 1;
+    VisitSlot = 1;
 
 
   visitorFirstName = '';
@@ -66,12 +86,18 @@ export class VisitorCheck implements OnInit {
 
   visitorLastName = '';
 
+  visitorCardNumber = '';
+
   visitorPhone = '';
 
 
   checkIn =
     this.getDateTimeLocal();
 
+
+  // =====================================================
+  // DATE
+  // =====================================================
 
   today =
     this.getToday();
@@ -81,16 +107,27 @@ export class VisitorCheck implements OnInit {
     new Date();
 
 
+  // =====================================================
+  // MESSAGES
+  // =====================================================
+
   message = '';
 
   errorMessage = '';
 
 
   constructor(
-    private patientService: PatientService,
-    private visitService: VisitService
+    private patientService:
+      PatientService,
+
+    private visitService:
+      VisitService
   ) {}
 
+
+  // =====================================================
+  // INIT
+  // =====================================================
 
   ngOnInit(): void {
 
@@ -113,21 +150,24 @@ export class VisitorCheck implements OnInit {
 
 
   // =====================================================
-  // FILTER
+  // FILTER PATIENTS
   // =====================================================
 
-  get filteredPatients(): Patient[] {
+  get filteredPatients():
+    Patient[] {
 
     const search =
       this.searchText
         .trim()
         .toLowerCase();
 
+
     if (!search) {
 
       return this.patients;
 
     }
+
 
     return this.patients.filter(
       patient => {
@@ -136,14 +176,19 @@ export class VisitorCheck implements OnInit {
           `${patient.firstName} ${patient.secondName} ${patient.lastName}`
             .toLowerCase();
 
+
         return (
+
           name.includes(search) ||
+
           patient.patientNumber
             .toLowerCase()
             .includes(search) ||
+
           patient.ward
             .toLowerCase()
             .includes(search)
+
         );
 
       }
@@ -161,10 +206,44 @@ export class VisitorCheck implements OnInit {
   ): string {
 
     return [
+
       patient.firstName,
+
       patient.secondName,
+
       patient.lastName
+
     ].join(' ');
+
+  }
+
+
+  // =====================================================
+  // MAX SLOTS
+  // =====================================================
+
+  getMaxSlots(): number {
+
+    return this.visitService
+      .getMaxSlots(
+        this.selectedSession
+      );
+
+  }
+
+
+  // =====================================================
+  // IS SLOT AVAILABLE FOR SESSION
+  // =====================================================
+
+  isSlotAllowed(
+    slot: VisitSlot
+  ): boolean {
+
+    return (
+      slot <=
+      this.getMaxSlots()
+    );
 
   }
 
@@ -175,26 +254,27 @@ export class VisitorCheck implements OnInit {
 
   getSlot(
     patient: Patient,
-    slot: 1 | 2
+    slot: VisitSlot
   ): Visit | undefined {
 
-    return this.visitService.getSlotVisit(
-      patient.id,
-      this.selectedSession,
-      slot,
-      this.today
-    );
+    return this.visitService
+      .getSlotVisit(
+        patient.id,
+        this.selectedSession,
+        slot,
+        this.today
+      );
 
   }
 
 
   // =====================================================
-  // CHECKED
+  // CHECK SLOT USED
   // =====================================================
 
   isSlotUsed(
     patient: Patient,
-    slot: 1 | 2
+    slot: VisitSlot
   ): boolean {
 
     return !!this.getSlot(
@@ -211,7 +291,7 @@ export class VisitorCheck implements OnInit {
 
   isCheckedIn(
     patient: Patient,
-    slot: 1 | 2
+    slot: VisitSlot
   ): boolean {
 
     const visit =
@@ -220,9 +300,14 @@ export class VisitorCheck implements OnInit {
         slot
       );
 
+
     return (
+
       !!visit &&
-      visit.status === 'Checked In'
+
+      visit.status ===
+        'Checked In'
+
     );
 
   }
@@ -239,7 +324,13 @@ export class VisitorCheck implements OnInit {
     this.selectedSession =
       session;
 
+
     this.closeForm();
+
+
+    this.message = '';
+
+    this.errorMessage = '';
 
   }
 
@@ -250,8 +341,25 @@ export class VisitorCheck implements OnInit {
 
   openVisitorForm(
     patient: Patient,
-    slot: 1 | 2
+    slot: VisitSlot
   ): void {
+
+
+    // -----------------------------
+    // SESSION SLOT VALIDATION
+    // -----------------------------
+
+    if (
+      !this.isSlotAllowed(slot)
+    ) {
+
+      this.errorMessage =
+        `Visitor ${slot} is not available during ${this.selectedSession}.`;
+
+      return;
+
+    }
+
 
     const existing =
       this.getSlot(
@@ -259,7 +367,9 @@ export class VisitorCheck implements OnInit {
         slot
       );
 
+
     if (existing) {
+
 
       if (
         existing.status ===
@@ -268,8 +378,9 @@ export class VisitorCheck implements OnInit {
 
         const checkout =
           confirm(
-            'This visitor is currently checked in. Do you want to check them out now?'
+            `This visitor is currently checked in. Do you want to check them out now?`
           );
+
 
         if (checkout) {
 
@@ -281,17 +392,27 @@ export class VisitorCheck implements OnInit {
 
       }
 
+
       return;
 
     }
 
 
+    // -----------------------------
+    // SELECT PATIENT
+    // -----------------------------
+
     this.selectedPatient =
       patient;
+
 
     this.selectedSlot =
       slot;
 
+
+    // -----------------------------
+    // RESET FORM
+    // -----------------------------
 
     this.visitorFirstName = '';
 
@@ -299,7 +420,10 @@ export class VisitorCheck implements OnInit {
 
     this.visitorLastName = '';
 
+    this.visitorCardNumber = '';
+
     this.visitorPhone = '';
+
 
     this.checkIn =
       this.getDateTimeLocal();
@@ -308,6 +432,7 @@ export class VisitorCheck implements OnInit {
     this.message = '';
 
     this.errorMessage = '';
+
 
     this.showVisitorForm =
       true;
@@ -324,9 +449,13 @@ export class VisitorCheck implements OnInit {
   ): void {
 
     if (
+
       !form ||
+
       form.invalid ||
+
       !this.selectedPatient
+
     ) {
 
       this.errorMessage =
@@ -337,11 +466,34 @@ export class VisitorCheck implements OnInit {
     }
 
 
+    // -----------------------------
+    // CHECK SLOT LIMIT
+    // -----------------------------
+
+    if (
+      !this.isSlotAllowed(
+        this.selectedSlot
+      )
+    ) {
+
+      this.errorMessage =
+        `Visitor ${this.selectedSlot} is not allowed for ${this.selectedSession}.`;
+
+      return;
+
+    }
+
+
+    // -----------------------------
+    // CHECK EXISTING SLOT
+    // -----------------------------
+
     const existing =
       this.getSlot(
         this.selectedPatient,
         this.selectedSlot
       );
+
 
     if (existing) {
 
@@ -353,54 +505,92 @@ export class VisitorCheck implements OnInit {
     }
 
 
+    // -----------------------------
+    // CREATE VISIT
+    // -----------------------------
+
     const visit: Visit = {
 
       id:
-        this.visitService.generateId(),
+        this.visitService
+          .generateId(),
+
 
       patientId:
         this.selectedPatient.id,
 
+
       patientNumber:
-        this.selectedPatient.patientNumber,
+        this.selectedPatient
+          .patientNumber,
+
 
       patientName:
         this.getPatientName(
           this.selectedPatient
         ),
 
+
       ward:
         this.selectedPatient.ward,
 
+
+      // ---------------------------
+      // VISITOR
+      // ---------------------------
+
       visitorFirstName:
-        this.visitorFirstName.trim(),
+        this.visitorFirstName
+          .trim(),
+
 
       visitorSecondName:
-        this.visitorSecondName.trim(),
+        this.visitorSecondName
+          .trim(),
+
 
       visitorLastName:
-        this.visitorLastName.trim(),
+        this.visitorLastName
+          .trim(),
+
+
+      visitorCardNumber:
+        this.visitorCardNumber
+          .trim(),
+
 
       visitorPhone:
-        this.visitorPhone.trim(),
+        this.visitorPhone
+          .trim(),
+
+
+      // ---------------------------
+      // VISIT
+      // ---------------------------
 
       session:
         this.selectedSession,
 
+
       slot:
         this.selectedSlot,
+
 
       visitDate:
         this.today,
 
+
       checkIn:
         this.checkIn,
+
 
       checkOut:
         null,
 
+
       durationMinutes:
         null,
+
 
       status:
         'Checked In'
@@ -408,16 +598,21 @@ export class VisitorCheck implements OnInit {
     };
 
 
+    // -----------------------------
+    // SAVE
+    // -----------------------------
+
     const saved =
-      this.visitService.addVisit(
-        visit
-      );
+      this.visitService
+        .addVisit(
+          visit
+        );
 
 
     if (!saved) {
 
       this.errorMessage =
-        'This visitor slot is already occupied.';
+        'This visitor slot is already occupied or the session limit has been reached.';
 
       return;
 
@@ -426,6 +621,7 @@ export class VisitorCheck implements OnInit {
 
     this.message =
       `Visitor ${this.selectedSlot} checked in successfully.`;
+
 
     this.closeForm();
 
@@ -443,10 +639,12 @@ export class VisitorCheck implements OnInit {
     const now =
       this.getDateTimeLocal();
 
+
     const confirmed =
       confirm(
         `Check out ${visit.visitorFirstName} ${visit.visitorSecondName} ${visit.visitorLastName}?`
       );
+
 
     if (!confirmed) {
 
@@ -455,14 +653,20 @@ export class VisitorCheck implements OnInit {
     }
 
 
-    this.visitService.checkoutVisit(
-      visit.id,
-      now
-    );
+    const success =
+      this.visitService
+        .checkoutVisit(
+          visit.id,
+          now
+        );
 
 
-    this.message =
-      'Visitor checked out successfully.';
+    if (success) {
+
+      this.message =
+        'Visitor checked out successfully.';
+
+    }
 
   }
 
@@ -475,6 +679,7 @@ export class VisitorCheck implements OnInit {
 
     this.showVisitorForm =
       false;
+
 
     this.selectedPatient =
       null;
@@ -496,8 +701,10 @@ export class VisitorCheck implements OnInit {
 
     }
 
+
     const date =
       new Date(value);
+
 
     return date.toLocaleTimeString(
       [],
@@ -511,7 +718,7 @@ export class VisitorCheck implements OnInit {
 
 
   // =====================================================
-  // DURATION
+  // FORMAT DURATION
   // =====================================================
 
   formatDuration(
@@ -527,10 +734,12 @@ export class VisitorCheck implements OnInit {
 
     }
 
+
     const hours =
       Math.floor(
         minutes / 60
       );
+
 
     const mins =
       minutes % 60;
@@ -542,13 +751,14 @@ export class VisitorCheck implements OnInit {
 
     }
 
+
     return `${mins} min`;
 
   }
 
 
   // =====================================================
-  // DATE
+  // TODAY
   // =====================================================
 
   private getToday(): string {
@@ -556,21 +766,26 @@ export class VisitorCheck implements OnInit {
     const now =
       new Date();
 
+
     return [
+
       now.getFullYear(),
+
       String(
         now.getMonth() + 1
       ).padStart(2, '0'),
+
       String(
         now.getDate()
       ).padStart(2, '0')
+
     ].join('-');
 
   }
 
 
   // =====================================================
-  // DATETIME
+  // DATETIME LOCAL
   // =====================================================
 
   private getDateTimeLocal(): string {
@@ -578,23 +793,28 @@ export class VisitorCheck implements OnInit {
     const now =
       new Date();
 
+
     const year =
       now.getFullYear();
+
 
     const month =
       String(
         now.getMonth() + 1
       ).padStart(2, '0');
 
+
     const day =
       String(
         now.getDate()
       ).padStart(2, '0');
 
+
     const hours =
       String(
         now.getHours()
       ).padStart(2, '0');
+
 
     const minutes =
       String(

@@ -17,7 +17,9 @@ import {
 
 
 @Component({
+
   selector: 'app-user-upload',
+
   standalone: true,
 
   imports: [
@@ -25,32 +27,49 @@ import {
   ],
 
   templateUrl: './user-upload.html',
+
   styleUrl: './user-upload.css'
+
 })
 export class UserUpload {
+
 
   selectedFile:
     File | null = null;
 
+
   patients:
     Patient[] = [];
+
 
   isReading =
     false;
 
+
   isUploading =
     false;
 
+
   message =
     '';
+
 
   errorMessage =
     '';
 
 
+  duplicateCount =
+    0;
+
+
   constructor(
-    private patientService: PatientService,
-    private cdr: ChangeDetectorRef
+
+    private patientService:
+      PatientService,
+
+    private cdr:
+      ChangeDetectorRef
+
   ) {}
 
 
@@ -66,8 +85,12 @@ export class UserUpload {
 
     this.errorMessage = '';
 
+    this.duplicateCount = 0;
+
+
     const input =
       event.target as HTMLInputElement;
+
 
     if (
       !input.files ||
@@ -80,8 +103,10 @@ export class UserUpload {
 
     }
 
+
     this.selectedFile =
       input.files[0];
+
 
     this.readExcel();
 
@@ -100,204 +125,452 @@ export class UserUpload {
 
     }
 
+
     this.isReading = true;
 
     this.patients = [];
+
 
     const reader =
       new FileReader();
 
 
-    reader.onload = (
-      event: ProgressEvent<FileReader>
-    ) => {
+    reader.onload =
+      (
+        event: ProgressEvent<FileReader>
+      ) => {
 
-      try {
+        try {
 
-        const data =
-          event.target?.result;
-
-        const workbook =
-          XLSX.read(
-            data,
-            {
-              type: 'array'
-            }
-          );
-
-        const firstSheetName =
-          workbook.SheetNames[0];
-
-        if (!firstSheetName) {
-
-          throw new Error(
-            'Excel file does not contain a worksheet.'
-          );
-
-        }
-
-        const worksheet =
-          workbook.Sheets[
-            firstSheetName
-          ];
-
-        const rows =
-          XLSX.utils.sheet_to_json<any>(
-            worksheet,
-            {
-              defval: ''
-            }
-          );
+          const data =
+            event.target?.result;
 
 
-        if (rows.length === 0) {
-
-          throw new Error(
-            'The Excel sheet is empty.'
-          );
-
-        }
-
-
-        const importedPatients:
-          Patient[] = [];
+          const workbook =
+            XLSX.read(
+              data,
+              {
+                type: 'array'
+              }
+            );
 
 
-        rows.forEach(
-          (row: any, index: number) => {
-
-            const firstName =
-              this.getValue(
-                row,
-                [
-                  'First Name',
-                  'firstName',
-                  'FirstName'
-                ]
-              );
-
-            const secondName =
-              this.getValue(
-                row,
-                [
-                  'Second Name',
-                  'secondName',
-                  'SecondName',
-                  'Middle Name'
-                ]
-              );
-
-            const lastName =
-              this.getValue(
-                row,
-                [
-                  'Last Name',
-                  'lastName',
-                  'LastName'
-                ]
-              );
-
-            const patientNumber =
-              this.getValue(
-                row,
-                [
-                  'Patient Number',
-                  'patientNumber',
-                  'PatientNumber'
-                ]
-              );
-
-            const ward =
-              this.getValue(
-                row,
-                [
-                  'Ward',
-                  'ward'
-                ]
-              );
-
-            const admissionDate =
-              this.getValue(
-                row,
-                [
-                  'Admission Date',
-                  'admissionDate',
-                  'AdmissionDate'
-                ]
-              );
+          const firstSheetName =
+            workbook.SheetNames[0];
 
 
-            if (
-              !firstName ||
-              !secondName ||
-              !lastName ||
-              !patientNumber ||
-              !ward
-            ) {
+          if (!firstSheetName) {
 
-              throw new Error(
-                `Row ${index + 2} is missing required patient information.`
-              );
-
-            }
-
-
-            importedPatients.push({
-
-              id:
-                this.patientService.generateId()
-                + index,
-
-              firstName,
-
-              secondName,
-
-              lastName,
-
-              patientNumber,
-
-              ward,
-
-              admissionDate:
-                this.normalizeDate(
-                  admissionDate
-                ),
-
-              status:
-                'Admitted',
-
-              createdAt:
-                new Date().toISOString()
-
-            });
+            throw new Error(
+              'Excel file does not contain a worksheet.'
+            );
 
           }
-        );
 
 
-        this.patients =
-          importedPatients;
+          const worksheet =
+            workbook.Sheets[
+              firstSheetName
+            ];
 
-        this.message =
-          `${this.patients.length} patient(s) loaded successfully. Review the preview before uploading.`;
 
-      } catch (error: any) {
+          const rows =
+            XLSX.utils.sheet_to_json<any>(
+              worksheet,
+              {
+                defval: ''
+              }
+            );
 
-        this.patients = [];
 
-        this.errorMessage =
-          error?.message ||
-          'Failed to read Excel file.';
+          if (
+            rows.length === 0
+          ) {
 
-      } finally {
+            throw new Error(
+              'The Excel sheet is empty.'
+            );
 
-        this.isReading = false;
+          }
 
-        this.cdr.detectChanges();
 
-      }
+          const importedPatients:
+            Patient[] = [];
 
-    };
+
+          const numbersInExcel =
+            new Set<string>();
+
+
+          /*
+           * Existing patients.
+           */
+
+          const existingPatients =
+            this.patientService
+              .getPatients();
+
+
+          const existingNumbers =
+            new Set(
+              existingPatients.map(
+                patient =>
+                  this.normalizeText(
+                    patient.patientNumber
+                  )
+              )
+            );
+
+
+          let skippedDuplicates = 0;
+
+
+          rows.forEach(
+            (
+              row: any,
+              index: number
+            ) => {
+
+
+              // ==========================================
+              // PATIENT NUMBER
+              // ==========================================
+
+              const patientNumber =
+                this.getValue(
+                  row,
+                  [
+
+                    'Patient Number',
+
+                    'PatientNumber',
+
+                    'patientNumber',
+
+                    'Patient No',
+
+                    'Patient No.',
+
+                    'patient_no',
+
+                    'patient_no.',
+
+                    'Patient ID',
+
+                    'PatientID',
+
+                    'patientId',
+
+                    'ID'
+
+                  ]
+                );
+
+
+              /*
+               * Patient Number is mandatory because
+               * it is our unique identifier.
+               */
+
+              if (!patientNumber) {
+
+                throw new Error(
+
+                  `Row ${index + 2} is missing Patient Number. ` +
+
+                  `Patient Number is required because it is used ` +
+
+                  `to prevent duplicate patients.`
+
+                );
+
+              }
+
+
+              const normalizedNumber =
+                this.normalizeText(
+                  patientNumber
+                );
+
+
+              /*
+               * Already in localStorage.
+               */
+
+              if (
+                existingNumbers.has(
+                  normalizedNumber
+                )
+              ) {
+
+                skippedDuplicates++;
+
+                return;
+
+              }
+
+
+              /*
+               * Duplicate inside Excel.
+               */
+
+              if (
+                numbersInExcel.has(
+                  normalizedNumber
+                )
+              ) {
+
+                skippedDuplicates++;
+
+                return;
+
+              }
+
+
+              numbersInExcel.add(
+                normalizedNumber
+              );
+
+
+              // ==========================================
+              // FIRST NAME
+              // ==========================================
+
+              const firstName =
+                this.getValue(
+                  row,
+                  [
+
+                    'First Name',
+
+                    'FirstName',
+
+                    'firstName',
+
+                    'First',
+
+                    'first'
+
+                  ]
+                );
+
+
+              // ==========================================
+              // SECOND NAME
+              // ==========================================
+
+              const secondName =
+                this.getValue(
+                  row,
+                  [
+
+                    'Second Name',
+
+                    'SecondName',
+
+                    'secondName',
+
+                    'Middle Name',
+
+                    'MiddleName',
+
+                    'middleName',
+
+                    'Middle'
+
+                  ]
+                );
+
+
+              // ==========================================
+              // LAST NAME
+              // ==========================================
+
+              const lastName =
+                this.getValue(
+                  row,
+                  [
+
+                    'Last Name',
+
+                    'LastName',
+
+                    'lastName',
+
+                    'Surname',
+
+                    'surname'
+
+                  ]
+                );
+
+
+              // ==========================================
+              // WARD
+              // ==========================================
+
+              const ward =
+                this.getValue(
+                  row,
+                  [
+
+                    'Ward',
+
+                    'ward',
+
+                    'Ward Name',
+
+                    'WardName',
+
+                    'wardName'
+
+                  ]
+                );
+
+
+              // ==========================================
+              // ADMISSION DATE
+              // ==========================================
+
+              const admissionDate =
+                this.getValue(
+                  row,
+                  [
+
+                    'Admission Date',
+
+                    'AdmissionDate',
+
+                    'admissionDate',
+
+                    'Date Admitted',
+
+                    'DateAdmitted',
+
+                    'dateAdmitted'
+
+                  ]
+                );
+
+
+              // ==========================================
+              // VALIDATION
+              // ==========================================
+
+              if (
+                !firstName ||
+                !lastName ||
+                !ward
+              ) {
+
+                throw new Error(
+
+                  `Row ${index + 2} is missing required patient information. ` +
+
+                  `Required fields: First Name, Last Name, ` +
+
+                  `Patient Number and Ward.`
+
+                );
+
+              }
+
+
+              // ==========================================
+              // CREATE PATIENT
+              // ==========================================
+
+              importedPatients.push({
+
+                id:
+                  this.patientService
+                    .generateId()
+                  +
+                  importedPatients.length,
+
+                firstName,
+
+                secondName:
+                  secondName || '-',
+
+                lastName,
+
+                patientNumber,
+
+                ward,
+
+                admissionDate:
+                  this.normalizeDate(
+                    admissionDate
+                  ),
+
+                status:
+                  'Admitted',
+
+                createdAt:
+                  new Date().toISOString()
+
+              });
+
+            }
+          );
+
+
+          this.patients =
+            importedPatients;
+
+
+          this.duplicateCount =
+            skippedDuplicates;
+
+
+          if (
+            this.patients.length === 0
+          ) {
+
+            this.message =
+              `No new patients found. ${skippedDuplicates} duplicate patient(s) were skipped.`;
+
+          }
+          else {
+
+            this.message =
+              `${this.patients.length} new patient(s) loaded successfully.` +
+
+              (
+                skippedDuplicates > 0
+                  ? ` ${skippedDuplicates} duplicate patient(s) were skipped.`
+                  : ''
+              ) +
+
+              ` Review the preview before uploading.`;
+
+          }
+
+
+        }
+        catch (
+          error: any
+        ) {
+
+          this.patients = [];
+
+          this.duplicateCount = 0;
+
+          this.errorMessage =
+            error?.message ||
+            'Failed to read Excel file.';
+
+        }
+        finally {
+
+          this.isReading = false;
+
+          this.cdr.detectChanges();
+
+        }
+
+      };
 
 
     reader.onerror = () => {
@@ -328,22 +601,48 @@ export class UserUpload {
     keys: string[]
   ): string {
 
-    for (const key of keys) {
+    for (
+      const key of keys
+    ) {
 
       if (
         row[key] !== undefined &&
         row[key] !== null
       ) {
 
-        return String(
-          row[key]
-        ).trim();
+        const value =
+          String(
+            row[key]
+          ).trim();
+
+
+        if (value) {
+
+          return value;
+
+        }
 
       }
 
     }
 
+
     return '';
+
+  }
+
+
+  // =====================================================
+  // NORMALIZE TEXT
+  // =====================================================
+
+  private normalizeText(
+    value: string
+  ): string {
+
+    return value
+      .trim()
+      .toLowerCase();
 
   }
 
@@ -365,6 +664,10 @@ export class UserUpload {
     }
 
 
+    /*
+     * Excel serial date.
+     */
+
     if (
       typeof value === 'number'
     ) {
@@ -374,12 +677,27 @@ export class UserUpload {
           value
         );
 
+
       if (date) {
 
         return [
+
           date.y,
-          String(date.m).padStart(2, '0'),
-          String(date.d).padStart(2, '0')
+
+          String(
+            date.m
+          ).padStart(
+            2,
+            '0'
+          ),
+
+          String(
+            date.d
+          ).padStart(
+            2,
+            '0'
+          )
+
         ].join('-');
 
       }
@@ -387,12 +705,19 @@ export class UserUpload {
     }
 
 
+    /*
+     * JavaScript date.
+     */
+
     const parsed =
       new Date(value);
 
-    if (!isNaN(
-      parsed.getTime()
-    )) {
+
+    if (
+      !isNaN(
+        parsed.getTime()
+      )
+    ) {
 
       return parsed
         .toISOString()
@@ -407,7 +732,7 @@ export class UserUpload {
 
 
   // =====================================================
-  // UPLOAD
+  // UPLOAD PATIENTS
   // =====================================================
 
   uploadPatients(): void {
@@ -420,6 +745,7 @@ export class UserUpload {
 
     }
 
+
     this.isUploading = true;
 
     this.message = '';
@@ -429,23 +755,41 @@ export class UserUpload {
 
     try {
 
-      this.patientService.addPatients(
-        this.patients
-      );
+      const result =
+        this.patientService.addPatients(
+          this.patients
+        );
+
 
       this.message =
-        `${this.patients.length} patient(s) uploaded successfully.`;
+        `${result.added} patient(s) uploaded successfully.`;
+
+
+      if (
+        result.duplicates > 0
+      ) {
+
+        this.message +=
+          ` ${result.duplicates} duplicate patient(s) were skipped.`;
+
+      }
+
 
       this.patients = [];
 
       this.selectedFile = null;
 
-    } catch {
+      this.duplicateCount = 0;
+
+
+    }
+    catch {
 
       this.errorMessage =
         'Failed to upload patients.';
 
-    } finally {
+    }
+    finally {
 
       this.isUploading = false;
 
@@ -470,9 +814,12 @@ export class UserUpload {
 
     this.errorMessage = '';
 
+    this.duplicateCount = 0;
+
     this.isReading = false;
 
     this.isUploading = false;
+
 
     this.cdr.detectChanges();
 
