@@ -1,7 +1,7 @@
+
 import {
   Component,
-  computed,
-  signal
+  OnInit
 } from '@angular/core';
 
 import {
@@ -23,38 +23,70 @@ import {
 
 
 @Component({
-  selector: 'app-reports',
-  standalone: true,
+
+  selector:
+    'app-reports',
+
+  standalone:
+    true,
 
   imports: [
     CommonModule,
     FormsModule
   ],
 
-  templateUrl: './reports.html',
-  styleUrl: './reports.css'
+  templateUrl:
+    './reports.html',
+
+  styleUrl:
+    './reports.css'
+
 })
-export class Reports {
+export class Reports
+  implements OnInit {
 
-  searchText = '';
 
-  selectedSession:
-    'All' | VisitSession = 'All';
-
-  selectedStatus:
-    'All' |
-    'Checked In' |
-    'Completed' = 'All';
-
-  selectedDate = '';
-
+  // =====================================================
+  // VISITS
+  // =====================================================
 
   visits: Visit[] = [];
 
 
+  // =====================================================
+  // FILTERS
+  // =====================================================
+
+  searchText = '';
+
+  selectedSession:
+    VisitSession | 'All' =
+      'All';
+
+  selectedStatus:
+    'Checked In' |
+    'Completed' |
+    'All' =
+      'All';
+
+  selectedDate = '';
+
+
+  // =====================================================
+  // CONSTRUCTOR
+  // =====================================================
+
   constructor(
-    private visitService: VisitService
-  ) {
+    private visitService:
+      VisitService
+  ) {}
+
+
+  // =====================================================
+  // INIT
+  // =====================================================
+
+  ngOnInit(): void {
 
     this.loadVisits();
 
@@ -62,22 +94,52 @@ export class Reports {
 
 
   // =====================================================
-  // LOAD
+  // LOAD VISITS
   // =====================================================
 
   loadVisits(): void {
 
     this.visits =
-      this.visitService.getVisits();
+      this.visitService
+        .getVisits();
 
   }
 
 
   // =====================================================
-  // FILTERED
+  // VISITOR NAME
   // =====================================================
 
-  get filteredVisits(): Visit[] {
+  visitorName(
+    visit: Visit
+  ): string {
+
+    return [
+
+      visit.visitorFirstName,
+
+      visit.visitorSecondName,
+
+      visit.visitorLastName
+
+    ]
+
+      .filter(
+        name =>
+          !!name?.trim()
+      )
+
+      .join(' ');
+
+  }
+
+
+  // =====================================================
+  // FILTERED VISITS
+  // =====================================================
+
+  get filteredVisits():
+    Visit[] {
 
     const search =
       this.searchText
@@ -88,52 +150,107 @@ export class Reports {
     return this.visits.filter(
       visit => {
 
-        const visitorName =
-          `${visit.visitorFirstName} ${visit.visitorSecondName} ${visit.visitorLastName}`
-            .toLowerCase();
 
-        const patientName =
-          visit.patientName
-            .toLowerCase();
+        // -----------------------------------------------
+        // SAFE VISITOR VALUES
+        // -----------------------------------------------
+
+        const visitorPhone =
+          visit.visitorPhone ??
+          '';
+
+        const visitorGender =
+          visit.visitorGender ??
+          '';
+
+        const visitorRelation =
+          visit.visitorRelation ??
+          '';
+
+
+        // -----------------------------------------------
+        // SEARCH
+        // -----------------------------------------------
 
         const matchesSearch =
           !search ||
-          visitorName.includes(search) ||
-          patientName.includes(search) ||
+
+          visit.patientName
+            .toLowerCase()
+            .includes(search) ||
+
           visit.patientNumber
             .toLowerCase()
             .includes(search) ||
+
           visit.ward
             .toLowerCase()
             .includes(search) ||
-          visit.visitorPhone
+
+          this.visitorName(
+            visit
+          )
+            .toLowerCase()
+            .includes(search) ||
+
+          visitorPhone
+            .toLowerCase()
+            .includes(search) ||
+
+          visitorGender
+            .toLowerCase()
+            .includes(search) ||
+
+          visitorRelation
             .toLowerCase()
             .includes(search);
 
 
-        const matchesSession =
-          this.selectedSession === 'All' ||
-          visit.session ===
-          this.selectedSession;
+        // -----------------------------------------------
+        // SESSION
+        // -----------------------------------------------
 
+        const matchesSession =
+          this.selectedSession ===
+            'All' ||
+
+          visit.session ===
+            this.selectedSession;
+
+
+        // -----------------------------------------------
+        // STATUS
+        // -----------------------------------------------
 
         const matchesStatus =
-          this.selectedStatus === 'All' ||
-          visit.status ===
-          this.selectedStatus;
+          this.selectedStatus ===
+            'All' ||
 
+          visit.status ===
+            this.selectedStatus;
+
+
+        // -----------------------------------------------
+        // DATE
+        // -----------------------------------------------
 
         const matchesDate =
           !this.selectedDate ||
+
           visit.visitDate ===
-          this.selectedDate;
+            this.selectedDate;
 
 
         return (
+
           matchesSearch &&
+
           matchesSession &&
+
           matchesStatus &&
+
           matchesDate
+
         );
 
       }
@@ -148,14 +265,16 @@ export class Reports {
 
   get totalPatients(): number {
 
-    const ids =
+    const patientIds =
       new Set(
-        this.visits.map(
-          visit => visit.patientId
+        this.filteredVisits.map(
+          visit =>
+            visit.patientId
         )
       );
 
-    return ids.size;
+
+    return patientIds.size;
 
   }
 
@@ -166,7 +285,7 @@ export class Reports {
 
   get totalVisits(): number {
 
-    return this.visits.length;
+    return this.filteredVisits.length;
 
   }
 
@@ -177,9 +296,10 @@ export class Reports {
 
   get dayVisits(): number {
 
-    return this.visits.filter(
+    return this.filteredVisits.filter(
       visit =>
-        visit.session === 'Day'
+        visit.session ===
+        'Day'
     ).length;
 
   }
@@ -191,9 +311,10 @@ export class Reports {
 
   get eveningVisits(): number {
 
-    return this.visits.filter(
+    return this.filteredVisits.filter(
       visit =>
-        visit.session === 'Evening'
+        visit.session ===
+        'Evening'
     ).length;
 
   }
@@ -205,47 +326,17 @@ export class Reports {
 
   get completedVisits(): number {
 
-    return this.visits.filter(
+    return this.filteredVisits.filter(
       visit =>
-        visit.status === 'Completed'
+        visit.status ===
+        'Completed'
     ).length;
 
   }
 
 
   // =====================================================
-  // ACTIVE
-  // =====================================================
-
-  get activeVisits(): number {
-
-    return this.visits.filter(
-      visit =>
-        visit.status === 'Checked In'
-    ).length;
-
-  }
-
-
-  // =====================================================
-  // FULL VISITOR NAME
-  // =====================================================
-
-  visitorName(
-    visit: Visit
-  ): string {
-
-    return [
-      visit.visitorFirstName,
-      visit.visitorSecondName,
-      visit.visitorLastName
-    ].join(' ');
-
-  }
-
-
-  // =====================================================
-  // TIME
+  // FORMAT TIME
   // =====================================================
 
   formatTime(
@@ -258,8 +349,21 @@ export class Reports {
 
     }
 
+
     const date =
       new Date(value);
+
+
+    if (
+      Number.isNaN(
+        date.getTime()
+      )
+    ) {
+
+      return '-';
+
+    }
+
 
     return date.toLocaleTimeString(
       [],
@@ -273,7 +377,7 @@ export class Reports {
 
 
   // =====================================================
-  // DURATION
+  // FORMAT DURATION
   // =====================================================
 
   formatDuration(
@@ -289,10 +393,12 @@ export class Reports {
 
     }
 
+
     const hours =
       Math.floor(
         minutes / 60
       );
+
 
     const mins =
       minutes % 60;
@@ -303,6 +409,7 @@ export class Reports {
       return `${hours}h ${mins}m`;
 
     }
+
 
     return `${mins} min`;
 
@@ -337,6 +444,7 @@ export class Reports {
     const XLSX =
       await import('xlsx');
 
+
     const data =
       this.filteredVisits.map(
         (visit, index) => ({
@@ -360,6 +468,12 @@ export class Reports {
 
           'Phone':
             visit.visitorPhone,
+
+          'Gender':
+            visit.visitorGender,
+
+          'Relation':
+            visit.visitorRelation,
 
           'Session':
             visit.session,
@@ -397,8 +511,10 @@ export class Reports {
         data
       );
 
+
     const workbook =
       XLSX.utils.book_new();
+
 
     XLSX.utils.book_append_sheet(
       workbook,
@@ -426,6 +542,7 @@ export class Reports {
         'reportTable'
       );
 
+
     if (!table) {
 
       return;
@@ -452,6 +569,7 @@ export class Reports {
 
 
     printWindow.document.write(`
+
       <html>
 
         <head>
@@ -460,16 +578,26 @@ export class Reports {
             Patient Visit Report
           </title>
 
+
           <style>
 
             body {
               font-family: Arial, sans-serif;
               padding: 25px;
+              color: #44515a;
             }
+
 
             h1 {
               color: #164e70;
+              margin-bottom: 5px;
             }
+
+
+            p {
+              color: #6c7a86;
+            }
+
 
             table {
               width: 100%;
@@ -477,21 +605,32 @@ export class Reports {
               margin-top: 20px;
             }
 
+
             th,
             td {
               border: 1px solid #ccc;
               padding: 8px;
-              font-size: 11px;
+              font-size: 10px;
               text-align: left;
+              white-space: nowrap;
             }
+
 
             th {
               background: #dcecf6;
+              color: #164e70;
+              font-weight: bold;
+            }
+
+
+            tr:nth-child(even) {
+              background: #f8fbfd;
             }
 
           </style>
 
         </head>
+
 
         <body>
 
@@ -499,22 +638,28 @@ export class Reports {
             Patient Visit Report
           </h1>
 
+
           <p>
             Generated:
             ${new Date().toLocaleString()}
           </p>
 
+
           ${table.outerHTML}
+
 
         </body>
 
       </html>
+
     `);
 
 
     printWindow.document.close();
 
+
     printWindow.focus();
+
 
     setTimeout(
       () => {
@@ -548,14 +693,25 @@ export class Reports {
     const now =
       new Date();
 
+
     return [
+
       now.getFullYear(),
+
       String(
         now.getMonth() + 1
-      ).padStart(2, '0'),
+      ).padStart(
+        2,
+        '0'
+      ),
+
       String(
         now.getDate()
-      ).padStart(2, '0')
+      ).padStart(
+        2,
+        '0'
+      )
+
     ].join('-');
 
   }

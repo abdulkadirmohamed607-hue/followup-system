@@ -10,6 +10,11 @@ export type VisitSlot =
   | 3;
 
 
+export type VisitorGender =
+  | 'Male'
+  | 'Female';
+
+
 export interface Visit {
 
   id: number;
@@ -36,6 +41,10 @@ export interface Visit {
   visitorCardNumber: string;
 
   visitorPhone: string;
+
+  visitorGender: VisitorGender;
+
+  visitorRelation: string;
 
 
   // =========================

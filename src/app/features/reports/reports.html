@@ -1,3 +1,4 @@
+
 <div class="reports-container">
 
   <!-- HEADER -->
@@ -133,16 +134,20 @@
   <div class="filters">
 
 
+    <!-- SEARCH -->
+
     <div class="search-box">
 
       <input
         type="text"
-        placeholder="Search patient, visitor, phone or ward..."
+        placeholder="Search patient, visitor, phone, gender, relation or ward..."
         [(ngModel)]="searchText"
       />
 
     </div>
 
+
+    <!-- SESSION -->
 
     <div class="filter-box">
 
@@ -167,6 +172,8 @@
     </div>
 
 
+    <!-- STATUS -->
+
     <div class="filter-box">
 
       <select
@@ -190,6 +197,8 @@
     </div>
 
 
+    <!-- DATE -->
+
     <div class="date-filter">
 
       <input
@@ -200,10 +209,13 @@
     </div>
 
 
+    <!-- RESET -->
+
     <button
       type="button"
       class="reset-button"
       (click)="resetFilters()"
+      title="Reset Filters"
     >
 
       <i class="bi bi-arrow-clockwise"></i>
@@ -235,6 +247,10 @@
 
           <th>Phone</th>
 
+          <th>Gender</th>
+
+          <th>Relation</th>
+
           <th>Session</th>
 
           <th>Slot</th>
@@ -263,10 +279,17 @@
 
           <tr>
 
+
+            <!-- NUMBER -->
+
             <td>
+
               {{ $index + 1 }}
+
             </td>
 
+
+            <!-- PATIENT -->
 
             <td>
 
@@ -276,6 +299,8 @@
 
             </td>
 
+
+            <!-- PATIENT NUMBER -->
 
             <td>
 
@@ -288,6 +313,8 @@
             </td>
 
 
+            <!-- WARD -->
+
             <td>
 
               <span class="ward-badge">
@@ -299,6 +326,8 @@
             </td>
 
 
+            <!-- VISITOR -->
+
             <td>
 
               {{ visitorName(visit) }}
@@ -306,12 +335,34 @@
             </td>
 
 
+            <!-- PHONE -->
+
             <td>
 
               {{ visit.visitorPhone }}
 
             </td>
 
+
+            <!-- GENDER -->
+
+            <td>
+
+              {{ visit.visitorGender }}
+
+            </td>
+
+
+            <!-- RELATION -->
+
+            <td>
+
+              {{ visit.visitorRelation }}
+
+            </td>
+
+
+            <!-- SESSION -->
 
             <td>
 
@@ -329,12 +380,16 @@
             </td>
 
 
+            <!-- SLOT -->
+
             <td>
 
               Visitor {{ visit.slot }}
 
             </td>
 
+
+            <!-- DATE -->
 
             <td>
 
@@ -343,6 +398,8 @@
             </td>
 
 
+            <!-- CHECK IN -->
+
             <td>
 
               {{ formatTime(visit.checkIn) }}
@@ -350,12 +407,16 @@
             </td>
 
 
+            <!-- CHECK OUT -->
+
             <td>
 
               {{ formatTime(visit.checkOut) }}
 
             </td>
 
+
+            <!-- DURATION -->
 
             <td>
 
@@ -367,6 +428,8 @@
 
             </td>
 
+
+            <!-- STATUS -->
 
             <td>
 
@@ -381,6 +444,7 @@
                 </span>
 
               }
+
               @else {
 
                 <span class="checked-in">
@@ -398,12 +462,14 @@
         }
 
 
+        <!-- EMPTY -->
+
         @empty {
 
           <tr>
 
             <td
-              colspan="13"
+              colspan="15"
               class="no-data"
             >
 

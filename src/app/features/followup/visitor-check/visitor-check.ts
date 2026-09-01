@@ -18,7 +18,8 @@ import {
 import {
   Visit,
   VisitSession,
-  VisitSlot
+  VisitSlot,
+  VisitorGender
 } from '../../../core/models/visit';
 
 import {
@@ -80,6 +81,10 @@ export class VisitorCheck
     VisitSlot = 1;
 
 
+  // =====================================================
+  // VISITOR DETAILS
+  // =====================================================
+
   visitorFirstName = '';
 
   visitorSecondName = '';
@@ -90,6 +95,15 @@ export class VisitorCheck
 
   visitorPhone = '';
 
+  visitorGender:
+    VisitorGender | '' = '';
+
+  visitorRelation = '';
+
+
+  // =====================================================
+  // CHECK IN
+  // =====================================================
 
   checkIn =
     this.getDateTimeLocal();
@@ -115,6 +129,10 @@ export class VisitorCheck
 
   errorMessage = '';
 
+
+  // =====================================================
+  // CONSTRUCTOR
+  // =====================================================
 
   constructor(
     private patientService:
@@ -233,7 +251,7 @@ export class VisitorCheck
 
 
   // =====================================================
-  // IS SLOT AVAILABLE FOR SESSION
+  // IS SLOT AVAILABLE
   // =====================================================
 
   isSlotAllowed(
@@ -361,6 +379,10 @@ export class VisitorCheck
     }
 
 
+    // -----------------------------
+    // CHECK EXISTING SLOT
+    // -----------------------------
+
     const existing =
       this.getSlot(
         patient,
@@ -411,7 +433,7 @@ export class VisitorCheck
 
 
     // -----------------------------
-    // RESET FORM
+    // RESET VISITOR FORM
     // -----------------------------
 
     this.visitorFirstName = '';
@@ -424,6 +446,14 @@ export class VisitorCheck
 
     this.visitorPhone = '';
 
+    this.visitorGender = '';
+
+    this.visitorRelation = '';
+
+
+    // -----------------------------
+    // CHECK-IN TIME
+    // -----------------------------
 
     this.checkIn =
       this.getDateTimeLocal();
@@ -460,6 +490,38 @@ export class VisitorCheck
 
       this.errorMessage =
         'Please fill all required visitor information.';
+
+      return;
+
+    }
+
+
+    // -----------------------------
+    // VALIDATE GENDER
+    // -----------------------------
+
+    if (
+      !this.visitorGender
+    ) {
+
+      this.errorMessage =
+        'Please select visitor gender.';
+
+      return;
+
+    }
+
+
+    // -----------------------------
+    // VALIDATE RELATION
+    // -----------------------------
+
+    if (
+      !this.visitorRelation.trim()
+    ) {
+
+      this.errorMessage =
+        'Please enter visitor relation to the patient.';
 
       return;
 
@@ -516,6 +578,10 @@ export class VisitorCheck
           .generateId(),
 
 
+      // ---------------------------
+      // PATIENT
+      // ---------------------------
+
       patientId:
         this.selectedPatient.id,
 
@@ -561,6 +627,15 @@ export class VisitorCheck
 
       visitorPhone:
         this.visitorPhone
+          .trim(),
+
+
+      visitorGender:
+        this.visitorGender,
+
+
+      visitorRelation:
+        this.visitorRelation
           .trim(),
 
 
@@ -618,6 +693,10 @@ export class VisitorCheck
 
     }
 
+
+    // -----------------------------
+    // SUCCESS
+    // -----------------------------
 
     this.message =
       `Visitor ${this.selectedSlot} checked in successfully.`;
