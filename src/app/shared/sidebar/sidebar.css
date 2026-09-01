@@ -1,24 +1,65 @@
-.sidebar {
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+:host {
+  display: block;
+
   width: 250px;
-  min-height: 100vh;
-  background: #ffffff;
-  border-right: 1px solid #e5e7eb;
-  padding: 20px 15px;
+  height: calc(100vh - 64px);
+
+  margin: 0;
+  padding: 0;
 }
 
 
-/* ==========================================
+.sidebar {
+  position: fixed;
+
+  top: 64px;
+  left: 0;
+
+  width: 250px;
+  height: calc(100vh - 64px);
+
+  margin: 0;
+  padding: 20px 15px;
+
+  box-sizing: border-box;
+
+  background: #ffffff;
+
+  border-right: 1px solid #e5e7eb;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  z-index: 1000;
+
+  transform: none;
+
+  transition: none;
+}
+
+
+/* =========================================================
    MENU HEADER
-   ========================================== */
+   ========================================================= */
 
 .menu-header {
   display: flex;
+
   align-items: center;
+
   justify-content: space-between;
+
+  width: 100%;
 
   padding: 11px 15px;
 
-  margin-bottom: 8px;
+  margin: 0 0 8px 0;
+
+  box-sizing: border-box;
 
   color: #555;
 
@@ -32,37 +73,33 @@
 
   cursor: pointer;
 
-  text-decoration: none;
+  user-select: none;
 
   transition:
-    background 0.2s ease,
+    background-color 0.2s ease,
     color 0.2s ease;
 }
 
 
-/* Hover kama link */
-
 .menu-header:hover {
   background: #f1f3f5;
-
   color: #222;
 }
 
 
-/* Active kama link */
-
 .menu-header.active {
   background: #e9ecef;
-
   color: #212529;
-
-  font-weight: 600;
 }
 
 
-/* Arrow */
+/* =========================================================
+   ARROW
+   ========================================================= */
 
 .menu-arrow {
+  display: inline-block;
+
   font-size: 10px;
 
   transition: transform 0.2s ease;
@@ -74,9 +111,9 @@
 }
 
 
-/* ==========================================
+/* =========================================================
    NAVIGATION
-   ========================================== */
+   ========================================================= */
 
 .sidebar-nav {
   display: flex;
@@ -84,19 +121,30 @@
   flex-direction: column;
 
   gap: 4px;
+
+  width: 100%;
+
+  margin: 0;
+  padding: 0;
+
+  box-sizing: border-box;
 }
 
 
-/* ==========================================
+/* =========================================================
    NAV ITEM
-   ========================================== */
+   ========================================================= */
 
 .nav-item {
   display: block;
 
+  width: 100%;
+
   padding: 11px 15px;
 
-  text-decoration: none;
+  margin: 0;
+
+  box-sizing: border-box;
 
   color: #555;
 
@@ -104,44 +152,59 @@
 
   font-weight: 500;
 
+  text-decoration: none;
+
   border-radius: 6px;
 
   transition:
-    background 0.2s ease,
+    background-color 0.2s ease,
     color 0.2s ease;
 }
 
 
 .nav-item:hover {
   background: #f1f3f5;
-
   color: #222;
 }
 
 
-/* ==========================================
-   ACTIVE
-   ========================================== */
-
 .nav-item.active {
   background: #e9ecef;
-
   color: #212529;
-
   font-weight: 600;
 }
 
 
-/* ==========================================
-   RESPONSIVE
-   ========================================== */
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+.sidebar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 10px;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
 
 @media (max-width: 768px) {
 
-  .sidebar {
-
+  :host {
     width: 220px;
+  }
 
+  .sidebar {
+    width: 220px;
   }
 
 }

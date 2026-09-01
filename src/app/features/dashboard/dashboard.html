@@ -1,21 +1,24 @@
 <div class="dashboard-container">
 
-
   <!-- =====================================================
        PAGE HEADER
   ====================================================== -->
 
   <div class="dashboard-header">
 
-    <div>
+    <div class="header-content">
 
-      <h1>
-        Dashboard
-      </h1>
+      <div class="header-icon">
+        <i class="bi bi-grid-1x2-fill"></i>
+      </div>
 
-      <p>
-        FollowUp System Overview
-      </p>
+      <div>
+        <h1>Dashboard</h1>
+
+        <p>
+          FollowUp System Overview
+        </p>
+      </div>
 
     </div>
 
@@ -24,12 +27,17 @@
 
       <i class="bi bi-calendar3"></i>
 
-      {{ today | date:'dd/MM/yyyy' }}
+      <div>
+        <span>Today</span>
+
+        <strong>
+          {{ today | date:'dd/MM/yyyy' }}
+        </strong>
+      </div>
 
     </div>
 
   </div>
-
 
 
   <!-- =====================================================
@@ -44,17 +52,12 @@
     <div class="stat-card">
 
       <div class="stat-icon">
-
         <i class="bi bi-hospital"></i>
-
       </div>
 
+      <div class="stat-content">
 
-      <div>
-
-        <span>
-          Total Patients
-        </span>
+        <span>Total Patients</span>
 
         <strong>
           {{ totalPatients }}
@@ -65,23 +68,17 @@
     </div>
 
 
-
     <!-- TODAY VISITORS -->
 
     <div class="stat-card">
 
       <div class="stat-icon">
-
         <i class="bi bi-people"></i>
-
       </div>
 
+      <div class="stat-content">
 
-      <div>
-
-        <span>
-          Today's Visitors
-        </span>
+        <span>Today's Visitors</span>
 
         <strong>
           {{ totalVisitorsToday }}
@@ -92,23 +89,17 @@
     </div>
 
 
-
     <!-- CHECKED IN -->
 
     <div class="stat-card">
 
       <div class="stat-icon">
-
         <i class="bi bi-person-check"></i>
-
       </div>
 
+      <div class="stat-content">
 
-      <div>
-
-        <span>
-          Checked In
-        </span>
+        <span>Checked In</span>
 
         <strong>
           {{ totalCheckedIn }}
@@ -119,23 +110,17 @@
     </div>
 
 
-
     <!-- COMPLETED -->
 
     <div class="stat-card">
 
       <div class="stat-icon">
-
         <i class="bi bi-check-circle"></i>
-
       </div>
 
+      <div class="stat-content">
 
-      <div>
-
-        <span>
-          Completed
-        </span>
+        <span>Completed</span>
 
         <strong>
           {{ totalCompleted }}
@@ -146,23 +131,17 @@
     </div>
 
 
-
     <!-- DAY VISITS -->
 
     <div class="stat-card">
 
       <div class="stat-icon">
-
         <i class="bi bi-sun"></i>
-
       </div>
 
+      <div class="stat-content">
 
-      <div>
-
-        <span>
-          Day Visits
-        </span>
+        <span>Day Visits</span>
 
         <strong>
           {{ totalDayVisits }}
@@ -175,25 +154,31 @@
   </div>
 
 
-
   <!-- =====================================================
-       VISIT SUMMARY
+       TODAY VISIT SUMMARY
   ====================================================== -->
 
-  <div class="visit-summary">
-
+  <section class="visit-summary">
 
     <div class="summary-header">
 
       <div>
 
-        <h2>
-          Today's Visit Summary
-        </h2>
+        <div class="section-title">
 
-        <span>
-          Visitor activity for today
-        </span>
+          <span class="title-icon">
+            <i class="bi bi-bar-chart-line"></i>
+          </span>
+
+          <h2>
+            Today's Visit Summary
+          </h2>
+
+        </div>
+
+        <p>
+          Visitor activity and attendance for today
+        </p>
 
       </div>
 
@@ -203,21 +188,17 @@
     <div class="summary-items">
 
 
-      <!-- TODAY -->
+      <!-- TOTAL VISITORS -->
 
       <div class="summary-item">
 
         <div class="summary-item-icon">
-
           <i class="bi bi-people"></i>
-
         </div>
 
-        <div>
+        <div class="summary-item-content">
 
-          <span>
-            Total Visitors
-          </span>
+          <span>Total Visitors</span>
 
           <strong>
             {{ totalVisitorsToday }}
@@ -228,22 +209,17 @@
       </div>
 
 
-
       <!-- DAY -->
 
       <div class="summary-item">
 
         <div class="summary-item-icon">
-
           <i class="bi bi-sun"></i>
-
         </div>
 
-        <div>
+        <div class="summary-item-content">
 
-          <span>
-            Day Session
-          </span>
+          <span>Day Session</span>
 
           <strong>
             {{ totalDayVisits }}
@@ -254,22 +230,17 @@
       </div>
 
 
-
       <!-- EVENING -->
 
       <div class="summary-item">
 
         <div class="summary-item-icon">
-
           <i class="bi bi-moon"></i>
-
         </div>
 
-        <div>
+        <div class="summary-item-content">
 
-          <span>
-            Evening Session
-          </span>
+          <span>Evening Session</span>
 
           <strong>
             {{ totalEveningVisits }}
@@ -280,22 +251,17 @@
       </div>
 
 
-
-      <!-- CHECKED IN -->
+      <!-- CURRENTLY INSIDE -->
 
       <div class="summary-item">
 
         <div class="summary-item-icon">
-
           <i class="bi bi-person-check"></i>
-
         </div>
 
-        <div>
+        <div class="summary-item-content">
 
-          <span>
-            Currently Inside
-          </span>
+          <span>Currently Inside</span>
 
           <strong>
             {{ totalCheckedIn }}
@@ -305,45 +271,52 @@
 
       </div>
 
-
     </div>
 
-  </div>
-
+  </section>
 
 
   <!-- =====================================================
        RECENT VISITS
   ====================================================== -->
 
-  <div class="recent-section">
+  <section class="recent-section">
 
 
     <div class="section-header">
 
       <div>
 
-        <h2>
-          Today's Recent Visits
-        </h2>
+        <div class="section-title">
 
-        <span>
+          <span class="title-icon">
+            <i class="bi bi-clock-history"></i>
+          </span>
+
+          <h2>
+            Today's Recent Visits
+          </h2>
+
+        </div>
+
+        <p>
           Latest visitor activity
-        </span>
+        </p>
 
       </div>
 
 
       <div class="visit-count">
 
-        {{ totalVisitorsToday }}
+        <i class="bi bi-people"></i>
 
-        Visits
+        <span>
+          {{ totalVisitorsToday }} Visits
+        </span>
 
       </div>
 
     </div>
-
 
 
     <!-- ===================================================
@@ -354,94 +327,65 @@
 
       <table>
 
-
         <thead>
 
           <tr>
 
-            <th>
-              #
-            </th>
+            <th>#</th>
 
-            <th>
-              Visitor
-            </th>
+            <th>Visitor</th>
 
-            <th>
-              Phone
-            </th>
+            <th>Phone</th>
 
-            <th>
-              Patient
-            </th>
+            <th>Patient</th>
 
-            <th>
-              Patient Number
-            </th>
+            <th>Patient Number</th>
 
-            <th>
-              Ward
-            </th>
+            <th>Ward</th>
 
-            <th>
-              Session
-            </th>
+            <th>Session</th>
 
-            <th>
-              Check In
-            </th>
+            <th>Check In</th>
 
-            <th>
-              Check Out
-            </th>
+            <th>Check Out</th>
 
-            <th>
-              Status
-            </th>
+            <th>Status</th>
 
           </tr>
 
         </thead>
 
 
-
         <tbody>
 
-
           @for (
-
             visit of recentVisits;
-
             track visit.id
-
           ) {
-
 
             <tr>
 
 
-              <!-- ID -->
+              <!-- NUMBER -->
 
-              <td>
+              <td class="row-number">
 
                 {{ $index + 1 }}
 
               </td>
 
 
-
               <!-- VISITOR -->
 
               <td>
 
-                <strong>
+                <strong class="visitor-name">
 
                   {{ getVisitorName(visit) }}
 
                 </strong>
 
               </td>
-
 
 
               <!-- PHONE -->
@@ -453,15 +397,17 @@
               </td>
 
 
-
               <!-- PATIENT -->
 
               <td>
 
-                {{ visit.patientName }}
+                <strong class="patient-name">
+
+                  {{ visit.patientName }}
+
+                </strong>
 
               </td>
-
 
 
               <!-- PATIENT NUMBER -->
@@ -477,7 +423,6 @@
               </td>
 
 
-
               <!-- WARD -->
 
               <td>
@@ -491,11 +436,9 @@
               </td>
 
 
-
               <!-- SESSION -->
 
               <td>
-
 
                 @if (visit.session === 'Day') {
 
@@ -521,35 +464,30 @@
 
                 }
 
-
               </td>
-
 
 
               <!-- CHECK IN -->
 
-              <td>
+              <td class="time-cell">
 
                 {{ formatTime(visit.checkIn) }}
 
               </td>
 
 
-
               <!-- CHECK OUT -->
 
-              <td>
+              <td class="time-cell">
 
                 {{ formatTime(visit.checkOut) }}
 
               </td>
 
 
-
               <!-- STATUS -->
 
               <td>
-
 
                 @if (visit.status === 'Checked In') {
 
@@ -575,14 +513,11 @@
 
                 }
 
-
               </td>
-
 
             </tr>
 
           }
-
 
 
           <!-- =================================================
@@ -591,7 +526,6 @@
 
           @empty {
 
-
             <tr>
 
               <td
@@ -599,23 +533,26 @@
                 class="no-data"
               >
 
-                <i class="bi bi-calendar-x"></i>
+                <div class="empty-icon">
+
+                  <i class="bi bi-calendar-x"></i>
+
+                </div>
 
                 <strong>
                   No visits today
                 </strong>
 
                 <span>
-                  Visitor records will appear here after a visitor is checked in.
+                  Visitor records will appear here after
+                  a visitor is checked in.
                 </span>
 
               </td>
 
             </tr>
 
-
           }
-
 
         </tbody>
 
@@ -623,7 +560,6 @@
 
     </div>
 
-  </div>
-
+  </section>
 
 </div>

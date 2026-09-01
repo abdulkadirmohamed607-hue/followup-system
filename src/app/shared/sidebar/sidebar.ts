@@ -1,14 +1,20 @@
 import { Component } from '@angular/core';
+
 import { CommonModule } from '@angular/common';
+
 import {
   RouterLink,
   RouterLinkActive
 } from '@angular/router';
 
-import { AuthService } from '../../core/services/auth.service';
+import {
+  AuthService
+} from '../../core/services/auth.service';
+
 
 @Component({
   selector: 'app-sidebar',
+
   standalone: true,
 
   imports: [
@@ -18,6 +24,7 @@ import { AuthService } from '../../core/services/auth.service';
   ],
 
   templateUrl: './sidebar.html',
+
   styleUrl: './sidebar.css'
 })
 export class Sidebar {
@@ -28,6 +35,10 @@ export class Sidebar {
 
   menuOpen = true;
 
+
+  // =====================================================
+  // CONSTRUCTOR
+  // =====================================================
 
   constructor(
     private authService: AuthService

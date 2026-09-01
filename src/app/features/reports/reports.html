@@ -1,20 +1,17 @@
-
 <div class="reports-container">
 
-  <!-- HEADER -->
+  <!-- =====================================================
+       HEADER
+       ===================================================== -->
 
   <div class="page-header">
 
     <div>
-
-      <h1>
-        Visit Reports
-      </h1>
+      <h1>Visit Reports</h1>
 
       <p>
         Patient visitor attendance and visit duration
       </p>
-
     </div>
 
 
@@ -25,9 +22,8 @@
         class="pdf-button"
         (click)="exportPDF()"
       >
-
-        📄 Export PDF
-
+        <i class="bi bi-file-earmark-pdf me-1"></i>
+        Export PDF
       </button>
 
 
@@ -36,9 +32,8 @@
         class="excel-button"
         (click)="exportExcel()"
       >
-
-        📊 Export Excel
-
+        <i class="bi bi-file-earmark-excel me-1"></i>
+        Export Excel
       </button>
 
 
@@ -47,9 +42,8 @@
         class="print-button"
         (click)="printReport()"
       >
-
-        🖨️ Print
-
+        <i class="bi bi-printer me-1"></i>
+        Print
       </button>
 
     </div>
@@ -57,91 +51,61 @@
   </div>
 
 
-  <!-- SUMMARY -->
+  <!-- =====================================================
+       SUMMARY
+       ===================================================== -->
 
   <div class="summary-grid">
 
-
     <div class="summary-card">
-
-      <span>
-        Total Patients Visited
-      </span>
-
-      <strong>
-        {{ totalPatients }}
-      </strong>
-
+      <span>Total Patients Visited</span>
+      <strong>{{ totalPatients }}</strong>
     </div>
 
 
     <div class="summary-card">
-
-      <span>
-        Total Visits
-      </span>
-
-      <strong>
-        {{ totalVisits }}
-      </strong>
-
+      <span>Total Visits</span>
+      <strong>{{ totalVisits }}</strong>
     </div>
 
 
     <div class="summary-card">
-
-      <span>
-        Day Visits
-      </span>
-
-      <strong>
-        {{ dayVisits }}
-      </strong>
-
+      <span>Day Visits</span>
+      <strong>{{ dayVisits }}</strong>
     </div>
 
 
     <div class="summary-card">
-
-      <span>
-        Evening Visits
-      </span>
-
-      <strong>
-        {{ eveningVisits }}
-      </strong>
-
+      <span>Evening Visits</span>
+      <strong>{{ eveningVisits }}</strong>
     </div>
 
 
     <div class="summary-card">
-
-      <span>
-        Completed
-      </span>
-
-      <strong>
-        {{ completedVisits }}
-      </strong>
-
+      <span>Completed</span>
+      <strong>{{ completedVisits }}</strong>
     </div>
 
   </div>
 
 
-  <!-- FILTERS -->
+  <!-- =====================================================
+       FILTERS
+       ===================================================== -->
 
   <div class="filters">
-
 
     <!-- SEARCH -->
 
     <div class="search-box">
 
+      <i class="bi bi-search"></i>
+
       <input
         type="text"
         placeholder="Search patient, visitor, phone, gender, relation or ward..."
         [(ngModel)]="searchText"
+        (input)="onFilterChange()"
       />
 
     </div>
@@ -153,6 +117,7 @@
 
       <select
         [(ngModel)]="selectedSession"
+        (change)="onFilterChange()"
       >
 
         <option value="All">
@@ -178,6 +143,7 @@
 
       <select
         [(ngModel)]="selectedStatus"
+        (change)="onFilterChange()"
       >
 
         <option value="All">
@@ -204,6 +170,7 @@
       <input
         type="date"
         [(ngModel)]="selectedDate"
+        (change)="onFilterChange()"
       />
 
     </div>
@@ -225,267 +192,397 @@
   </div>
 
 
-  <!-- REPORT TABLE -->
+  <!-- =====================================================
+       REPORT TABLE
+       ===================================================== -->
 
   <div class="report-table">
 
-    <table id="reportTable">
+    <div class="table-responsive">
 
-      <thead>
+      <table id="reportTable">
 
-        <tr>
-
-          <th>#</th>
-
-          <th>Patient</th>
-
-          <th>Patient Number</th>
-
-          <th>Ward</th>
-
-          <th>Visitor</th>
-
-          <th>Phone</th>
-
-          <th>Gender</th>
-
-          <th>Relation</th>
-
-          <th>Session</th>
-
-          <th>Slot</th>
-
-          <th>Date</th>
-
-          <th>Check In</th>
-
-          <th>Check Out</th>
-
-          <th>Duration</th>
-
-          <th>Status</th>
-
-        </tr>
-
-      </thead>
-
-
-      <tbody>
-
-        @for (
-          visit of filteredVisits;
-          track visit.id
-        ) {
+        <thead>
 
           <tr>
 
+            <th>#</th>
 
-            <!-- NUMBER -->
+            <th>Patient</th>
 
-            <td>
+            <th>Patient Number</th>
 
-              {{ $index + 1 }}
+            <th>Ward</th>
 
-            </td>
+            <th>Visitor</th>
 
+            <th>Phone</th>
 
-            <!-- PATIENT -->
+            <th>Gender</th>
 
-            <td>
+            <th>Relation</th>
 
-              <strong>
-                {{ visit.patientName }}
-              </strong>
+            <th>Session</th>
 
-            </td>
+            <th>Slot</th>
 
+            <th>Date</th>
 
-            <!-- PATIENT NUMBER -->
+            <th>Check In</th>
 
-            <td>
+            <th>Check Out</th>
 
-              <span class="patient-number">
+            <th>Duration</th>
 
-                {{ visit.patientNumber }}
+            <th>Status</th>
 
-              </span>
+          </tr>
 
-            </td>
-
-
-            <!-- WARD -->
-
-            <td>
-
-              <span class="ward-badge">
-
-                {{ visit.ward }}
-
-              </span>
-
-            </td>
+        </thead>
 
 
-            <!-- VISITOR -->
+        <tbody>
 
-            <td>
+          @for (
+            visit of paginatedVisits;
+            track visit.id;
+            let i = $index
+          ) {
 
-              {{ visitorName(visit) }}
+            <tr>
 
-            </td>
+              <!-- NUMBER -->
 
-
-            <!-- PHONE -->
-
-            <td>
-
-              {{ visit.visitorPhone }}
-
-            </td>
-
-
-            <!-- GENDER -->
-
-            <td>
-
-              {{ visit.visitorGender }}
-
-            </td>
+              <td>
+                {{ startItem + i }}
+              </td>
 
 
-            <!-- RELATION -->
+              <!-- PATIENT -->
 
-            <td>
+              <td>
+                <strong>
+                  {{ visit.patientName }}
+                </strong>
+              </td>
 
-              {{ visit.visitorRelation }}
 
-            </td>
+              <!-- PATIENT NUMBER -->
+
+              <td>
+
+                <span class="patient-number">
+                  {{ visit.patientNumber }}
+                </span>
+
+              </td>
 
 
-            <!-- SESSION -->
+              <!-- WARD -->
 
-            <td>
+              <td>
 
-              <span
-                class="session-badge"
-                [class.evening]="
-                  visit.session === 'Evening'
-                "
+                <span class="ward-badge">
+                  {{ visit.ward }}
+                </span>
+
+              </td>
+
+
+              <!-- VISITOR -->
+
+              <td>
+                {{ visitorName(visit) }}
+              </td>
+
+
+              <!-- PHONE -->
+
+              <td>
+                {{ visit.visitorPhone || '-' }}
+              </td>
+
+
+              <!-- GENDER -->
+
+              <td>
+                {{ visit.visitorGender || '-' }}
+              </td>
+
+
+              <!-- RELATION -->
+
+              <td>
+                {{ visit.visitorRelation || '-' }}
+              </td>
+
+
+              <!-- SESSION -->
+
+              <td>
+
+                <span
+                  class="session-badge"
+                  [class.evening]="
+                    visit.session === 'Evening'
+                  "
+                >
+                  {{ visit.session }}
+                </span>
+
+              </td>
+
+
+              <!-- SLOT -->
+
+              <td>
+                Visitor {{ visit.slot }}
+              </td>
+
+
+              <!-- DATE -->
+
+              <td>
+                {{ visit.visitDate }}
+              </td>
+
+
+              <!-- CHECK IN -->
+
+              <td>
+                {{ formatTime(visit.checkIn) }}
+              </td>
+
+
+              <!-- CHECK OUT -->
+
+              <td>
+                {{ formatTime(visit.checkOut) }}
+              </td>
+
+
+              <!-- DURATION -->
+
+              <td>
+
+                <strong>
+                  {{ formatDuration(visit.durationMinutes) }}
+                </strong>
+
+              </td>
+
+
+              <!-- STATUS -->
+
+              <td>
+
+                @if (
+                  visit.status === 'Completed'
+                ) {
+
+                  <span class="completed">
+                    <i class="bi bi-check-circle me-1"></i>
+                    Completed
+                  </span>
+
+                }
+
+                @else {
+
+                  <span class="checked-in">
+                    <i class="bi bi-clock me-1"></i>
+                    Checked In
+                  </span>
+
+                }
+
+              </td>
+
+            </tr>
+
+          }
+
+
+          <!-- EMPTY -->
+
+          @if (paginatedVisits.length === 0) {
+
+            <tr>
+
+              <td
+                colspan="15"
+                class="no-data"
               >
 
-                {{ visit.session }}
+                <i class="bi bi-clipboard-x"></i>
 
-              </span>
+                <strong>
+                  No visit records found
+                </strong>
 
-            </td>
-
-
-            <!-- SLOT -->
-
-            <td>
-
-              Visitor {{ visit.slot }}
-
-            </td>
-
-
-            <!-- DATE -->
-
-            <td>
-
-              {{ visit.visitDate }}
-
-            </td>
-
-
-            <!-- CHECK IN -->
-
-            <td>
-
-              {{ formatTime(visit.checkIn) }}
-
-            </td>
-
-
-            <!-- CHECK OUT -->
-
-            <td>
-
-              {{ formatTime(visit.checkOut) }}
-
-            </td>
-
-
-            <!-- DURATION -->
-
-            <td>
-
-              <strong>
-
-                {{ formatDuration(visit.durationMinutes) }}
-
-              </strong>
-
-            </td>
-
-
-            <!-- STATUS -->
-
-            <td>
-
-              @if (
-                visit.status === 'Completed'
-              ) {
-
-                <span class="completed">
-
-                  Completed
-
+                <span>
+                  Try changing your search or filter.
                 </span>
 
-              }
+              </td>
 
-              @else {
+            </tr>
 
-                <span class="checked-in">
+          }
 
-                  Checked In
+        </tbody>
 
-                </span>
+      </table>
 
-              }
-
-            </td>
-
-          </tr>
-
-        }
+    </div>
 
 
-        <!-- EMPTY -->
+    <!-- =====================================================
+         PAGINATION
+         ===================================================== -->
 
-        @empty {
+    @if (filteredVisits.length > 0) {
 
-          <tr>
+      <div class="pagination-section">
 
-            <td
-              colspan="15"
-              class="no-data"
+
+        <!-- INFO -->
+
+        <div class="pagination-info">
+
+          Showing
+
+          <strong>
+            {{ startItem }}
+          </strong>
+
+          -
+
+          <strong>
+            {{ endItem }}
+          </strong>
+
+          of
+
+          <strong>
+            {{ filteredVisits.length }}
+          </strong>
+
+          visits
+
+        </div>
+
+
+        <!-- CONTROLS -->
+
+        <div class="pagination-controls">
+
+
+          <!-- PAGE SIZE -->
+
+          <div class="page-size">
+
+            <span>
+              Show
+            </span>
+
+            <select
+              [value]="pageSize"
+              (change)="
+                onPageSizeChange(
+                  $any($event.target).value
+                )
+              "
             >
 
-              <i class="bi bi-clipboard-x"></i>
+              <option value="10">
+                10
+              </option>
 
-              No visit records found
+              <option value="20">
+                20
+              </option>
 
-            </td>
+              <option value="30">
+                30
+              </option>
 
-          </tr>
+              <option value="50">
+                50
+              </option>
 
-        }
+              <option value="100">
+                100
+              </option>
 
-      </tbody>
+            </select>
 
-    </table>
+            <span>
+              per page
+            </span>
+
+          </div>
+
+
+          <!-- PREVIOUS -->
+
+          <button
+            type="button"
+            class="page-button"
+            [disabled]="currentPage === 1"
+            (click)="previousPage()"
+            title="Previous page"
+          >
+
+            <i class="bi bi-chevron-left"></i>
+
+          </button>
+
+
+          <!-- PAGE NUMBERS -->
+
+          @for (
+            page of pageNumbers;
+            track page
+          ) {
+
+            <button
+              type="button"
+              class="page-button"
+              [class.active]="
+                currentPage === page
+              "
+              (click)="goToPage(page)"
+            >
+
+              {{ page }}
+
+            </button>
+
+          }
+
+
+          <!-- NEXT -->
+
+          <button
+            type="button"
+            class="page-button"
+            [disabled]="
+              currentPage === totalPages
+            "
+            (click)="nextPage()"
+            title="Next page"
+          >
+
+            <i class="bi bi-chevron-right"></i>
+
+          </button>
+
+        </div>
+
+      </div>
+
+    }
 
   </div>
 

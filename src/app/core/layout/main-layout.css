@@ -1,18 +1,114 @@
-.layout {
+/* =========================================================
+   ROOT LAYOUT
+   ========================================================= */
 
-  display: flex;
-
-  min-height: calc(100vh - 60px);
-
+:host {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 
-.content {
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
 
-  flex: 1;
+app-sidebar {
+  position: fixed;
+
+  top: 64px;
+  left: 0;
+
+  width: 250px;
+  height: calc(100vh - 64px);
+
+  z-index: 1000;
+
+  display: block;
+}
+
+
+/* =========================================================
+   MAIN CONTENT AREA
+   ========================================================= */
+
+.content {
+  position: relative;
+
+  /* SIDEBAR WIDTH */
+  margin-left: 250px;
+
+  /* AVAILABLE SCREEN WIDTH */
+  width: calc(100vw - 250px);
+
+  max-width: calc(100vw - 250px);
 
   min-width: 0;
 
-  background-color: #f5f9fc;
+  min-height: calc(100vh - 64px);
+
+  padding: 20px;
+
+  box-sizing: border-box;
+
+  background: #f5f9fc;
+
+  overflow-x: auto;
+}
+
+
+/* =========================================================
+   LAYOUT
+   ========================================================= */
+
+.layout {
+  display: block;
+
+  width: 100%;
+
+  min-height: calc(100vh - 64px);
+
+  margin: 0;
+  padding: 0;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   ROUTER CONTENT
+   ========================================================= */
+
+.content > * {
+  display: block;
+
+  width: 100%;
+
+  max-width: 100%;
+
+  min-width: 0;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+  app-sidebar {
+    width: 220px;
+  }
+
+  .content {
+    margin-left: 220px;
+
+    width: calc(100vw - 220px);
+
+    max-width: calc(100vw - 220px);
+  }
 
 }

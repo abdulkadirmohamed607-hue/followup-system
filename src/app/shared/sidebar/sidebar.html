@@ -1,44 +1,44 @@
 <aside class="sidebar">
 
-  <!-- ========================= -->
-  <!-- MENU HEADER -->
-  <!-- ========================= -->
+  <!-- =====================================================
+       MENU HEADER
+       ===================================================== -->
 
   <div
-  class="menu-header"
-  [class.active]="menuOpen"
-  (click)="toggleMenu()"
-  role="button"
-  tabindex="0"
-  (keydown.enter)="toggleMenu()"
-  (keydown.space)="toggleMenu()"
->
-
-  <span>
-    MENU
-  </span>
-
-  <span
-    class="menu-arrow"
-    [class.open]="menuOpen"
+    class="menu-header"
+    [class.active]="menuOpen"
+    (click)="toggleMenu()"
+    role="button"
+    tabindex="0"
+    (keydown.enter)="toggleMenu()"
+    (keydown.space)="toggleMenu()"
   >
-    ▼
-  </span>
 
-</div>
+    <span>
+      MENU
+    </span>
+
+    <span
+      class="menu-arrow"
+      [class.open]="menuOpen"
+    >
+      ▼
+    </span>
+
+  </div>
 
 
-  <!-- ========================= -->
-  <!-- NAVIGATION MODULES -->
-  <!-- ========================= -->
+  <!-- =====================================================
+       NAVIGATION MODULES
+       ===================================================== -->
 
   @if (menuOpen) {
 
     <nav class="sidebar-nav">
 
-      <!-- ========================= -->
-      <!-- DASHBOARD -->
-      <!-- ========================= -->
+      <!-- =================================================
+           DASHBOARD
+           ================================================= -->
 
       <a
         routerLink="/dashboard"
@@ -46,87 +46,64 @@
         [routerLinkActiveOptions]="{ exact: true }"
         class="nav-item"
       >
-
         <span>
           Dashboard
         </span>
-
       </a>
 
 
-      <!-- ========================= -->
-      <!-- ADMIN MODULES -->
-      <!-- ========================= -->
+      <!-- =================================================
+           ADMIN MODULES
+           ================================================= -->
 
       @if (isAdmin) {
 
-        <!-- USERS -->
+        <!-- PATIENTS -->
 
         <a
           routerLink="/users"
           routerLinkActive="active"
           class="nav-item"
         >
-
           <span>
             Patients
           </span>
-
         </a>
 
 
-        <!-- ADD USER -->
-
-        <!-- <a
-          routerLink="/users/add"
-          routerLinkActive="active"
-          class="nav-item"
-        >
-
-          <span>
-            Add Patient
-          </span>
-
-        </a> -->
-
-
-        <!-- UPLOAD USERS -->
+        <!-- UPLOAD PATIENTS -->
 
         <a
           routerLink="/upload"
           routerLinkActive="active"
           class="nav-item"
         >
-
           <span>
             Upload Patients
           </span>
-
         </a>
 
       }
 
 
-      <!-- ========================= -->
-      <!-- VISITOR CHECK -->
-      <!-- ========================= -->
+      <!-- =================================================
+           VISITOR CHECK
+           ================================================= -->
 
       <a
         routerLink="/visitor-check"
         routerLinkActive="active"
         class="nav-item"
       >
-
         <span>
           Visitor Check
         </span>
-
       </a>
 
 
-      <!-- ========================= -->
-      <!-- REPORTS -->
-      <!-- ========================= -->
+      <!-- =================================================
+           REPORTS
+           ================================================= -->
 
       @if (isAdmin) {
 
@@ -135,11 +112,9 @@
           routerLinkActive="active"
           class="nav-item"
         >
-
           <span>
             Reports
           </span>
-
         </a>
 
       }

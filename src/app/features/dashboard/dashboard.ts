@@ -41,7 +41,8 @@ import {
 })
 
 
-export class Dashboard implements OnInit {
+export class Dashboard
+  implements OnInit {
 
 
   // =====================================================
@@ -91,10 +92,12 @@ export class Dashboard implements OnInit {
   loadDashboardData(): void {
 
     this.patients =
-      this.patientService.getAdmittedPatients();
+      this.patientService
+        .getAdmittedPatients();
 
     this.visits =
-      this.visitService.getVisits();
+      this.visitService
+        .getVisits();
 
   }
 
@@ -215,21 +218,25 @@ export class Dashboard implements OnInit {
 
         (a, b) => {
 
-          return (
-            new Date(b.checkIn).getTime() -
-            new Date(a.checkIn).getTime()
-          );
+          const timeA =
+            a.checkIn
+              ? new Date(a.checkIn).getTime()
+              : 0;
+
+          const timeB =
+            b.checkIn
+              ? new Date(b.checkIn).getTime()
+              : 0;
+
+          return timeB - timeA;
 
         }
 
       )
 
       .slice(
-
         0,
-
         10
-
       );
 
   }
@@ -253,7 +260,10 @@ export class Dashboard implements OnInit {
 
     ]
 
-      .filter(Boolean)
+      .filter(
+        name =>
+          !!name?.trim()
+      )
 
       .join(' ');
 
@@ -277,6 +287,17 @@ export class Dashboard implements OnInit {
 
     const date =
       new Date(value);
+
+
+    if (
+      Number.isNaN(
+        date.getTime()
+      )
+    ) {
+
+      return '-';
+
+    }
 
 
     return date.toLocaleTimeString(

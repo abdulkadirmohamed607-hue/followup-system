@@ -39,7 +39,6 @@
 
     <div class="session-buttons">
 
-
       <!-- MORNING -->
 
       <button
@@ -139,6 +138,7 @@
         type="text"
         placeholder="Search patient by name, number or ward..."
         [(ngModel)]="searchText"
+        (ngModelChange)="onSearchChange()"
       />
 
     </div>
@@ -147,10 +147,13 @@
 
 
   <!-- =====================================================
-       PATIENT TABLE
+       PATIENT TABLE CARD
   ====================================================== -->
 
-  <div class="patients-card">
+  <div
+    class="patients-card"
+    id="patientsTable"
+  >
 
 
     <!-- HEADER -->
@@ -199,6 +202,10 @@
     </div>
 
 
+    <!-- =================================================
+         TABLE
+    ================================================== -->
+
     <div class="table-responsive">
 
       <table>
@@ -243,7 +250,7 @@
         <tbody>
 
           @for (
-            patient of filteredPatients;
+            patient of paginatedPatients;
             track patient.id
           ) {
 
@@ -253,7 +260,12 @@
               <!-- NUMBER -->
 
               <td>
-                {{ $index + 1 }}
+
+                {{
+                  ((currentPage - 1) * pageSize)
+                  + $index + 1
+                }}
+
               </td>
 
 
@@ -294,9 +306,9 @@
               </td>
 
 
-              <!-- ==========================================
+              <!-- ========================================
                    VISITOR 1
-              =========================================== -->
+              ========================================= -->
 
               <td>
 
@@ -375,9 +387,9 @@
               </td>
 
 
-              <!-- ==========================================
+              <!-- ========================================
                    VISITOR 2
-              =========================================== -->
+              ========================================= -->
 
               <td>
 
@@ -456,9 +468,9 @@
               </td>
 
 
-              <!-- ==========================================
+              <!-- ========================================
                    VISITOR 3
-              =========================================== -->
+              ========================================= -->
 
               <td>
 
@@ -557,7 +569,9 @@
 
           <!-- EMPTY -->
 
-          @empty {
+          @if (
+            paginatedPatients.length === 0
+          ) {
 
             <tr>
 
@@ -583,6 +597,161 @@
       </table>
 
     </div>
+
+
+    <!-- =================================================
+         PAGINATION
+    ================================================== -->
+
+    @if (filteredPatients.length > 0) {
+
+      <div class="pagination-container">
+
+
+        <!-- LEFT INFO -->
+
+        <div class="pagination-info">
+
+          Showing
+
+          <strong>
+            {{ ((currentPage - 1) * pageSize) + 1 }}
+          </strong>
+
+          -
+
+          <strong>
+            {{
+              Math.min(
+                currentPage * pageSize,
+                filteredPatients.length
+              )
+            }}
+          </strong>
+
+          of
+
+          <strong>
+            {{ filteredPatients.length }}
+          </strong>
+
+          patients
+
+        </div>
+
+
+        <!-- PAGE SIZE -->
+
+        <div class="page-size">
+
+          <label>
+            Rows:
+          </label>
+
+          <select
+            [(ngModel)]="pageSize"
+            (change)="changePageSize()"
+          >
+
+            <option [ngValue]="10">
+              10
+            </option>
+
+            <option [ngValue]="15">
+              15
+            </option>
+
+            <option [ngValue]="25">
+              25
+            </option>
+
+            <option [ngValue]="50">
+              50
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <!-- PAGINATION BUTTONS -->
+
+        <div class="pagination-buttons">
+
+
+          <!-- PREVIOUS -->
+
+          <button
+            type="button"
+            class="page-button previous"
+            [disabled]="currentPage === 1"
+            (click)="previousPage()"
+          >
+
+            <i class="bi bi-chevron-left"></i>
+
+            Previous
+
+          </button>
+
+
+          <!-- PAGE NUMBERS -->
+
+          @for (
+            page of pageNumbers;
+            track $index
+          ) {
+
+            @if (page === -1) {
+
+              <span class="page-dots">
+                ...
+              </span>
+
+            }
+
+            @else {
+
+              <button
+                type="button"
+                class="page-button number"
+                [class.active]="
+                  currentPage === page
+                "
+                (click)="goToPage(page)"
+              >
+
+                {{ page }}
+
+              </button>
+
+            }
+
+          }
+
+
+          <!-- NEXT -->
+
+          <button
+            type="button"
+            class="page-button next"
+            [disabled]="
+              currentPage === totalPages
+            "
+            (click)="nextPage()"
+          >
+
+            Next
+
+            <i class="bi bi-chevron-right"></i>
+
+          </button>
+
+        </div>
+
+      </div>
+
+    }
 
   </div>
 
@@ -631,12 +800,9 @@
         </div>
 
 
-        <!-- =================================================
-             PATIENT INFORMATION
-        ================================================== -->
+        <!-- PATIENT INFORMATION -->
 
         <div class="patient-info">
-
 
           <div>
 
@@ -684,9 +850,7 @@
             </span>
 
             <strong>
-
               {{ selectedSession }}
-
             </strong>
 
           </div>
@@ -699,9 +863,7 @@
             </span>
 
             <strong>
-
               Visitor {{ selectedSlot }}
-
             </strong>
 
           </div>
@@ -709,9 +871,7 @@
         </div>
 
 
-        <!-- =================================================
-             FORM
-        ================================================== -->
+        <!-- FORM -->
 
         <form
           #visitorForm="ngForm"
@@ -826,20 +986,61 @@
               />
 
             </div>
-            <!-- GENDER --> 
-             <div class="form-group">
-               <label> Gender </label> 
-               <select name="visitorGender" [(ngModel)]="visitorGender" required > 
-                <option value=""> Select gender </option>
-                 <option value="Male"> Male </option> 
-                 <option value="Female"> Female </option> 
-                </select> </div> 
 
-                <!-- VISITOR RELATION --> 
-                 <div class="form-group"> 
-                  <label> Relation to Patient </label>
-                   <input type="text" name="visitorRelation" [(ngModel)]="visitorRelation" required placeholder="e.g. Father, Mother, Uncle, Friend" />
-                   </div>
+
+            <!-- GENDER -->
+
+            <div class="form-group">
+
+              <label>
+                Gender
+              </label>
+
+              <select
+                name="visitorGender"
+                [(ngModel)]="
+                  visitorGender
+                "
+                required
+              >
+
+                <option value="">
+                  Select gender
+                </option>
+
+                <option value="Male">
+                  Male
+                </option>
+
+                <option value="Female">
+                  Female
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <!-- RELATION -->
+
+            <div class="form-group">
+
+              <label>
+                Relation to Patient
+              </label>
+
+              <input
+                type="text"
+                name="visitorRelation"
+                [(ngModel)]="
+                  visitorRelation
+                "
+                required
+                placeholder="e.g. Father, Mother, Uncle, Friend"
+              />
+
+            </div>
+
 
             <!-- CHECK IN -->
 

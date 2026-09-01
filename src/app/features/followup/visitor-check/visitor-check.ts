@@ -1,3 +1,4 @@
+
 import {
   Component,
   OnInit
@@ -52,12 +53,28 @@ export class VisitorCheck
 
 
   // =====================================================
+  // EXPOSE MATH TO ANGULAR TEMPLATE
+  // =====================================================
+
+  Math = Math;
+
+
+  // =====================================================
   // PATIENTS
   // =====================================================
 
   patients: Patient[] = [];
 
   searchText = '';
+
+
+  // =====================================================
+  // PAGINATION
+  // =====================================================
+
+  currentPage = 1;
+
+  pageSize = 10;
 
 
   // =====================================================
@@ -164,15 +181,16 @@ export class VisitorCheck
       this.patientService
         .getAdmittedPatients();
 
+    this.currentPage = 1;
+
   }
 
 
   // =====================================================
-  // FILTER PATIENTS
+  // FILTERED PATIENTS
   // =====================================================
 
-  get filteredPatients():
-    Patient[] {
+  get filteredPatients(): Patient[] {
 
     const search =
       this.searchText
@@ -216,6 +234,219 @@ export class VisitorCheck
 
 
   // =====================================================
+  // PAGINATED PATIENTS
+  // =====================================================
+
+  get paginatedPatients(): Patient[] {
+
+    const start =
+      (this.currentPage - 1) *
+      this.pageSize;
+
+
+    const end =
+      start +
+      this.pageSize;
+
+
+    return this.filteredPatients
+      .slice(start, end);
+
+  }
+
+
+  // =====================================================
+  // TOTAL PAGES
+  // =====================================================
+
+  get totalPages(): number {
+
+    return Math.ceil(
+      this.filteredPatients.length /
+      this.pageSize
+    );
+
+  }
+
+
+  // =====================================================
+  // PAGE NUMBERS
+  // =====================================================
+
+  get pageNumbers(): number[] {
+
+    const total =
+      this.totalPages;
+
+
+    if (total <= 7) {
+
+      return Array.from(
+        { length: total },
+        (_, index) =>
+          index + 1
+      );
+
+    }
+
+
+    const pages: number[] = [];
+
+
+    // FIRST PAGE
+
+    pages.push(1);
+
+
+    // LEFT ELLIPSIS
+
+    if (this.currentPage > 4) {
+
+      pages.push(-1);
+
+    }
+
+
+    // MIDDLE PAGES
+
+    const start =
+      Math.max(
+        2,
+        this.currentPage - 1
+      );
+
+
+    const end =
+      Math.min(
+        total - 1,
+        this.currentPage + 1
+      );
+
+
+    for (
+      let page = start;
+      page <= end;
+      page++
+    ) {
+
+      pages.push(page);
+
+    }
+
+
+    // RIGHT ELLIPSIS
+
+    if (
+      this.currentPage <
+      total - 3
+    ) {
+
+      pages.push(-1);
+
+    }
+
+
+    // LAST PAGE
+
+    pages.push(total);
+
+
+    return pages;
+
+  }
+
+
+  // =====================================================
+  // GO TO PAGE
+  // =====================================================
+
+  goToPage(
+    page: number
+  ): void {
+
+    if (
+      page < 1 ||
+      page > this.totalPages
+    ) {
+
+      return;
+
+    }
+
+
+    this.currentPage =
+      page;
+
+
+    this.scrollTableToTop();
+
+  }
+
+
+  // =====================================================
+  // PREVIOUS PAGE
+  // =====================================================
+
+  previousPage(): void {
+
+    if (
+      this.currentPage > 1
+    ) {
+
+      this.currentPage--;
+
+      this.scrollTableToTop();
+
+    }
+
+  }
+
+
+  // =====================================================
+  // NEXT PAGE
+  // =====================================================
+
+  nextPage(): void {
+
+    if (
+      this.currentPage <
+      this.totalPages
+    ) {
+
+      this.currentPage++;
+
+      this.scrollTableToTop();
+
+    }
+
+  }
+
+
+  // =====================================================
+  // CHANGE PAGE SIZE
+  // =====================================================
+
+  changePageSize(): void {
+
+    this.currentPage = 1;
+
+    this.scrollTableToTop();
+
+  }
+
+
+  // =====================================================
+  // SEARCH CHANGE
+  // =====================================================
+
+  onSearchChange(): void {
+
+    this.currentPage = 1;
+
+  }
+
+
+  // =====================================================
   // PATIENT NAME
   // =====================================================
 
@@ -231,7 +462,14 @@ export class VisitorCheck
 
       patient.lastName
 
-    ].join(' ');
+    ]
+
+      .filter(
+        name =>
+          !!name?.trim()
+      )
+
+      .join(' ');
 
   }
 
@@ -341,6 +579,9 @@ export class VisitorCheck
 
     this.selectedSession =
       session;
+
+
+    this.currentPage = 1;
 
 
     this.closeForm();
@@ -585,17 +826,14 @@ export class VisitorCheck
       patientId:
         this.selectedPatient.id,
 
-
       patientNumber:
         this.selectedPatient
           .patientNumber,
-
 
       patientName:
         this.getPatientName(
           this.selectedPatient
         ),
-
 
       ward:
         this.selectedPatient.ward,
@@ -609,30 +847,24 @@ export class VisitorCheck
         this.visitorFirstName
           .trim(),
 
-
       visitorSecondName:
         this.visitorSecondName
           .trim(),
-
 
       visitorLastName:
         this.visitorLastName
           .trim(),
 
-
       visitorCardNumber:
         this.visitorCardNumber
           .trim(),
-
 
       visitorPhone:
         this.visitorPhone
           .trim(),
 
-
       visitorGender:
         this.visitorGender,
-
 
       visitorRelation:
         this.visitorRelation
@@ -646,26 +878,20 @@ export class VisitorCheck
       session:
         this.selectedSession,
 
-
       slot:
         this.selectedSlot,
-
 
       visitDate:
         this.today,
 
-
       checkIn:
         this.checkIn,
-
 
       checkOut:
         null,
 
-
       durationMinutes:
         null,
-
 
       status:
         'Checked In'
@@ -837,6 +1063,34 @@ export class VisitorCheck
 
 
   // =====================================================
+  // SCROLL TABLE TO TOP
+  // =====================================================
+
+  private scrollTableToTop(): void {
+
+    setTimeout(() => {
+
+      const table =
+        document.querySelector(
+          '.patients-card'
+        );
+
+
+      if (table) {
+
+        table.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+
+      }
+
+    }, 50);
+
+  }
+
+
+  // =====================================================
   // TODAY
   // =====================================================
 
@@ -852,11 +1106,17 @@ export class VisitorCheck
 
       String(
         now.getMonth() + 1
-      ).padStart(2, '0'),
+      ).padStart(
+        2,
+        '0'
+      ),
 
       String(
         now.getDate()
-      ).padStart(2, '0')
+      ).padStart(
+        2,
+        '0'
+      )
 
     ].join('-');
 
@@ -880,25 +1140,37 @@ export class VisitorCheck
     const month =
       String(
         now.getMonth() + 1
-      ).padStart(2, '0');
+      ).padStart(
+        2,
+        '0'
+      );
 
 
     const day =
       String(
         now.getDate()
-      ).padStart(2, '0');
+      ).padStart(
+        2,
+        '0'
+      );
 
 
     const hours =
       String(
         now.getHours()
-      ).padStart(2, '0');
+      ).padStart(
+        2,
+        '0'
+      );
 
 
     const minutes =
       String(
         now.getMinutes()
-      ).padStart(2, '0');
+      ).padStart(
+        2,
+        '0'
+      );
 
 
     return `${year}-${month}-${day}T${hours}:${minutes}`;
