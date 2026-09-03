@@ -58,7 +58,10 @@
 
       @if (isAdmin) {
 
-        <!-- PATIENTS -->
+        <!-- =================================================
+             PATIENTS
+             Existing Patients module
+             ================================================= -->
 
         <a
           routerLink="/users"
@@ -71,7 +74,9 @@
         </a>
 
 
-        <!-- UPLOAD PATIENTS -->
+        <!-- =================================================
+             UPLOAD PATIENTS
+             ================================================= -->
 
         <a
           routerLink="/upload"
@@ -80,6 +85,41 @@
         >
           <span>
             Upload Patients
+          </span>
+        </a>
+
+
+        <!-- =================================================
+             USER MANAGEMENT
+             Admin only
+             ================================================= -->
+
+        <a
+          routerLink="/user-management"
+          routerLinkActive="active"
+          class="nav-item"
+        >
+          <span>
+            User Management
+          </span>
+        </a>
+
+      }
+
+
+      <!-- =================================================
+           NORMAL USER - PATIENTS
+           ================================================= -->
+
+      @if (isUser) {
+
+        <a
+          routerLink="/users"
+          routerLinkActive="active"
+          class="nav-item"
+        >
+          <span>
+            Patients
           </span>
         </a>
 
@@ -102,7 +142,7 @@
 
 
       <!-- =================================================
-           REPORTS
+           REPORTS - ADMIN ONLY
            ================================================= -->
 
       @if (isAdmin) {

@@ -1,39 +1,86 @@
-import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
-import { AuthUser, UserRole } from '../models/auth-user';
+import {
+  Injectable,
+  PLATFORM_ID,
+  inject
+} from '@angular/core';
 
-export interface RegisterResult {
-  success: boolean;
-  message?: string;
-}
+import {
+  isPlatformBrowser
+} from '@angular/common';
+
+import {
+  HttpClient
+} from '@angular/common/http';
+
+import {
+  Router
+} from '@angular/router';
+
+import {
+  Observable,
+  tap
+} from 'rxjs';
+
+import {
+  AuthUser,
+  ChangePasswordResponse,
+  LoginResponse,
+  UserRole
+} from '../models/auth-user';
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
-  private readonly STORAGE_KEY = 'followup_auth_user';
+  // ==========================================
+  // API
+  // ==========================================
 
-  private users: AuthUser[] = [
-    {
-      id: 1,
-      username: 'admin',
-      password: 'admin123',
-      fullName: 'System Administrator',
-      role: 'admin'
-    },
-    {
-      id: 2,
-      username: 'user',
-      password: 'user123',
-      fullName: 'Normal User',
-      role: 'user'
-    }
-  ];
+  private readonly API_URL =
+    'http://127.0.0.1:8000/api/auth';
+
+
+  // ==========================================
+  // STORAGE KEYS
+  // ==========================================
+
+  private readonly ACCESS_TOKEN_KEY =
+    'followup_access_token';
+
+  private readonly REFRESH_TOKEN_KEY =
+    'followup_refresh_token';
+
+  private readonly USER_KEY =
+    'followup_auth_user';
+
+
+  // ==========================================
+  // PLATFORM
+  // ==========================================
+
+  private readonly platformId =
+    inject(PLATFORM_ID);
+
 
   constructor(
+    private http: HttpClient,
     private router: Router
   ) {}
+
+
+  // ==========================================
+  // CHECK BROWSER
+  // ==========================================
+
+  private isBrowser(): boolean {
+
+    return isPlatformBrowser(
+      this.platformId
+    );
+
+  }
 
 
   // ==========================================
@@ -43,123 +90,116 @@ export class AuthService {
   login(
     username: string,
     password: string
-  ): boolean {
+  ): Observable<LoginResponse> {
 
-    const cleanUsername =
-      username.trim().toLowerCase();
+    return this.http.post<LoginResponse>(
+      `${this.API_URL}/login/`,
+      {
+        username: username.trim(),
+        password: password
+      }
+    ).pipe(
 
-    const user = this.users.find(
-      item =>
-        item.username.toLowerCase() === cleanUsername &&
-        item.password === password
+      tap(response => {
+
+        this.saveAuthentication(
+          response
+        );
+
+      })
+
     );
 
-    if (!user) {
-      return false;
-    }
-
-    this.setCurrentUser(user);
-
-    return true;
   }
 
 
   // ==========================================
-  // REGISTER
+  // SAVE AUTHENTICATION
   // ==========================================
 
-  register(
-    username: string,
-    password: string,
-    fullName: string
-  ): RegisterResult {
+  private saveAuthentication(
+    response: LoginResponse
+  ): void {
 
-    const cleanUsername =
-      username.trim();
-
-    const cleanFullName =
-      fullName.trim();
-
-    if (!cleanFullName) {
-      return {
-        success: false,
-        message: 'Full name is required.'
-      };
+    if (!this.isBrowser()) {
+      return;
     }
 
-    if (!cleanUsername) {
-      return {
-        success: false,
-        message: 'Username is required.'
-      };
-    }
 
-    if (!password) {
-      return {
-        success: false,
-        message: 'Password is required.'
-      };
-    }
+    const user =
+      this.normalizeUser(
+        response.user
+      );
 
-    if (password.length < 6) {
-      return {
-        success: false,
-        message:
-          'Password must be at least 6 characters.'
-      };
-    }
 
-    const exists = this.users.some(
-      user =>
-        user.username.toLowerCase() ===
-        cleanUsername.toLowerCase()
+    localStorage.setItem(
+      this.ACCESS_TOKEN_KEY,
+      response.access
     );
 
-    if (exists) {
-      return {
-        success: false,
-        message:
-          'Username already exists.'
-      };
-    }
 
-    const newUser: AuthUser = {
-      id: this.users.length + 1,
-      username: cleanUsername,
-      password: password,
-      fullName: cleanFullName,
-      role: 'user'
-    };
+    localStorage.setItem(
+      this.REFRESH_TOKEN_KEY,
+      response.refresh
+    );
 
-    this.users.push(newUser);
+
+    localStorage.setItem(
+      this.USER_KEY,
+      JSON.stringify(user)
+    );
+
+  }
+
+
+  // ==========================================
+  // NORMALIZE USER
+  // Django → Angular
+  // ==========================================
+
+  private normalizeUser(
+    user: AuthUser
+  ): AuthUser {
 
     return {
-      success: true,
-      message:
-        'Registration successful.'
+
+      ...user,
+
+      role:
+        user.role.toLowerCase() as UserRole
+
     };
+
   }
 
 
   // ==========================================
-  // GET CURRENT USER
+  // CURRENT USER
   // ==========================================
 
   getCurrentUser(): AuthUser | null {
+
+    if (!this.isBrowser()) {
+      return null;
+    }
+
 
     try {
 
       const data =
         localStorage.getItem(
-          this.STORAGE_KEY
+          this.USER_KEY
         );
+
 
       if (!data) {
         return null;
       }
 
+
       const user =
         JSON.parse(data) as AuthUser;
+
 
       if (
         !user ||
@@ -167,29 +207,70 @@ export class AuthService {
         !user.role
       ) {
 
-        localStorage.removeItem(
-          this.STORAGE_KEY
-        );
+        this.clearAuthentication();
 
         return null;
+
       }
+
 
       return user;
 
     } catch {
 
+      this.clearAuthentication();
+
       return null;
+
     }
+
   }
 
 
   // ==========================================
-  // CHECK LOGIN
+  // ACCESS TOKEN
+  // ==========================================
+
+  getAccessToken(): string | null {
+
+    if (!this.isBrowser()) {
+      return null;
+    }
+
+
+    return localStorage.getItem(
+      this.ACCESS_TOKEN_KEY
+    );
+
+  }
+
+
+  // ==========================================
+  // REFRESH TOKEN
+  // ==========================================
+
+  getRefreshToken(): string | null {
+
+    if (!this.isBrowser()) {
+      return null;
+    }
+
+
+    return localStorage.getItem(
+      this.REFRESH_TOKEN_KEY
+    );
+
+  }
+
+
+  // ==========================================
+  // LOGIN STATUS
   // ==========================================
 
   isLoggedIn(): boolean {
 
-    return this.getCurrentUser() !== null;
+    return !!this.getAccessToken();
+
   }
 
 
@@ -199,7 +280,10 @@ export class AuthService {
 
   isAdmin(): boolean {
 
-    return this.getCurrentUser()?.role === 'admin';
+    return (
+      this.getCurrentUser()?.role === 'admin'
+    );
+
   }
 
 
@@ -209,7 +293,10 @@ export class AuthService {
 
   isUser(): boolean {
 
-    return this.getCurrentUser()?.role === 'user';
+    return (
+      this.getCurrentUser()?.role === 'user'
+    );
+
   }
 
 
@@ -221,7 +308,108 @@ export class AuthService {
     role: UserRole
   ): boolean {
 
-    return this.getCurrentUser()?.role === role;
+    return (
+      this.getCurrentUser()?.role === role
+    );
+
+  }
+
+
+  // ==========================================
+  // MUST CHANGE PASSWORD
+  // ==========================================
+
+  mustChangePassword(): boolean {
+
+    return (
+      this.getCurrentUser()
+        ?.must_change_password === true
+    );
+
+  }
+
+
+  // ==========================================
+  // CHANGE PASSWORD
+  // ==========================================
+
+  changePassword(
+    oldPassword: string,
+    newPassword: string,
+    confirmPassword: string
+  ): Observable<ChangePasswordResponse> {
+
+    return this.http.post<ChangePasswordResponse>(
+      `${this.API_URL}/change-password/`,
+      {
+        old_password: oldPassword,
+        new_password: newPassword,
+        confirm_password: confirmPassword
+      }
+    ).pipe(
+
+      tap(() => {
+
+        if (!this.isBrowser()) {
+          return;
+        }
+
+
+        const currentUser =
+          this.getCurrentUser();
+
+
+        if (!currentUser) {
+          return;
+        }
+
+
+        currentUser.must_change_password =
+          false;
+
+
+        localStorage.setItem(
+          this.USER_KEY,
+          JSON.stringify(currentUser)
+        );
+
+      })
+
+    );
+
+  }
+
+
+  // ==========================================
+  // LOAD CURRENT USER
+  // ==========================================
+
+  loadCurrentUser(): Observable<AuthUser> {
+
+    return this.http.get<AuthUser>(
+      `${this.API_URL}/me/`
+    ).pipe(
+
+      tap(user => {
+
+        if (!this.isBrowser()) {
+          return;
+        }
+
+
+        const normalizedUser =
+          this.normalizeUser(user);
+
+
+        localStorage.setItem(
+          this.USER_KEY,
+          JSON.stringify(normalizedUser)
+        );
+
+      })
+
+    );
+
   }
 
 
@@ -231,28 +419,38 @@ export class AuthService {
 
   logout(): void {
 
-    localStorage.removeItem(
-      this.STORAGE_KEY
-    );
+    this.clearAuthentication();
 
     this.router.navigateByUrl(
       '/login'
     );
+
   }
 
 
   // ==========================================
-  // SAVE USER
+  // CLEAR AUTHENTICATION
   // ==========================================
 
-  private setCurrentUser(
-    user: AuthUser
-  ): void {
+  clearAuthentication(): void {
 
-    localStorage.setItem(
-      this.STORAGE_KEY,
-      JSON.stringify(user)
+    if (!this.isBrowser()) {
+      return;
+    }
+
+
+    localStorage.removeItem(
+      this.ACCESS_TOKEN_KEY
     );
+
+    localStorage.removeItem(
+      this.REFRESH_TOKEN_KEY
+    );
+
+    localStorage.removeItem(
+      this.USER_KEY
+    );
+
   }
 
 }

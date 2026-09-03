@@ -1,15 +1,22 @@
-import { Component } from '@angular/core';
+import {
+  Component
+} from '@angular/core';
 
-import { CommonModule } from '@angular/common';
+import {
+  CommonModule
+} from '@angular/common';
 
 import {
   FormsModule
 } from '@angular/forms';
 
 import {
-  Router,
-  RouterLink
+  Router
 } from '@angular/router';
+
+import {
+  HttpErrorResponse
+} from '@angular/common/http';
 
 import {
   AuthService
@@ -24,8 +31,7 @@ import {
 
   imports: [
     CommonModule,
-    FormsModule,
-    RouterLink
+    FormsModule
   ],
 
   templateUrl: './login.html',
@@ -113,99 +119,205 @@ export class Login {
 
 
     // =========================
-    // AUTHENTICATE
+    // AUTHENTICATE WITH DJANGO
     // =========================
 
-    const success =
-      this.authService.login(
-        this.username.trim(),
-        this.password
-      );
+    this.authService.login(
+
+      this.username.trim(),
+
+      this.password
+
+    ).subscribe({
+
+      // =========================
+      // LOGIN SUCCESS
+      // =========================
+
+      next: (response) => {
+
+        this.loading = false;
 
 
-    this.loading = false;
+        console.log(
+          'LOGIN SUCCESS'
+        );
 
 
-    console.log(
-      'LOGIN RESULT:',
-      success
-    );
+        const user =
+          this.authService.getCurrentUser();
 
 
-    // =========================
-    // LOGIN FAILED
-    // =========================
+        if (!user) {
 
-    if (!success) {
+          this.errorMessage =
+            'Login session could not be created.';
 
-      this.errorMessage =
-        'Invalid username or password.';
+          return;
 
-      return;
-
-    }
+        }
 
 
-    // =========================
-    // GET USER
-    // =========================
-
-    const user =
-      this.authService.getCurrentUser();
+        console.log(
+          'LOGGED USER:',
+          user
+        );
 
 
-    if (!user) {
+        // =========================
+        // FORCE PASSWORD CHANGE
+        // =========================
 
-      this.errorMessage =
-        'Login session could not be created.';
+        if (
+          user.must_change_password
+        ) {
 
-      return;
+          this.router.navigateByUrl(
+            '/change-password'
+          );
 
-    }
+          return;
 
-
-    console.log(
-      'LOGGED USER:',
-      user
-    );
-
-
-    // =========================
-    // ADMIN
-    // =========================
-
-    if (user.role === 'admin') {
-
-      this.router.navigateByUrl(
-        '/dashboard'
-      );
-
-      return;
-
-    }
+        }
 
 
-    // =========================
-    // NORMAL USER
-    // =========================
+        // =========================
+        // ADMIN
+        // =========================
 
-    if (user.role === 'user') {
+        if (
+          user.role === 'admin'
+        ) {
 
-      this.router.navigateByUrl(
-        '/visitor-check'
-      );
+          this.router.navigateByUrl(
+            '/dashboard'
+          );
 
-      return;
+          return;
 
-    }
+        }
 
 
-    // =========================
-    // UNKNOWN ROLE
-    // =========================
+        // =========================
+        // NORMAL USER
+        // =========================
 
-    this.errorMessage =
-      'User role is not recognized.';
+        if (
+          user.role === 'user'
+        ) {
+
+          this.router.navigateByUrl(
+            '/visitor-check'
+          );
+
+          return;
+
+        }
+
+
+        // =========================
+        // UNKNOWN ROLE
+        // =========================
+
+        this.authService.clearAuthentication();
+
+        this.errorMessage =
+          'User role is not recognized.';
+
+      },
+
+
+      // =========================
+      // LOGIN ERROR
+      // =========================
+
+      error: (
+        error: HttpErrorResponse
+      ) => {
+
+        this.loading = false;
+
+
+        console.error(
+          'LOGIN ERROR:',
+          error
+        );
+
+
+        // =========================
+        // INVALID CREDENTIALS
+        // =========================
+
+        if (
+          error.status === 401
+        ) {
+
+          this.errorMessage =
+            'Invalid username or password.';
+
+          return;
+
+        }
+
+
+        // =========================
+        // BAD REQUEST
+        // =========================
+
+        if (
+          error.status === 400
+        ) {
+
+          this.errorMessage =
+            'Please check your username and password.';
+
+          return;
+
+        }
+
+
+        // =========================
+        // SERVER ERROR
+        // =========================
+
+        if (
+          error.status >= 500
+        ) {
+
+          this.errorMessage =
+            'Server error. Please try again later.';
+
+          return;
+
+        }
+
+
+        // =========================
+        // CONNECTION ERROR
+        // =========================
+
+        if (
+          error.status === 0
+        ) {
+
+          this.errorMessage =
+            'Unable to connect to the server. Please make sure Django is running.';
+
+          return;
+
+        }
+
+
+        // =========================
+        // OTHER ERROR
+        // =========================
+
+        this.errorMessage =
+          'Login failed. Please try again.';
+
+      }
+
+    });
 
   }
 

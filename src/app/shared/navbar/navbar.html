@@ -4,9 +4,12 @@
 
   <div class="system-section">
 
-    <div class="logo"> 
-        <img src="assets/bombologo.jpg" alt="FollowUp System Logo" > 
-      </div>
+    <div class="logo">
+      <img
+        src="assets/bombologo.jpg"
+        alt="FollowUp System Logo"
+      >
+    </div>
 
     <div>
 
@@ -42,9 +45,13 @@
         <strong>
 
           {{
-            currentUser?.fullName
-            || currentUser?.username
-            || 'User'
+            currentUser?.first_name &&
+            currentUser?.last_name
+              ? currentUser?.first_name + ' ' + currentUser?.last_name
+              : currentUser?.first_name
+              || currentUser?.last_name
+              || currentUser?.username
+              || 'User'
           }}
 
         </strong>
@@ -52,8 +59,9 @@
         <small>
 
           {{
-            currentUser?.role
-            || 'User'
+            currentUser?.role === 'admin'
+              ? 'Admin'
+              : 'User'
           }}
 
         </small>
