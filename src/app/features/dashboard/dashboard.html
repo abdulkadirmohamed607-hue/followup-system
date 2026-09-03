@@ -1,5 +1,6 @@
 <div class="dashboard-container">
 
+
   <!-- =====================================================
        PAGE HEADER
   ====================================================== -->
@@ -13,11 +14,15 @@
       </div>
 
       <div>
-        <h1>Dashboard</h1>
+
+        <h1>
+          Dashboard
+        </h1>
 
         <p>
           FollowUp System Overview
         </p>
+
       </div>
 
     </div>
@@ -28,16 +33,21 @@
       <i class="bi bi-calendar3"></i>
 
       <div>
-        <span>Today</span>
+
+        <span>
+          Today
+        </span>
 
         <strong>
           {{ today | date:'dd/MM/yyyy' }}
         </strong>
+
       </div>
 
     </div>
 
   </div>
+
 
 
   <!-- =====================================================
@@ -57,7 +67,9 @@
 
       <div class="stat-content">
 
-        <span>Total Patients</span>
+        <span>
+          Total Patients
+        </span>
 
         <strong>
           {{ totalPatients }}
@@ -66,6 +78,7 @@
       </div>
 
     </div>
+
 
 
     <!-- TODAY VISITORS -->
@@ -78,7 +91,9 @@
 
       <div class="stat-content">
 
-        <span>Today's Visitors</span>
+        <span>
+          Today's Visitors
+        </span>
 
         <strong>
           {{ totalVisitorsToday }}
@@ -87,6 +102,7 @@
       </div>
 
     </div>
+
 
 
     <!-- CHECKED IN -->
@@ -99,7 +115,9 @@
 
       <div class="stat-content">
 
-        <span>Checked In</span>
+        <span>
+          Checked In
+        </span>
 
         <strong>
           {{ totalCheckedIn }}
@@ -108,6 +126,7 @@
       </div>
 
     </div>
+
 
 
     <!-- COMPLETED -->
@@ -120,7 +139,9 @@
 
       <div class="stat-content">
 
-        <span>Completed</span>
+        <span>
+          Completed
+        </span>
 
         <strong>
           {{ totalCompleted }}
@@ -129,6 +150,7 @@
       </div>
 
     </div>
+
 
 
     <!-- DAY VISITS -->
@@ -141,7 +163,9 @@
 
       <div class="stat-content">
 
-        <span>Day Visits</span>
+        <span>
+          Day Visits
+        </span>
 
         <strong>
           {{ totalDayVisits }}
@@ -154,11 +178,13 @@
   </div>
 
 
+
   <!-- =====================================================
        TODAY VISIT SUMMARY
   ====================================================== -->
 
   <section class="visit-summary">
+
 
     <div class="summary-header">
 
@@ -185,6 +211,7 @@
     </div>
 
 
+
     <div class="summary-items">
 
 
@@ -198,7 +225,9 @@
 
         <div class="summary-item-content">
 
-          <span>Total Visitors</span>
+          <span>
+            Total Visitors
+          </span>
 
           <strong>
             {{ totalVisitorsToday }}
@@ -207,6 +236,31 @@
         </div>
 
       </div>
+
+
+
+      <!-- MORNING -->
+
+      <div class="summary-item">
+
+        <div class="summary-item-icon">
+          <i class="bi bi-sunrise"></i>
+        </div>
+
+        <div class="summary-item-content">
+
+          <span>
+            Morning Session
+          </span>
+
+          <strong>
+            {{ totalMorningVisits }}
+          </strong>
+
+        </div>
+
+      </div>
+
 
 
       <!-- DAY -->
@@ -219,7 +273,9 @@
 
         <div class="summary-item-content">
 
-          <span>Day Session</span>
+          <span>
+            Day Session
+          </span>
 
           <strong>
             {{ totalDayVisits }}
@@ -230,17 +286,20 @@
       </div>
 
 
+
       <!-- EVENING -->
 
       <div class="summary-item">
 
         <div class="summary-item-icon">
-          <i class="bi bi-moon"></i>
+          <i class="bi bi-sunset"></i>
         </div>
 
         <div class="summary-item-content">
 
-          <span>Evening Session</span>
+          <span>
+            Evening Session
+          </span>
 
           <strong>
             {{ totalEveningVisits }}
@@ -249,6 +308,7 @@
         </div>
 
       </div>
+
 
 
       <!-- CURRENTLY INSIDE -->
@@ -261,7 +321,9 @@
 
         <div class="summary-item-content">
 
-          <span>Currently Inside</span>
+          <span>
+            Currently Inside
+          </span>
 
           <strong>
             {{ totalCheckedIn }}
@@ -271,9 +333,11 @@
 
       </div>
 
+
     </div>
 
   </section>
+
 
 
   <!-- =====================================================
@@ -319,6 +383,7 @@
     </div>
 
 
+
     <!-- ===================================================
          TABLE
     ==================================================== -->
@@ -358,6 +423,7 @@
 
         <tbody>
 
+
           @for (
             visit of recentVisits;
             track visit.id
@@ -375,6 +441,7 @@
               </td>
 
 
+
               <!-- VISITOR -->
 
               <td>
@@ -388,6 +455,7 @@
               </td>
 
 
+
               <!-- PHONE -->
 
               <td>
@@ -395,6 +463,7 @@
                 {{ visit.visitorPhone }}
 
               </td>
+
 
 
               <!-- PATIENT -->
@@ -410,6 +479,7 @@
               </td>
 
 
+
               <!-- PATIENT NUMBER -->
 
               <td>
@@ -421,6 +491,7 @@
                 </span>
 
               </td>
+
 
 
               <!-- WARD -->
@@ -436,11 +507,30 @@
               </td>
 
 
+
               <!-- SESSION -->
 
               <td>
 
-                @if (visit.session === 'Day') {
+
+                <!-- MORNING -->
+
+                @if (visit.session === 'Morning') {
+
+                  <span class="session-badge morning">
+
+                    <i class="bi bi-sunrise"></i>
+
+                    Morning
+
+                  </span>
+
+                }
+
+
+                <!-- DAY -->
+
+                @else if (visit.session === 'Day') {
 
                   <span class="session-badge day">
 
@@ -452,11 +542,14 @@
 
                 }
 
+
+                <!-- EVENING -->
+
                 @else {
 
                   <span class="session-badge evening">
 
-                    <i class="bi bi-moon"></i>
+                    <i class="bi bi-sunset"></i>
 
                     Evening
 
@@ -465,6 +558,7 @@
                 }
 
               </td>
+
 
 
               <!-- CHECK IN -->
@@ -476,6 +570,7 @@
               </td>
 
 
+
               <!-- CHECK OUT -->
 
               <td class="time-cell">
@@ -485,9 +580,11 @@
               </td>
 
 
+
               <!-- STATUS -->
 
               <td>
+
 
                 @if (visit.status === 'Checked In') {
 
@@ -500,6 +597,7 @@
                   </span>
 
                 }
+
 
                 @else {
 
@@ -514,6 +612,7 @@
                 }
 
               </td>
+
 
             </tr>
 
@@ -540,12 +639,16 @@
                 </div>
 
                 <strong>
+
                   No visits today
+
                 </strong>
 
                 <span>
+
                   Visitor records will appear here after
                   a visitor is checked in.
+
                 </span>
 
               </td>
@@ -553,6 +656,7 @@
             </tr>
 
           }
+
 
         </tbody>
 

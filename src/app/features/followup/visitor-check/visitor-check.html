@@ -1,15 +1,12 @@
 <div class="visitor-container">
 
-
   <!-- =====================================================
        PAGE HEADER
   ====================================================== -->
 
   <div class="page-header">
 
-    <h1>
-      Visitor Check
-    </h1>
+    <h1>Visitor Check</h1>
 
     <p>
       Manage patient visitors and visiting sessions
@@ -43,11 +40,8 @@
 
       <button
         type="button"
-        [class.active]="
-          selectedSession === 'Morning'
-        "
-        (click)="selectSession('Morning')"
-      >
+        [class.active]="selectedSession === 'Morning'"
+        (click)="selectSession('Morning')">
 
         <i class="bi bi-sunrise me-1"></i>
 
@@ -60,11 +54,8 @@
 
       <button
         type="button"
-        [class.active]="
-          selectedSession === 'Day'
-        "
-        (click)="selectSession('Day')"
-      >
+        [class.active]="selectedSession === 'Day'"
+        (click)="selectSession('Day')">
 
         <i class="bi bi-sun me-1"></i>
 
@@ -77,11 +68,8 @@
 
       <button
         type="button"
-        [class.active]="
-          selectedSession === 'Evening'
-        "
-        (click)="selectSession('Evening')"
-      >
+        [class.active]="selectedSession === 'Evening'"
+        (click)="selectSession('Evening')">
 
         <i class="bi bi-sunset me-1"></i>
 
@@ -95,7 +83,7 @@
 
 
   <!-- =====================================================
-       MESSAGE
+       SUCCESS MESSAGE
   ====================================================== -->
 
   @if (message) {
@@ -110,6 +98,10 @@
 
   }
 
+
+  <!-- =====================================================
+       ERROR MESSAGE
+  ====================================================== -->
 
   @if (errorMessage) {
 
@@ -147,24 +139,18 @@
 
 
   <!-- =====================================================
-       PATIENT TABLE CARD
+       PATIENTS CARD
   ====================================================== -->
 
   <div
     class="patients-card"
-    id="patientsTable"
-  >
-
-
-    <!-- HEADER -->
+    id="patientsTable">
 
     <div class="card-header">
 
       <div>
 
-        <h3>
-          Patients
-        </h3>
+        <h3>Patients</h3>
 
         <span>
           {{ today }}
@@ -175,17 +161,13 @@
 
       <span class="session-label">
 
-        @if (
-          selectedSession === 'Morning'
-        ) {
+        @if (selectedSession === 'Morning') {
 
           Morning
 
         }
 
-        @else if (
-          selectedSession === 'Day'
-        ) {
+        @else if (selectedSession === 'Day') {
 
           Day
 
@@ -214,33 +196,21 @@
 
           <tr>
 
-            <th>
-              #
-            </th>
+            <th>#</th>
 
-            <th>
-              Patient
-            </th>
+            <th>Patient</th>
 
-            <th>
-              Patient Number
-            </th>
+            <th>Patient Number</th>
 
-            <th>
-              Ward
-            </th>
+            <th>Ward</th>
 
-            <th>
-              Visitor 1
-            </th>
+            <th>Visitor 1</th>
 
-            <th>
-              Visitor 2
-            </th>
+            <th>Visitor 2</th>
 
-            <th>
-              Visitor 3
-            </th>
+            <th>Visitor 3</th>
+
+            <th>View</th>
 
           </tr>
 
@@ -256,14 +226,14 @@
 
             <tr>
 
-
               <!-- NUMBER -->
 
               <td>
 
                 {{
                   ((currentPage - 1) * pageSize)
-                  + $index + 1
+                  + $index
+                  + 1
                 }}
 
               </td>
@@ -306,23 +276,18 @@
               </td>
 
 
-              <!-- ========================================
+              <!-- =================================================
                    VISITOR 1
-              ========================================= -->
+              ================================================== -->
 
               <td>
 
-                @if (
-                  !isSlotUsed(patient, 1)
-                ) {
+                @if (!isSlotUsed(patient, 1)) {
 
                   <button
                     type="button"
                     class="visitor-button"
-                    (click)="
-                      openVisitorForm(patient, 1)
-                    "
-                  >
+                    (click)="openVisitorForm(patient, 1)">
 
                     <i class="bi bi-person-plus"></i>
 
@@ -336,14 +301,9 @@
 
                   <div
                     class="visitor-status"
-                    [class.completed]="
-                      !isCheckedIn(patient, 1)
-                    "
-                  >
+                    [class.completed]="!isCheckedIn(patient, 1)">
 
-                    @if (
-                      isCheckedIn(patient, 1)
-                    ) {
+                    @if (isCheckedIn(patient, 1)) {
 
                       <span>
 
@@ -355,12 +315,7 @@
 
                       <button
                         type="button"
-                        (click)="
-                          checkout(
-                            getSlot(patient, 1)!
-                          )
-                        "
-                      >
+                        (click)="checkout(getSlot(patient, 1)!)">
 
                         Check Out
 
@@ -387,23 +342,18 @@
               </td>
 
 
-              <!-- ========================================
+              <!-- =================================================
                    VISITOR 2
-              ========================================= -->
+              ================================================== -->
 
               <td>
 
-                @if (
-                  !isSlotUsed(patient, 2)
-                ) {
+                @if (!isSlotUsed(patient, 2)) {
 
                   <button
                     type="button"
                     class="visitor-button"
-                    (click)="
-                      openVisitorForm(patient, 2)
-                    "
-                  >
+                    (click)="openVisitorForm(patient, 2)">
 
                     <i class="bi bi-person-plus"></i>
 
@@ -417,14 +367,9 @@
 
                   <div
                     class="visitor-status"
-                    [class.completed]="
-                      !isCheckedIn(patient, 2)
-                    "
-                  >
+                    [class.completed]="!isCheckedIn(patient, 2)">
 
-                    @if (
-                      isCheckedIn(patient, 2)
-                    ) {
+                    @if (isCheckedIn(patient, 2)) {
 
                       <span>
 
@@ -436,12 +381,7 @@
 
                       <button
                         type="button"
-                        (click)="
-                          checkout(
-                            getSlot(patient, 2)!
-                          )
-                        "
-                      >
+                        (click)="checkout(getSlot(patient, 2)!)">
 
                         Check Out
 
@@ -468,15 +408,13 @@
               </td>
 
 
-              <!-- ========================================
+              <!-- =================================================
                    VISITOR 3
-              ========================================= -->
+              ================================================== -->
 
               <td>
 
-                @if (
-                  selectedSession !== 'Evening'
-                ) {
+                @if (selectedSession !== 'Evening') {
 
                   <div class="slot-not-available">
 
@@ -488,17 +426,12 @@
 
                 }
 
-                @else if (
-                  !isSlotUsed(patient, 3)
-                ) {
+                @else if (!isSlotUsed(patient, 3)) {
 
                   <button
                     type="button"
                     class="visitor-button visitor-three"
-                    (click)="
-                      openVisitorForm(patient, 3)
-                    "
-                  >
+                    (click)="openVisitorForm(patient, 3)">
 
                     <i class="bi bi-person-plus"></i>
 
@@ -512,14 +445,9 @@
 
                   <div
                     class="visitor-status"
-                    [class.completed]="
-                      !isCheckedIn(patient, 3)
-                    "
-                  >
+                    [class.completed]="!isCheckedIn(patient, 3)">
 
-                    @if (
-                      isCheckedIn(patient, 3)
-                    ) {
+                    @if (isCheckedIn(patient, 3)) {
 
                       <span>
 
@@ -531,12 +459,7 @@
 
                       <button
                         type="button"
-                        (click)="
-                          checkout(
-                            getSlot(patient, 3)!
-                          )
-                        "
-                      >
+                        (click)="checkout(getSlot(patient, 3)!)">
 
                         Check Out
 
@@ -562,23 +485,42 @@
 
               </td>
 
+
+              <!-- =================================================
+                   VIEW VISITORS
+              ================================================== -->
+
+              <td>
+
+                <button
+                  type="button"
+                  class="view-button"
+                  (click)="viewVisitors(patient)">
+
+                  <i class="bi bi-eye"></i>
+
+                  View
+
+                </button>
+
+              </td>
+
             </tr>
 
           }
 
 
-          <!-- EMPTY -->
+          <!-- =================================================
+               NO DATA
+          ================================================== -->
 
-          @if (
-            paginatedPatients.length === 0
-          ) {
+          @if (paginatedPatients.length === 0) {
 
             <tr>
 
               <td
-                colspan="7"
-                class="no-data"
-              >
+                colspan="8"
+                class="no-data">
 
                 <i class="bi bi-person-x"></i>
 
@@ -599,34 +541,36 @@
     </div>
 
 
-    <!-- =================================================
+    <!-- =====================================================
          PAGINATION
-    ================================================== -->
+    ====================================================== -->
 
     @if (filteredPatients.length > 0) {
 
       <div class="pagination-container">
 
 
-        <!-- LEFT INFO -->
-
         <div class="pagination-info">
 
           Showing
 
           <strong>
-            {{ ((currentPage - 1) * pageSize) + 1 }}
+            {{
+              ((currentPage - 1) * pageSize) + 1
+            }}
           </strong>
 
           -
 
           <strong>
+
             {{
               Math.min(
                 currentPage * pageSize,
                 filteredPatients.length
               )
             }}
+
           </strong>
 
           of
@@ -640,8 +584,6 @@
         </div>
 
 
-        <!-- PAGE SIZE -->
-
         <div class="page-size">
 
           <label>
@@ -650,8 +592,7 @@
 
           <select
             [(ngModel)]="pageSize"
-            (change)="changePageSize()"
-          >
+            (change)="changePageSize()">
 
             <option [ngValue]="10">
               10
@@ -674,19 +615,13 @@
         </div>
 
 
-        <!-- PAGINATION BUTTONS -->
-
         <div class="pagination-buttons">
-
-
-          <!-- PREVIOUS -->
 
           <button
             type="button"
             class="page-button previous"
             [disabled]="currentPage === 1"
-            (click)="previousPage()"
-          >
+            (click)="previousPage()">
 
             <i class="bi bi-chevron-left"></i>
 
@@ -694,8 +629,6 @@
 
           </button>
 
-
-          <!-- PAGE NUMBERS -->
 
           @for (
             page of pageNumbers;
@@ -715,11 +648,8 @@
               <button
                 type="button"
                 class="page-button number"
-                [class.active]="
-                  currentPage === page
-                "
-                (click)="goToPage(page)"
-              >
+                [class.active]="currentPage === page"
+                (click)="goToPage(page)">
 
                 {{ page }}
 
@@ -730,16 +660,11 @@
           }
 
 
-          <!-- NEXT -->
-
           <button
             type="button"
             class="page-button next"
-            [disabled]="
-              currentPage === totalPages
-            "
-            (click)="nextPage()"
-          >
+            [disabled]="currentPage === totalPages"
+            (click)="nextPage()">
 
             Next
 
@@ -757,7 +682,7 @@
 
 
   <!-- =====================================================
-       VISITOR FORM MODAL
+       CHECK VISITOR MODAL
   ====================================================== -->
 
   @if (
@@ -770,7 +695,7 @@
       <div class="visitor-modal">
 
 
-        <!-- MODAL HEADER -->
+        <!-- HEADER -->
 
         <div class="modal-header">
 
@@ -790,8 +715,7 @@
           <button
             type="button"
             class="close-button"
-            (click)="closeForm()"
-          >
+            (click)="closeForm()">
 
             <i class="bi bi-x-lg"></i>
 
@@ -800,7 +724,7 @@
         </div>
 
 
-        <!-- PATIENT INFORMATION -->
+        <!-- PATIENT INFO -->
 
         <div class="patient-info">
 
@@ -875,10 +799,7 @@
 
         <form
           #visitorForm="ngForm"
-          (ngSubmit)="
-            saveVisitor(visitorForm)
-          "
-        >
+          (ngSubmit)="saveVisitor(visitorForm)">
 
           <div class="form-grid">
 
@@ -894,9 +815,7 @@
               <input
                 type="text"
                 name="visitorFirstName"
-                [(ngModel)]="
-                  visitorFirstName
-                "
+                [(ngModel)]="visitorFirstName"
                 required
                 placeholder="Visitor first name"
               />
@@ -915,9 +834,7 @@
               <input
                 type="text"
                 name="visitorSecondName"
-                [(ngModel)]="
-                  visitorSecondName
-                "
+                [(ngModel)]="visitorSecondName"
                 required
                 placeholder="Visitor second name"
               />
@@ -936,9 +853,7 @@
               <input
                 type="text"
                 name="visitorLastName"
-                [(ngModel)]="
-                  visitorLastName
-                "
+                [(ngModel)]="visitorLastName"
                 required
                 placeholder="Visitor last name"
               />
@@ -957,9 +872,7 @@
               <input
                 type="text"
                 name="visitorCardNumber"
-                [(ngModel)]="
-                  visitorCardNumber
-                "
+                [(ngModel)]="visitorCardNumber"
                 required
                 placeholder="Enter visitor card number"
               />
@@ -978,9 +891,7 @@
               <input
                 type="tel"
                 name="visitorPhone"
-                [(ngModel)]="
-                  visitorPhone
-                "
+                [(ngModel)]="visitorPhone"
                 required
                 placeholder="e.g. 0712345678"
               />
@@ -998,11 +909,8 @@
 
               <select
                 name="visitorGender"
-                [(ngModel)]="
-                  visitorGender
-                "
-                required
-              >
+                [(ngModel)]="visitorGender"
+                required>
 
                 <option value="">
                   Select gender
@@ -1032,9 +940,7 @@
               <input
                 type="text"
                 name="visitorRelation"
-                [(ngModel)]="
-                  visitorRelation
-                "
+                [(ngModel)]="visitorRelation"
                 required
                 placeholder="e.g. Father, Mother, Uncle, Friend"
               />
@@ -1087,11 +993,7 @@
 
               <input
                 type="text"
-                [value]="
-                  getPatientName(
-                    selectedPatient
-                  )
-                "
+                [value]="getPatientName(selectedPatient)"
                 readonly
               />
 
@@ -1108,9 +1010,7 @@
 
               <input
                 type="text"
-                [value]="
-                  selectedPatient.ward
-                "
+                [value]="selectedPatient.ward"
                 readonly
               />
 
@@ -1126,8 +1026,7 @@
             <button
               type="button"
               class="cancel-button"
-              (click)="closeForm()"
-            >
+              (click)="closeForm()">
 
               Cancel
 
@@ -1136,8 +1035,7 @@
 
             <button
               type="submit"
-              class="save-button"
-            >
+              class="save-button">
 
               <i class="bi bi-person-check me-1"></i>
 
@@ -1148,6 +1046,323 @@
           </div>
 
         </form>
+
+      </div>
+
+    </div>
+
+  }
+
+
+  <!-- =====================================================
+       VIEW VISITORS MODAL
+  ====================================================== -->
+
+  @if (
+    showVisitorsModal &&
+    viewedPatient
+  ) {
+
+    <div
+      class="modal-backdrop-custom"
+      (click)="closeVisitorsModal()">
+
+      <div
+        class="visitor-modal view-visitors-modal"
+        (click)="$event.stopPropagation()">
+
+
+        <!-- HEADER -->
+
+        <div class="modal-header">
+
+          <div>
+
+            <h2>
+              Visitor Details
+            </h2>
+
+            <p>
+              Today's visitors
+            </p>
+
+          </div>
+
+
+          <button
+            type="button"
+            class="close-button"
+            (click)="closeVisitorsModal()">
+
+            <i class="bi bi-x-lg"></i>
+
+          </button>
+
+        </div>
+
+
+        <!-- PATIENT SUMMARY -->
+
+        <div class="patient-info visitor-summary">
+
+          <div>
+
+            <span>
+              Patient
+            </span>
+
+            <strong>
+              {{ getPatientName(viewedPatient) }}
+            </strong>
+
+          </div>
+
+
+          <div>
+
+            <span>
+              Patient Number
+            </span>
+
+            <strong>
+              {{ viewedPatient.patientNumber }}
+            </strong>
+
+          </div>
+
+
+          <div>
+
+            <span>
+              Ward
+            </span>
+
+            <strong>
+              {{ viewedPatient.ward }}
+            </strong>
+
+          </div>
+
+
+          <div>
+
+            <span>
+              Date
+            </span>
+
+            <strong>
+              {{ today }}
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <!-- VISITORS -->
+
+        @if (patientVisitors.length > 0) {
+
+          <div class="visitor-details-table">
+
+            <div class="table-responsive">
+
+              <table>
+
+                <thead>
+
+                  <tr>
+
+                    <th>#</th>
+
+                    <th>Visitor Name</th>
+
+                    <th>Phone</th>
+
+                    <th>Relation</th>
+
+                    <th>Gender</th>
+
+                    <th>Session</th>
+
+                    <th>Slot</th>
+
+                    <th>Check In</th>
+
+                    <th>Check Out</th>
+
+                    <th>Status</th>
+
+                  </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                  @for (
+                    visit of patientVisitors;
+                    track visit.id
+                  ) {
+
+                    <tr>
+
+                      <td>
+                        {{ $index + 1 }}
+                      </td>
+
+
+                      <td>
+
+                        <strong>
+                          {{ getVisitorFullName(visit) }}
+                        </strong>
+
+                        <small class="visitor-card-number">
+                          Card:
+                          {{ visit.visitorCardNumber }}
+                        </small>
+
+                      </td>
+
+
+                      <td>
+                        {{ visit.visitorPhone }}
+                      </td>
+
+
+                      <td>
+                        {{ visit.visitorRelation }}
+                      </td>
+
+
+                      <td>
+
+                        <span class="gender-badge">
+
+                          <i
+                            [class]="visit.visitorGender === 'Male'
+                              ? 'bi bi-gender-male'
+                              : 'bi bi-gender-female'">
+                          </i>
+
+                          {{ visit.visitorGender }}
+
+                        </span>
+
+                      </td>
+
+
+                      <td>
+
+                        <span class="session-badge">
+
+                          {{ visit.session }}
+
+                        </span>
+
+                      </td>
+
+
+                      <td>
+
+                        Visitor
+                        {{ visit.slot }}
+
+                      </td>
+
+
+                      <td>
+
+                        {{ formatTime(visit.checkIn) }}
+
+                      </td>
+
+
+                      <td>
+
+                        {{ formatTime(visit.checkOut) }}
+
+                      </td>
+
+
+                      <td>
+
+                        @if (
+                          visit.status === 'Checked In'
+                        ) {
+
+                          <span class="status-badge checked-in">
+
+                            <i class="bi bi-person-check"></i>
+
+                            Checked In
+
+                          </span>
+
+                        }
+
+                        @else {
+
+                          <span class="status-badge completed">
+
+                            <i class="bi bi-check-circle"></i>
+
+                            Completed
+
+                          </span>
+
+                        }
+
+                      </td>
+
+                    </tr>
+
+                  }
+
+                </tbody>
+
+              </table>
+
+            </div>
+
+          </div>
+
+        }
+
+        @else {
+
+          <div class="no-visitors">
+
+            <i class="bi bi-people"></i>
+
+            <strong>
+              No visitors yet
+            </strong>
+
+            <span>
+              No visitor has checked in for this patient today.
+            </span>
+
+          </div>
+
+        }
+
+
+        <!-- CLOSE -->
+
+        <div class="form-actions">
+
+          <button
+            type="button"
+            class="cancel-button"
+            (click)="closeVisitorsModal()">
+
+            Close
+
+          </button>
+
+        </div>
 
       </div>
 

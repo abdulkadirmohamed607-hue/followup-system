@@ -173,6 +173,22 @@ export class Dashboard
 
 
   // =====================================================
+  // MORNING VISITS
+  // =====================================================
+
+  get totalMorningVisits(): number {
+
+    return this.todayVisits.filter(
+
+      visit =>
+        visit.session === 'Morning'
+
+    ).length;
+
+  }
+
+
+  // =====================================================
   // DAY VISITS
   // =====================================================
 

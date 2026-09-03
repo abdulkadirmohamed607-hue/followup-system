@@ -1,214 +1,191 @@
-/* =====================================================
-   CONTAINER
-===================================================== */
+/* =========================================================
+   MAIN CONTAINER
+========================================================= */
 
 .visitor-container {
-
-  padding: 30px;
-
-  background: #f4f8fb;
-
   min-height: 100vh;
-
-  box-sizing: border-box;
-
+  padding: 30px;
+  background: #f4f8fb;
+  color: #1f2937;
 }
 
 
-/* =====================================================
+/* =========================================================
    PAGE HEADER
-===================================================== */
+========================================================= */
 
 .page-header {
-
   margin-bottom: 22px;
-
 }
 
 .page-header h1 {
-
   margin: 0;
-
-  color: #123b5d;
-
+  color: #123d6a;
   font-size: 28px;
-
   font-weight: 700;
-
 }
 
 .page-header p {
-
   margin: 6px 0 0;
-
-  color: #6c7a86;
-
+  color: #6b7280;
   font-size: 14px;
-
 }
 
 
-/* =====================================================
+/* =========================================================
    SESSION CARD
-===================================================== */
+========================================================= */
 
 .session-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
 
   background: #ffffff;
 
-  border: 1px solid #dcecf5;
+  border: 1px solid #dbe5ef;
 
-  border-radius: 10px;
+  border-radius: 12px;
 
   padding: 18px 20px;
 
   margin-bottom: 18px;
 
-  display: flex;
-
-  justify-content: space-between;
-
-  align-items: center;
-
-  gap: 20px;
-
-  box-shadow:
-    0 3px 10px rgba(35, 105, 140, 0.07);
-
+  box-shadow: 0 3px 12px rgba(20, 60, 100, 0.04);
 }
 
 .session-title {
-
   display: block;
 
-  color: #164e70;
+  color: #123d6a;
+
+  font-size: 15px;
 
   font-weight: 700;
 
-  font-size: 16px;
-
+  margin-bottom: 4px;
 }
 
 .session-card small {
+  display: block;
 
-  color: #7c8992;
+  color: #7b8794;
 
   font-size: 12px;
-
 }
 
+
+/* =========================================================
+   SESSION BUTTONS
+========================================================= */
+
 .session-buttons {
-
   display: flex;
-
   gap: 8px;
-
+  flex-wrap: wrap;
 }
 
 .session-buttons button {
+  border: 1px solid #cbd9e6;
 
-  border: 1px solid #bfd5e1;
+  background: #f7fafc;
 
-  background: #f8fbfd;
+  color: #4b5563;
 
-  color: #456879;
+  padding: 9px 17px;
 
-  padding: 10px 18px;
+  border-radius: 8px;
 
-  border-radius: 7px;
-
-  cursor: pointer;
+  font-size: 13px;
 
   font-weight: 600;
 
-  transition: all 0.2s ease;
+  cursor: pointer;
 
+  transition: 0.2s ease;
 }
 
 .session-buttons button:hover {
+  background: #eaf3fa;
 
-  background: #edf6fa;
+  border-color: #9bbdd7;
 
-  border-color: #9fc7da;
-
+  color: #205d8f;
 }
 
 .session-buttons button.active {
-
   background: #2f80b7;
 
   border-color: #2f80b7;
 
   color: #ffffff;
 
+  box-shadow: 0 3px 8px rgba(47, 128, 183, 0.22);
 }
 
 
-/* =====================================================
+/* =========================================================
    ALERTS
-===================================================== */
+========================================================= */
 
 .alert-message {
+  display: flex;
+  align-items: center;
 
   padding: 12px 15px;
 
-  border-radius: 7px;
+  border-radius: 9px;
 
   margin-bottom: 18px;
 
   font-size: 13px;
 
   font-weight: 600;
-
 }
 
 .alert-message.success {
+  background: #eef5fa;
 
-  background: #e7f5ee;
+  border: 1px solid #c7dceb;
 
-  border: 1px solid #bfe3d0;
-
-  color: #28704e;
-
+  color: #245b80;
 }
 
 .alert-message.error {
+  background: #fff2f2;
 
-  background: #fff0f0;
+  border: 1px solid #f0cccc;
 
-  border: 1px solid #e5bcbc;
-
-  color: #a23e3e;
-
+  color: #a33a3a;
 }
 
 
-/* =====================================================
-   SEARCH
-===================================================== */
+/* =========================================================
+   SEARCH CARD
+========================================================= */
 
 .search-card {
-
   background: #ffffff;
 
-  border: 1px solid #dcecf5;
+  border: 1px solid #dbe5ef;
 
-  border-radius: 10px;
+  border-radius: 12px;
 
-  padding: 16px;
+  padding: 15px;
 
   margin-bottom: 18px;
 
+  box-shadow: 0 3px 12px rgba(20, 60, 100, 0.04);
 }
 
 .search-box {
-
   position: relative;
 
+  width: 100%;
 }
 
 .search-box i {
-
   position: absolute;
 
   left: 14px;
@@ -217,384 +194,64 @@
 
   transform: translateY(-50%);
 
-  color: #7d96a8;
+  color: #7890a3;
 
-  pointer-events: none;
-
+  font-size: 15px;
 }
 
 .search-box input {
-
   width: 100%;
 
-  box-sizing: border-box;
+  height: 42px;
 
-  padding: 12px 15px 12px 40px;
+  border: 1px solid #d3dfe9;
 
-  border: 1px solid #cbdce7;
+  border-radius: 8px;
 
-  border-radius: 7px;
+  padding: 0 14px 0 40px;
 
   outline: none;
 
-  background: #ffffff;
-
-  color: #344b58;
-
   font-size: 13px;
 
-  transition: all 0.2s ease;
+  color: #263746;
 
+  background: #fbfdff;
+
+  transition: 0.2s ease;
 }
 
 .search-box input:focus {
-
-  border-color: #5aa6d1;
-
-  box-shadow:
-    0 0 0 3px rgba(47, 128, 183, 0.10);
-
-}
-
-
-/* =====================================================
-   PATIENT TABLE CARD
-===================================================== */
-
-.patients-card {
+  border-color: #6fa6cc;
 
   background: #ffffff;
 
-  border-radius: 10px;
+  box-shadow: 0 0 0 3px rgba(47, 128, 183, 0.08);
+}
 
-  border: 1px solid #dcecf5;
 
-  box-shadow:
-    0 3px 12px rgba(30, 70, 100, 0.08);
+/* =========================================================
+   PATIENT CARD
+========================================================= */
+
+.patients-card {
+  background: #ffffff;
+
+  border: 1px solid #dbe5ef;
+
+  border-radius: 12px;
 
   overflow: hidden;
 
+  box-shadow: 0 3px 12px rgba(20, 60, 100, 0.04);
 }
 
 
-/* =====================================================
+/* =========================================================
    CARD HEADER
-===================================================== */
+========================================================= */
 
 .card-header {
-
-  padding: 18px 20px;
-
-  border-bottom: 1px solid #e5eef3;
-
-  display: flex;
-
-  justify-content: space-between;
-
-  align-items: center;
-
-}
-
-.card-header h3 {
-
-  margin: 0;
-
-  color: #164e70;
-
-  font-size: 18px;
-
-}
-
-.card-header span {
-
-  color: #7c8992;
-
-  font-size: 13px;
-
-}
-
-.session-label {
-
-  background: #e6f1f7;
-
-  color: #21658c !important;
-
-  padding: 6px 12px;
-
-  border-radius: 20px;
-
-  font-weight: 600;
-
-}
-
-
-/* =====================================================
-   TABLE
-===================================================== */
-
-.table-responsive {
-
-  width: 100%;
-
-  overflow-x: auto;
-
-  overflow-y: hidden;
-
-  -webkit-overflow-scrolling: touch;
-
-}
-
-table {
-
-  width: 100%;
-
-  min-width: 1350px;
-
-  border-collapse: collapse;
-
-}
-
-thead {
-
-  background: #dcecf6;
-
-}
-
-th {
-
-  padding: 14px;
-
-  color: #164a6b;
-
-  font-size: 13px;
-
-  text-align: left;
-
-  white-space: nowrap;
-
-}
-
-td {
-
-  padding: 14px;
-
-  border-bottom: 1px solid #edf2f5;
-
-  color: #394b59;
-
-  font-size: 13px;
-
-  white-space: nowrap;
-
-}
-
-tbody tr {
-
-  transition: background 0.15s ease;
-
-}
-
-tbody tr:hover {
-
-  background: #f5faff;
-
-}
-
-.patient-number {
-
-  color: #25658b;
-
-  font-weight: 600;
-
-}
-
-.ward {
-
-  color: #4c6676;
-
-}
-
-
-/* =====================================================
-   VISITOR BUTTON
-===================================================== */
-
-.visitor-button {
-
-  border: 1px solid #a9cfe4;
-
-  background: #eaf5fb;
-
-  color: #28729c;
-
-  padding: 8px 11px;
-
-  border-radius: 6px;
-
-  cursor: pointer;
-
-  font-size: 12px;
-
-  font-weight: 600;
-
-  transition: all 0.2s ease;
-
-}
-
-.visitor-button:hover {
-
-  background: #d7edf8;
-
-  border-color: #6eafd0;
-
-  transform: translateY(-1px);
-
-}
-
-.visitor-three {
-
-  background: #eef5fb;
-
-}
-
-
-/* =====================================================
-   SLOT NOT AVAILABLE
-===================================================== */
-
-.slot-not-available {
-
-  display: inline-flex;
-
-  align-items: center;
-
-  gap: 5px;
-
-  padding: 7px 10px;
-
-  border-radius: 6px;
-
-  background: #f1f4f6;
-
-  border: 1px solid #dce3e7;
-
-  color: #87949c;
-
-  font-size: 11px;
-
-  font-weight: 600;
-
-}
-
-
-/* =====================================================
-   VISITOR STATUS
-===================================================== */
-
-.visitor-status {
-
-  display: flex;
-
-  align-items: center;
-
-  gap: 8px;
-
-}
-
-.visitor-status span {
-
-  background: #fff3df;
-
-  color: #93651e;
-
-  padding: 7px 9px;
-
-  border-radius: 6px;
-
-  font-size: 12px;
-
-  font-weight: 600;
-
-}
-
-.visitor-status.completed span {
-
-  background: #e1f3eb;
-
-  color: #28704e;
-
-}
-
-.visitor-status button {
-
-  border: 1px solid #d5b778;
-
-  background: #fffaf0;
-
-  color: #8c641e;
-
-  padding: 6px 8px;
-
-  border-radius: 5px;
-
-  cursor: pointer;
-
-  font-size: 11px;
-
-  font-weight: 600;
-
-}
-
-.visitor-status button:hover {
-
-  background: #fff2d8;
-
-}
-
-
-/* =====================================================
-   EMPTY DATA
-===================================================== */
-
-.no-data {
-
-  text-align: center;
-
-  padding: 50px !important;
-
-}
-
-.no-data i {
-
-  display: block;
-
-  font-size: 40px;
-
-  color: #9db9ca;
-
-  margin-bottom: 10px;
-
-}
-
-.no-data strong {
-
-  display: block;
-
-  color: #526875;
-
-}
-
-
-/* =====================================================
-   PAGINATION
-===================================================== */
-
-.pagination-container {
-
-  padding: 14px 18px;
-
-  border-top: 1px solid #e5eef3;
-
   display: flex;
 
   align-items: center;
@@ -603,112 +260,469 @@ tbody tr:hover {
 
   gap: 15px;
 
-  flex-wrap: wrap;
+  padding: 17px 20px;
 
-  background: #fbfdfe;
+  background: #dcecf6;
 
+  border-bottom: 1px solid #c7dce9;
 }
 
+.card-header h3 {
+  margin: 0;
 
-/* =====================================================
-   PAGINATION INFO
-===================================================== */
+  color: #17486f;
 
-.pagination-info {
+  font-size: 17px;
 
-  color: #71818c;
+  font-weight: 700;
+}
+
+.card-header span:not(.session-label) {
+  color: #6d8191;
+
+  font-size: 12px;
+}
+
+.session-label {
+  display: inline-flex;
+
+  align-items: center;
+
+  padding: 7px 12px;
+
+  background: #ffffff;
+
+  color: #28648d;
+
+  border: 1px solid #c1d8e7;
+
+  border-radius: 7px;
 
   font-size: 12px;
 
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+.table-responsive {
+  width: 100%;
+
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+
+  min-width: 1500px;
+
+  border-collapse: collapse;
+}
+
+thead {
+  background: #f4f8fb;
+}
+
+thead th {
+  padding: 13px 12px;
+
+  border-bottom: 1px solid #dbe5ef;
+
+  color: #506579;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  text-transform: uppercase;
+
+  white-space: nowrap;
+
+  text-align: left;
+}
+
+tbody td {
+  padding: 14px 12px;
+
+  border-bottom: 1px solid #edf1f4;
+
+  color: #4b5563;
+
+  font-size: 12px;
+
+  vertical-align: middle;
+}
+
+tbody tr:hover {
+  background: #f9fcfe;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody td strong {
+  color: #233f56;
+
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   PATIENT NUMBER
+========================================================= */
+
+.patient-number {
+  display: inline-block;
+
+  padding: 5px 8px;
+
+  background: #f1f6fa;
+
+  color: #315e7e;
+
+  border: 1px solid #d9e5ed;
+
+  border-radius: 6px;
+
+  font-size: 11px;
+
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   WARD
+========================================================= */
+
+.ward {
+  color: #4f6475;
+
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   VISITOR BUTTON
+========================================================= */
+
+.visitor-button {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  border: 1px solid #b9d5e7;
+
+  background: #edf7fc;
+
+  color: #24658e;
+
+  padding: 7px 10px;
+
+  border-radius: 7px;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.visitor-button:hover {
+  background: #dceff9;
+
+  border-color: #91bfd9;
+
+  color: #174f73;
+}
+
+.visitor-three {
+  background: #eef5fa;
+
+  color: #315f7e;
+}
+
+
+/* =========================================================
+   VIEW BUTTON
+========================================================= */
+
+.view-button {
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 6px;
+
+  min-width: 72px;
+
+  border: 1px solid #b9cad8;
+
+  background: #ffffff;
+
+  color: #315e7e;
+
+  padding: 7px 11px;
+
+  border-radius: 7px;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.view-button:hover {
+  background: #eaf3f8;
+
+  border-color: #8fb4cc;
+
+  color: #174f73;
+}
+
+.view-button i {
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   VISITOR STATUS
+========================================================= */
+
+.visitor-status {
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: flex-start;
+
+  gap: 6px;
+
+  font-size: 11px;
+}
+
+.visitor-status span {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 5px;
+
+  color: #b56a00;
+
+  font-weight: 700;
+}
+
+.visitor-status.completed span {
+  color: #557487;
+}
+
+.visitor-status button {
+  border: 1px solid #e0c69d;
+
+  background: #fff9ed;
+
+  color: #a36200;
+
+  padding: 5px 8px;
+
+  border-radius: 5px;
+
+  font-size: 10px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.visitor-status button:hover {
+  background: #fff2d7;
+}
+
+
+/* =========================================================
+   SLOT NOT AVAILABLE
+========================================================= */
+
+.slot-not-available {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 5px;
+
+  padding: 7px 9px;
+
+  background: #f3f5f7;
+
+  border: 1px solid #e0e5e9;
+
+  color: #8996a0;
+
+  border-radius: 7px;
+
+  font-size: 10px;
+
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   NO DATA
+========================================================= */
+
+.no-data {
+  text-align: center;
+
+  padding: 45px 20px !important;
+
+  color: #8493a0 !important;
+}
+
+.no-data i {
+  display: block;
+
+  font-size: 30px;
+
+  margin-bottom: 8px;
+
+  color: #a6b6c2;
+}
+
+.no-data strong {
+  display: block;
+
+  color: #687985 !important;
+
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   PAGINATION
+========================================================= */
+
+.pagination-container {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 15px;
+
+  padding: 15px 18px;
+
+  border-top: 1px solid #e5ebef;
+
+  background: #fbfdfe;
+}
+
+.pagination-info {
+  color: #748391;
+
+  font-size: 12px;
+
+  white-space: nowrap;
 }
 
 .pagination-info strong {
-
-  color: #38586b;
-
+  color: #34556c;
 }
 
-
-/* =====================================================
-   PAGE SIZE
-===================================================== */
-
 .page-size {
-
   display: flex;
 
   align-items: center;
 
   gap: 7px;
 
-  color: #667985;
-
   font-size: 12px;
 
+  color: #71808c;
 }
 
 .page-size select {
+  height: 32px;
 
-  height: 34px;
-
-  padding: 0 9px;
-
-  border: 1px solid #cbdce7;
+  border: 1px solid #ccd9e2;
 
   border-radius: 6px;
 
+  padding: 0 7px;
+
+  color: #435766;
+
   background: #ffffff;
 
-  color: #344b58;
-
   outline: none;
-
-  cursor: pointer;
-
 }
-
-.page-size select:focus {
-
-  border-color: #5aa6d1;
-
-}
-
-
-/* =====================================================
-   PAGINATION BUTTONS
-===================================================== */
 
 .pagination-buttons {
-
   display: flex;
 
   align-items: center;
 
   gap: 5px;
-
 }
 
 .page-button {
+  min-width: 32px;
 
-  min-width: 34px;
+  height: 32px;
 
-  height: 34px;
-
-  padding: 0 9px;
-
-  border: 1px solid #cbdce7;
+  border: 1px solid #d1dde6;
 
   background: #ffffff;
 
-  color: #456879;
+  color: #536777;
 
   border-radius: 6px;
 
-  cursor: pointer;
-
-  font-size: 12px;
+  font-size: 11px;
 
   font-weight: 600;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.page-button:hover:not(:disabled) {
+  background: #eaf3f8;
+
+  color: #255b7d;
+
+  border-color: #a9c6d8;
+}
+
+.page-button.active {
+  background: #2f80b7;
+
+  border-color: #2f80b7;
+
+  color: #ffffff;
+}
+
+.page-button.previous,
+.page-button.next {
+  padding: 0 10px;
 
   display: inline-flex;
 
@@ -717,192 +731,127 @@ tbody tr:hover {
   justify-content: center;
 
   gap: 5px;
-
-  transition: all 0.2s ease;
-
-}
-
-.page-button:hover:not(:disabled) {
-
-  background: #edf6fa;
-
-  border-color: #9fc7da;
-
-  color: #21658c;
-
-}
-
-.page-button.number.active {
-
-  background: #2f80b7;
-
-  border-color: #2f80b7;
-
-  color: #ffffff;
-
 }
 
 .page-button:disabled {
-
   opacity: 0.45;
 
   cursor: not-allowed;
-
-}
-
-.page-button.previous,
-
-.page-button.next {
-
-  padding-left: 11px;
-
-  padding-right: 11px;
-
 }
 
 .page-dots {
+  color: #8997a2;
 
-  min-width: 25px;
+  padding: 0 3px;
 
-  text-align: center;
-
-  color: #8b9ba5;
-
-  font-size: 13px;
-
+  font-size: 12px;
 }
 
 
-/* =====================================================
-   MODAL BACKDROP
-===================================================== */
+/* =========================================================
+   CUSTOM MODAL
+========================================================= */
 
 .modal-backdrop-custom {
-
   position: fixed;
 
   inset: 0;
 
-  background: rgba(18, 59, 93, 0.45);
+  z-index: 2000;
 
   display: flex;
 
-  justify-content: center;
-
   align-items: center;
 
-  padding: 20px;
+  justify-content: center;
 
-  z-index: 2000;
+  padding: 25px;
 
-  backdrop-filter: blur(2px);
+  background: rgba(20, 42, 61, 0.58);
 
+  overflow-y: auto;
 }
 
 
-/* =====================================================
+/* =========================================================
    VISITOR MODAL
-===================================================== */
+========================================================= */
 
 .visitor-modal {
-
-  background: #ffffff;
-
-  width: 100%;
-
-  max-width: 820px;
+  width: min(900px, 100%);
 
   max-height: 92vh;
 
   overflow-y: auto;
 
-  border-radius: 12px;
+  background: #ffffff;
 
-  box-shadow:
-    0 15px 50px rgba(0, 0, 0, 0.20);
+  border-radius: 14px;
 
-  animation: modalOpen 0.18s ease-out;
+  border: 1px solid #d5e0e8;
 
+  box-shadow: 0 18px 55px rgba(15, 45, 70, 0.25);
+
+  animation: modalIn 0.2s ease;
 }
 
-@keyframes modalOpen {
+@keyframes modalIn {
 
   from {
-
     opacity: 0;
 
-    transform: translateY(-10px) scale(0.99);
-
+    transform: translateY(10px) scale(0.99);
   }
 
   to {
-
     opacity: 1;
 
     transform: translateY(0) scale(1);
-
   }
 
 }
 
 
-/* =====================================================
+/* =========================================================
    MODAL HEADER
-===================================================== */
+========================================================= */
 
-.modal-header {
-
+.visitor-modal .modal-header {
   display: flex;
+
+  align-items: center;
 
   justify-content: space-between;
 
-  align-items: flex-start;
+  padding: 18px 20px;
 
-  padding: 20px;
+  background: #dcecf6;
 
-  border-bottom: 1px solid #e5eef3;
-
-  background: #ffffff;
-
+  border-bottom: 1px solid #c6dbe8;
 }
 
-.modal-header h2 {
-
+.visitor-modal .modal-header h2 {
   margin: 0;
 
-  color: #164e70;
+  color: #17486f;
 
-  font-size: 21px;
+  font-size: 19px;
 
   font-weight: 700;
-
 }
 
-.modal-header p {
-
+.visitor-modal .modal-header p {
   margin: 4px 0 0;
 
-  color: #7c8992;
+  color: #6f8290;
 
-  font-size: 13px;
-
+  font-size: 12px;
 }
 
 .close-button {
-
-  border: none;
-
-  background: #f2f6f8;
-
-  color: #506773;
-
   width: 34px;
 
   height: 34px;
-
-  border-radius: 6px;
-
-  cursor: pointer;
 
   display: flex;
 
@@ -910,521 +859,524 @@ tbody tr:hover {
 
   justify-content: center;
 
-  transition: all 0.2s ease;
+  border: 1px solid #c7d8e3;
 
+  background: #ffffff;
+
+  color: #607381;
+
+  border-radius: 7px;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
 }
 
 .close-button:hover {
+  background: #edf4f8;
 
-  background: #e7eef2;
-
-  color: #164e70;
-
+  color: #244f6d;
 }
 
 
-/* =====================================================
-   PATIENT INFORMATION
-===================================================== */
+/* =========================================================
+   PATIENT INFO
+========================================================= */
 
 .patient-info {
-
-  margin: 20px;
-
-  padding: 16px;
-
-  background: #f4f9fc;
-
-  border: 1px solid #dcecf5;
-
-  border-radius: 8px;
-
   display: grid;
 
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns:
+    repeat(5, minmax(0, 1fr));
 
-  gap: 15px;
+  gap: 10px;
 
+  padding: 15px 20px;
+
+  background: #f7fafc;
+
+  border-bottom: 1px solid #e3ebf0;
 }
 
-.patient-info > div {
-
+.patient-info div {
   min-width: 0;
-
 }
 
 .patient-info span {
-
   display: block;
-
-  font-size: 11px;
-
-  color: #7c8992;
 
   margin-bottom: 4px;
 
+  color: #82919c;
+
+  font-size: 10px;
+
   text-transform: uppercase;
 
-  letter-spacing: 0.3px;
-
+  font-weight: 700;
 }
 
 .patient-info strong {
+  display: block;
 
-  color: #164e70;
+  color: #36566b;
 
-  font-size: 13px;
+  font-size: 12px;
 
-  font-weight: 700;
+  overflow: hidden;
 
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
 }
 
 
-/* =====================================================
+/* =========================================================
    FORM
-===================================================== */
+========================================================= */
 
 .visitor-modal form {
-
-  padding: 0 20px 20px;
-
+  padding: 20px;
 }
 
 .form-grid {
-
   display: grid;
 
   grid-template-columns:
     repeat(2, minmax(0, 1fr));
 
-  gap: 16px;
-
+  gap: 15px;
 }
 
 .form-group {
+  display: flex;
 
-  min-width: 0;
+  flex-direction: column;
 
+  gap: 6px;
 }
 
 .form-group label {
+  color: #4b6272;
 
-  display: block;
+  font-size: 12px;
 
-  color: #435c6a;
-
-  font-size: 13px;
-
-  font-weight: 600;
-
-  margin-bottom: 6px;
-
+  font-weight: 700;
 }
 
 .form-group input,
-
 .form-group select {
-
   width: 100%;
 
-  box-sizing: border-box;
+  height: 40px;
 
-  padding: 11px 12px;
-
-  border: 1px solid #cbdce7;
+  border: 1px solid #ccd9e2;
 
   border-radius: 7px;
+
+  padding: 0 11px;
 
   outline: none;
 
-  background: white;
+  background: #ffffff;
 
-  color: #344b58;
+  color: #334b5c;
 
-  font-size: 13px;
+  font-size: 12px;
 
-  cursor: pointer;
-
+  transition: 0.2s ease;
 }
 
-.form-group select:focus,
-
-.form-group input:focus {
-
-  border-color: #5aa6d1;
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #6fa6cc;
 
   box-shadow:
-    0 0 0 3px rgba(47, 128, 183, 0.10);
-
+    0 0 0 3px
+    rgba(47, 128, 183, 0.08);
 }
-
-.form-group select option {
-
-  color: #344b58;
-
-}
-
-.form-group input::placeholder {
-
-  color: #9aaab4;
-
-}
-
-
-/* =====================================================
-   READONLY INPUTS
-===================================================== */
 
 .form-group input[readonly] {
-
   background: #f4f7f9;
 
-  color: #657781;
-
-  cursor: default;
-
+  color: #60717d;
 }
 
 
-/* =====================================================
-   REQUIRED FIELD
-===================================================== */
-
-.form-group input:required:invalid:not(:placeholder-shown),
-
-.form-group select:required:invalid {
-
-  border-color: #d8a1a1;
-
-}
-
-.form-group input:required:valid,
-
-.form-group select:required:valid {
-
-  border-color: #cbdce7;
-
-}
-
-
-/* =====================================================
+/* =========================================================
    FORM ACTIONS
-===================================================== */
+========================================================= */
 
 .form-actions {
-
-  margin-top: 22px;
-
-  padding-top: 16px;
-
-  border-top: 1px solid #edf2f5;
-
   display: flex;
+
+  align-items: center;
 
   justify-content: flex-end;
 
-  gap: 10px;
+  gap: 9px;
 
+  padding-top: 20px;
+
+  margin-top: 5px;
 }
 
-.save-button,
+.cancel-button,
+.save-button {
+  height: 38px;
 
-.cancel-button {
-
-  border: none;
-
-  min-height: 40px;
-
-  padding: 10px 17px;
+  padding: 0 15px;
 
   border-radius: 7px;
 
+  font-size: 12px;
+
+  font-weight: 700;
+
   cursor: pointer;
 
-  font-weight: 600;
+  transition: 0.2s ease;
+}
 
-  font-size: 13px;
+.cancel-button {
+  background: #ffffff;
 
-  transition: all 0.2s ease;
+  color: #536674;
 
+  border: 1px solid #ccd8e1;
+}
+
+.cancel-button:hover {
+  background: #f3f7f9;
 }
 
 .save-button {
-
   background: #2f80b7;
 
   color: #ffffff;
 
+  border: 1px solid #2f80b7;
 }
 
 .save-button:hover {
+  background: #286f9f;
 
-  background: #246b99;
-
-  transform: translateY(-1px);
-
-}
-
-.cancel-button {
-
-  background: #edf2f5;
-
-  color: #526875;
-
-}
-
-.cancel-button:hover {
-
-  background: #e0e8ed;
-
+  border-color: #286f9f;
 }
 
 
-/* =====================================================
-   MODAL SCROLLBAR
-===================================================== */
+/* =========================================================
+   VIEW VISITORS MODAL
+========================================================= */
 
-.visitor-modal::-webkit-scrollbar {
-
-  width: 7px;
-
+.view-visitors-modal {
+  width: min(1250px, 100%);
 }
 
-.visitor-modal::-webkit-scrollbar-track {
+.visitor-summary {
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+}
 
+
+/* =========================================================
+   VISITOR DETAILS TABLE
+========================================================= */
+
+.visitor-details-table {
+  padding: 18px 20px 5px;
+}
+
+.visitor-details-table table {
+  min-width: 1050px;
+}
+
+.visitor-details-table thead {
+  background: #f2f7fa;
+}
+
+.visitor-details-table thead th {
+  font-size: 10px;
+
+  padding: 11px 9px;
+}
+
+.visitor-details-table tbody td {
+  font-size: 11px;
+
+  padding: 12px 9px;
+}
+
+.visitor-details-table tbody td strong {
+  display: block;
+
+  color: #294b62;
+}
+
+.visitor-card-number {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #8998a3;
+
+  font-size: 9px;
+}
+
+
+/* =========================================================
+   GENDER BADGE
+========================================================= */
+
+.gender-badge {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 4px;
+
+  padding: 4px 7px;
+
+  border-radius: 5px;
+
+  background: #f2f6f9;
+
+  border: 1px solid #dbe4ea;
+
+  color: #536d7d;
+
+  font-size: 10px;
+
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   SESSION BADGE
+========================================================= */
+
+.session-badge {
+  display: inline-flex;
+
+  align-items: center;
+
+  padding: 4px 7px;
+
+  border-radius: 5px;
+
+  background: #edf5fa;
+
+  border: 1px solid #d6e5ee;
+
+  color: #356783;
+
+  font-size: 10px;
+
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   STATUS BADGES
+========================================================= */
+
+.status-badge {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 4px;
+
+  padding: 5px 7px;
+
+  border-radius: 5px;
+
+  font-size: 9px;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+.status-badge.checked-in {
+  background: #fff6e8;
+
+  border: 1px solid #ecd7ad;
+
+  color: #a26a0c;
+}
+
+.status-badge.completed {
   background: #f1f5f7;
 
-}
+  border: 1px solid #d8e1e6;
 
-.visitor-modal::-webkit-scrollbar-thumb {
-
-  background: #bfd3df;
-
-  border-radius: 10px;
-
-}
-
-.visitor-modal::-webkit-scrollbar-thumb:hover {
-
-  background: #9fb9c8;
-
+  color: #587080;
 }
 
 
-/* =====================================================
-   RESPONSIVE - TABLET
-===================================================== */
+/* =========================================================
+   NO VISITORS
+========================================================= */
 
-@media (max-width: 900px) {
+.no-visitors {
+  display: flex;
 
-  .visitor-container {
+  flex-direction: column;
 
-    padding: 20px;
+  align-items: center;
 
-  }
+  justify-content: center;
+
+  min-height: 180px;
+
+  padding: 25px;
+
+  color: #81909b;
+
+  text-align: center;
+}
+
+.no-visitors i {
+  font-size: 35px;
+
+  color: #a8b7c1;
+
+  margin-bottom: 9px;
+}
+
+.no-visitors strong {
+  color: #536b7a;
+
+  font-size: 14px;
+
+  margin-bottom: 4px;
+}
+
+.no-visitors span {
+  color: #8a98a2;
+
+  font-size: 11px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1100px) {
 
   .session-card {
-
-    flex-direction: column;
-
     align-items: flex-start;
 
+    flex-direction: column;
   }
 
-  .session-buttons {
-
-    width: 100%;
-
+  .patient-info {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
   }
 
-  .session-buttons button {
-
-    flex: 1;
-
-  }
-
-  .visitor-modal {
-
-    max-width: 720px;
-
+  .visitor-summary {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
   }
 
   .pagination-container {
-
-    justify-content: center;
-
+    flex-wrap: wrap;
   }
 
 }
 
 
-/* =====================================================
-   RESPONSIVE - MOBILE
-===================================================== */
-
-@media (max-width: 600px) {
+@media (max-width: 768px) {
 
   .visitor-container {
-
-    padding: 15px;
-
+    padding: 18px;
   }
 
   .page-header h1 {
-
     font-size: 24px;
-
   }
 
   .session-buttons {
-
-    flex-direction: column;
-
     width: 100%;
-
   }
 
   .session-buttons button {
-
-    width: 100%;
-
+    flex: 1;
   }
 
   .patient-info {
-
-    grid-template-columns: 1fr;
-
-    margin: 15px;
-
-  }
-
-  .visitor-modal {
-
-    max-height: 95vh;
-
-    border-radius: 10px;
-
-  }
-
-  .modal-header {
-
-    padding: 16px;
-
-  }
-
-  .visitor-modal form {
-
-    padding: 0 16px 16px;
-
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
   }
 
   .form-grid {
-
     grid-template-columns: 1fr;
-
-    gap: 14px;
-
-  }
-
-  .form-actions {
-
-    flex-direction: column;
-
-  }
-
-  .save-button,
-
-  .cancel-button {
-
-    width: 100%;
-
   }
 
   .pagination-container {
+    align-items: flex-start;
 
     flex-direction: column;
-
-    align-items: stretch;
-
-  }
-
-  .pagination-info {
-
-    text-align: center;
-
-  }
-
-  .page-size {
-
-    justify-content: center;
-
   }
 
   .pagination-buttons {
+    width: 100%;
 
-    justify-content: center;
+    overflow-x: auto;
 
-    flex-wrap: wrap;
-
+    padding-bottom: 3px;
   }
 
-  .page-button.previous,
-
-  .page-button.next {
-
-    min-width: 90px;
-
+  .visitor-modal {
+    max-height: 95vh;
   }
 
 }
 
 
-/* =====================================================
-   VERY SMALL DEVICES
-===================================================== */
-
-@media (max-width: 400px) {
+@media (max-width: 500px) {
 
   .visitor-container {
-
-    padding: 10px;
-
+    padding: 12px;
   }
 
-  .patient-info {
-
-    margin: 10px;
-
+  .session-buttons {
+    flex-direction: column;
   }
 
-  .modal-header h2 {
-
-    font-size: 18px;
-
+  .session-buttons button {
+    width: 100%;
   }
 
-  .form-group input,
-
-  .form-group select {
-
-    height: 42px;
-
+  .patient-info,
+  .visitor-summary {
+    grid-template-columns: 1fr;
   }
 
-  .pagination-buttons {
-
-    gap: 3px;
-
+  .visitor-modal form {
+    padding: 15px;
   }
 
-  .page-button {
+  .visitor-modal .modal-header {
+    padding: 15px;
+  }
 
-    min-width: 31px;
+  .visitor-details-table {
+    padding: 15px 10px 5px;
+  }
 
-    height: 32px;
+  .form-actions {
+    flex-direction: column-reverse;
 
-    padding: 0 7px;
+    align-items: stretch;
+  }
 
+  .cancel-button,
+  .save-button {
+    width: 100%;
   }
 
 }

@@ -114,7 +114,9 @@
 
   border-radius: 8px;
 
-  box-shadow: 0 2px 7px rgba(31, 72, 94, 0.05);
+  box-shadow:
+    0 2px 7px
+    rgba(31, 72, 94, 0.05);
 
 }
 
@@ -408,6 +410,7 @@
 
 /* =====================================================
    SUMMARY ITEMS
+   TOTAL + MORNING + DAY + EVENING + INSIDE
 ===================================================== */
 
 .summary-items {
@@ -415,7 +418,7 @@
   display: grid;
 
   grid-template-columns:
-    repeat(4, minmax(0, 1fr));
+    repeat(5, minmax(0, 1fr));
 
   gap: 13px;
 
@@ -430,6 +433,8 @@
 
   gap: 11px;
 
+  min-width: 0;
+
   padding: 14px;
 
   background: #f8fafc;
@@ -437,6 +442,22 @@
   border: 1px solid #e2e9ee;
 
   border-radius: 9px;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+
+}
+
+
+.summary-item:hover {
+
+  background: #f5f9fc;
+
+  border-color: #d3e0e8;
+
+  transform: translateY(-1px);
 
 }
 
@@ -483,6 +504,8 @@
 
   font-size: 11px;
 
+  white-space: nowrap;
+
 }
 
 
@@ -493,6 +516,58 @@
   font-size: 20px;
 
   font-weight: 700;
+
+}
+
+
+/* =====================================================
+   MORNING SESSION
+===================================================== */
+
+.summary-item:nth-child(2) .summary-item-icon {
+
+  background: #fff8e5;
+
+  color: #a06b00;
+
+}
+
+
+/* =====================================================
+   DAY SESSION
+===================================================== */
+
+.summary-item:nth-child(3) .summary-item-icon {
+
+  background: #fff4e1;
+
+  color: #93651e;
+
+}
+
+
+/* =====================================================
+   EVENING SESSION
+===================================================== */
+
+.summary-item:nth-child(4) .summary-item-icon {
+
+  background: #eef0f6;
+
+  color: #58657a;
+
+}
+
+
+/* =====================================================
+   CURRENTLY INSIDE
+===================================================== */
+
+.summary-item:nth-child(5) .summary-item-icon {
+
+  background: #e9f3f8;
+
+  color: #2f7395;
 
 }
 
@@ -771,6 +846,23 @@ tbody tr:last-child td {
 }
 
 
+/* =====================================================
+   MORNING
+===================================================== */
+
+.session-badge.morning {
+
+  background: #fff8e5;
+
+  color: #a06b00;
+
+}
+
+
+/* =====================================================
+   DAY
+===================================================== */
+
 .session-badge.day {
 
   background: #fff4e1;
@@ -779,6 +871,10 @@ tbody tr:last-child td {
 
 }
 
+
+/* =====================================================
+   EVENING
+===================================================== */
 
 .session-badge.evening {
 
@@ -827,6 +923,10 @@ tbody tr:last-child td {
 }
 
 
+/* =====================================================
+   CHECKED IN
+===================================================== */
+
 .status-badge.checked-in {
 
   background: #e8f3f8;
@@ -835,6 +935,10 @@ tbody tr:last-child td {
 
 }
 
+
+/* =====================================================
+   COMPLETED
+===================================================== */
 
 .status-badge.completed {
 
@@ -908,6 +1012,22 @@ tbody tr:last-child td {
 
 
 /* =====================================================
+   RESPONSIVE - 1400px
+===================================================== */
+
+@media (max-width: 1400px) {
+
+  .summary-items {
+
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+
+  }
+
+}
+
+
+/* =====================================================
    RESPONSIVE - 1200px
 ===================================================== */
 
@@ -952,6 +1072,14 @@ tbody tr:last-child td {
 
 
   .stats-grid {
+
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+  }
+
+
+  .summary-items {
 
     grid-template-columns:
       repeat(2, minmax(0, 1fr));
@@ -1078,7 +1206,7 @@ tbody tr:last-child td {
 
 
 /* =====================================================
-   SMALL MOBILE
+   SMALL MOBILE - 400px
 ===================================================== */
 
 @media (max-width: 400px) {
@@ -1122,6 +1250,24 @@ tbody tr:last-child td {
   .stat-content strong {
 
     font-size: 23px;
+
+  }
+
+
+  .summary-item {
+
+    padding: 12px;
+
+  }
+
+
+  .summary-item-icon {
+
+    width: 38px;
+
+    height: 38px;
+
+    min-width: 38px;
 
   }
 

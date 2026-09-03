@@ -3,17 +3,14 @@ export type VisitSession =
   | 'Day'
   | 'Evening';
 
-
 export type VisitSlot =
   | 1
   | 2
   | 3;
 
-
 export type VisitorGender =
   | 'Male'
   | 'Female';
-
 
 export interface Visit {
 
@@ -27,10 +24,6 @@ export interface Visit {
 
   ward: string;
 
-
-  // =========================
-  // VISITOR INFORMATION
-  // =========================
 
   visitorFirstName: string;
 
@@ -47,10 +40,6 @@ export interface Visit {
   visitorRelation: string;
 
 
-  // =========================
-  // VISIT INFORMATION
-  // =========================
-
   session: VisitSession;
 
   slot: VisitSlot;
@@ -66,5 +55,4 @@ export interface Visit {
   status:
     | 'Checked In'
     | 'Completed';
-
 }

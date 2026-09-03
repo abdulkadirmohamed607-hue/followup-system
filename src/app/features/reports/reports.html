@@ -1,48 +1,47 @@
-<div class="reports-container">
+<div class="reports-page">
 
-  <!-- =====================================================
-       HEADER
-       ===================================================== -->
+  <!-- =========================================================
+       PAGE HEADER
+       ========================================================= -->
+  <div class="reports-header">
 
-  <div class="page-header">
+    <div class="header-left">
+      <div class="header-icon">
+        <i class="bi bi-bar-chart-line-fill"></i>
+      </div>
 
-    <div>
-      <h1>Visit Reports</h1>
-
-      <p>
-        Patient visitor attendance and visit duration
-      </p>
+      <div>
+        <h1>Visit Reports</h1>
+        <p>Patient and visitor attendance reports</p>
+      </div>
     </div>
 
-
-    <div class="report-actions">
+    <div class="header-actions">
 
       <button
         type="button"
-        class="pdf-button"
+        class="btn-report btn-pdf"
         (click)="exportPDF()"
       >
-        <i class="bi bi-file-earmark-pdf me-1"></i>
-        Export PDF
+        <i class="bi bi-file-earmark-pdf-fill"></i>
+        PDF
       </button>
-
 
       <button
         type="button"
-        class="excel-button"
+        class="btn-report btn-excel"
         (click)="exportExcel()"
       >
-        <i class="bi bi-file-earmark-excel me-1"></i>
-        Export Excel
+        <i class="bi bi-file-earmark-excel-fill"></i>
+        Excel
       </button>
-
 
       <button
         type="button"
-        class="print-button"
+        class="btn-report btn-print"
         (click)="printReport()"
       >
-        <i class="bi bi-printer me-1"></i>
+        <i class="bi bi-printer-fill"></i>
         Print
       </button>
 
@@ -51,156 +50,349 @@
   </div>
 
 
-  <!-- =====================================================
-       SUMMARY
-       ===================================================== -->
-
+  <!-- =========================================================
+       SUMMARY CARDS
+       ========================================================= -->
   <div class="summary-grid">
 
+    <!-- TOTAL PATIENTS -->
     <div class="summary-card">
-      <span>Total Patients Visited</span>
-      <strong>{{ totalPatients }}</strong>
+      <div class="summary-icon blue">
+        <i class="bi bi-person-check-fill"></i>
+      </div>
+
+      <div class="summary-content">
+        <span>Total Patients Visited</span>
+        <strong>{{ totalPatients }}</strong>
+      </div>
     </div>
 
 
+    <!-- TOTAL VISITS -->
     <div class="summary-card">
-      <span>Total Visits</span>
-      <strong>{{ totalVisits }}</strong>
+      <div class="summary-icon purple">
+        <i class="bi bi-people-fill"></i>
+      </div>
+
+      <div class="summary-content">
+        <span>Total Visits</span>
+        <strong>{{ totalVisits }}</strong>
+      </div>
     </div>
 
 
+    <!-- MORNING -->
     <div class="summary-card">
-      <span>Day Visits</span>
-      <strong>{{ dayVisits }}</strong>
+      <div class="summary-icon morning">
+        <i class="bi bi-sunrise-fill"></i>
+      </div>
+
+      <div class="summary-content">
+        <span>Morning Visits</span>
+        <strong>{{ morningVisits }}</strong>
+      </div>
     </div>
 
 
+    <!-- DAY -->
     <div class="summary-card">
-      <span>Evening Visits</span>
-      <strong>{{ eveningVisits }}</strong>
+      <div class="summary-icon day">
+        <i class="bi bi-sun-fill"></i>
+      </div>
+
+      <div class="summary-content">
+        <span>Day Visits</span>
+        <strong>{{ dayVisits }}</strong>
+      </div>
     </div>
 
 
+    <!-- EVENING -->
     <div class="summary-card">
-      <span>Completed</span>
-      <strong>{{ completedVisits }}</strong>
+      <div class="summary-icon evening">
+        <i class="bi bi-sunset-fill"></i>
+      </div>
+
+      <div class="summary-content">
+        <span>Evening Visits</span>
+        <strong>{{ eveningVisits }}</strong>
+      </div>
+    </div>
+
+
+    <!-- COMPLETED -->
+    <div class="summary-card">
+      <div class="summary-icon completed">
+        <i class="bi bi-check-circle-fill"></i>
+      </div>
+
+      <div class="summary-content">
+        <span>Completed</span>
+        <strong>{{ completedVisits }}</strong>
+      </div>
     </div>
 
   </div>
 
 
-  <!-- =====================================================
-       FILTERS
-       ===================================================== -->
+  <!-- =========================================================
+       FILTER SECTION
+       ========================================================= -->
+  <div class="filter-card">
 
-  <div class="filters">
+    <div class="filter-header">
 
-    <!-- SEARCH -->
+      <div class="filter-title">
+        <i class="bi bi-funnel-fill"></i>
+        <span>Report Filters</span>
+      </div>
 
-    <div class="search-box">
-
-      <i class="bi bi-search"></i>
-
-      <input
-        type="text"
-        placeholder="Search patient, visitor, phone, gender, relation or ward..."
-        [(ngModel)]="searchText"
-        (input)="onFilterChange()"
-      />
-
-    </div>
-
-
-    <!-- SESSION -->
-
-    <div class="filter-box">
-
-      <select
-        [(ngModel)]="selectedSession"
-        (change)="onFilterChange()"
+      <button
+        type="button"
+        class="reset-btn"
+        (click)="resetFilters()"
       >
-
-        <option value="All">
-          All Sessions
-        </option>
-
-        <option value="Day">
-          Day
-        </option>
-
-        <option value="Evening">
-          Evening
-        </option>
-
-      </select>
+        <i class="bi bi-arrow-counterclockwise"></i>
+        Reset Filters
+      </button>
 
     </div>
 
 
-    <!-- STATUS -->
+    <div class="filters-grid">
 
-    <div class="filter-box">
+      <!-- SEARCH -->
+      <div class="filter-group search-group">
 
-      <select
-        [(ngModel)]="selectedStatus"
-        (change)="onFilterChange()"
-      >
+        <label for="search">
+          Search
+        </label>
 
-        <option value="All">
-          All Status
-        </option>
+        <div class="input-with-icon">
 
-        <option value="Checked In">
-          Checked In
-        </option>
+          <i class="bi bi-search"></i>
 
-        <option value="Completed">
-          Completed
-        </option>
+          <input
+            id="search"
+            type="text"
+            class="form-control"
+            placeholder="Patient, visitor, phone..."
+            [(ngModel)]="searchText"
+            (ngModelChange)="onFilterChange()"
+          />
 
-      </select>
+        </div>
+
+      </div>
+
+
+      <!-- SESSION -->
+      <div class="filter-group">
+
+        <label for="session">
+          Session
+        </label>
+
+        <select
+          id="session"
+          class="form-select"
+          [(ngModel)]="selectedSession"
+          (ngModelChange)="onFilterChange()"
+        >
+
+          <option value="All">
+            All Sessions
+          </option>
+
+          <option value="Morning">
+            Morning
+          </option>
+
+          <option value="Day">
+            Day
+          </option>
+
+          <option value="Evening">
+            Evening
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- STATUS -->
+      <div class="filter-group">
+
+        <label for="status">
+          Status
+        </label>
+
+        <select
+          id="status"
+          class="form-select"
+          [(ngModel)]="selectedStatus"
+          (ngModelChange)="onFilterChange()"
+        >
+
+          <option value="All">
+            All Status
+          </option>
+
+          <option value="Checked In">
+            Checked In
+          </option>
+
+          <option value="Completed">
+            Completed
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- DATE FROM -->
+      <div class="filter-group">
+
+        <label for="dateFrom">
+          Date From
+        </label>
+
+        <div class="date-input-wrapper">
+
+          <i class="bi bi-calendar3"></i>
+
+          <input
+            id="dateFrom"
+            type="date"
+            class="form-control"
+            [(ngModel)]="dateFrom"
+            [max]="dateTo || null"
+            (ngModelChange)="onFilterChange()"
+          />
+
+        </div>
+
+      </div>
+
+
+      <!-- DATE TO -->
+      <div class="filter-group">
+
+        <label for="dateTo">
+          Date To
+        </label>
+
+        <div class="date-input-wrapper">
+
+          <i class="bi bi-calendar3"></i>
+
+          <input
+            id="dateTo"
+            type="date"
+            class="form-control"
+            [(ngModel)]="dateTo"
+            [min]="dateFrom || null"
+            (ngModelChange)="onFilterChange()"
+          />
+
+        </div>
+
+      </div>
 
     </div>
 
 
-    <!-- DATE -->
-
-    <div class="date-filter">
-
-      <input
-        type="date"
-        [(ngModel)]="selectedDate"
-        (change)="onFilterChange()"
-      />
-
-    </div>
-
-
-    <!-- RESET -->
-
-    <button
-      type="button"
-      class="reset-button"
-      (click)="resetFilters()"
-      title="Reset Filters"
+    <!-- DATE RANGE INFORMATION -->
+    <div
+      class="date-range-info"
+      *ngIf="dateFrom || dateTo"
     >
 
-      <i class="bi bi-arrow-clockwise"></i>
+      <i class="bi bi-calendar-range"></i>
 
-    </button>
+      <span *ngIf="dateFrom && dateTo">
+        Showing visits from
+        <strong>{{ formatDate(dateFrom) }}</strong>
+        to
+        <strong>{{ formatDate(dateTo) }}</strong>
+      </span>
+
+      <span *ngIf="dateFrom && !dateTo">
+        Showing visits from
+        <strong>{{ formatDate(dateFrom) }}</strong>
+        onwards
+      </span>
+
+      <span *ngIf="!dateFrom && dateTo">
+        Showing visits up to
+        <strong>{{ formatDate(dateTo) }}</strong>
+      </span>
+
+    </div>
+
+
+    <!-- INVALID DATE RANGE -->
+    <div
+      class="filter-warning"
+      *ngIf="isInvalidDateRange"
+    >
+
+      <i class="bi bi-exclamation-triangle-fill"></i>
+
+      <span>
+        Date From cannot be later than Date To.
+      </span>
+
+    </div>
 
   </div>
 
 
-  <!-- =====================================================
-       REPORT TABLE
-       ===================================================== -->
+  <!-- =========================================================
+       RESULTS HEADER
+       ========================================================= -->
+  <div class="results-header">
 
-  <div class="report-table">
+    <div class="results-title">
+
+      <div class="results-icon">
+        <i class="bi bi-table"></i>
+      </div>
+
+      <div>
+        <h2>Visit Records</h2>
+
+        <span>
+          Showing {{ filteredVisits.length }} record(s)
+        </span>
+      </div>
+
+    </div>
+
+
+    <div class="results-date">
+
+      <i class="bi bi-calendar-check"></i>
+
+      <span>
+        {{ selectedSession === 'All' ? 'All Sessions' : selectedSession }}
+      </span>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================================================
+       TABLE
+       ========================================================= -->
+  <div class="table-card">
 
     <div class="table-responsive">
 
-      <table id="reportTable">
+      <table class="reports-table">
 
         <thead>
 
@@ -243,192 +435,268 @@
 
         <tbody>
 
-          @for (
-            visit of paginatedVisits;
-            track visit.id;
-            let i = $index
-          ) {
+          <!-- DATA -->
+          <tr
+            *ngFor="
+              let visit of paginatedVisits;
+              let i = index
+            "
+          >
 
-            <tr>
-
-              <!-- NUMBER -->
-
-              <td>
-                {{ startItem + i }}
-              </td>
-
-
-              <!-- PATIENT -->
-
-              <td>
-                <strong>
-                  {{ visit.patientName }}
-                </strong>
-              </td>
+            <!-- NUMBER -->
+            <td class="row-number">
+              {{ (currentPage - 1) * pageSize + i + 1 }}
+            </td>
 
 
-              <!-- PATIENT NUMBER -->
+            <!-- PATIENT -->
+            <td>
 
-              <td>
+              <div class="patient-cell">
 
-                <span class="patient-number">
-                  {{ visit.patientNumber }}
-                </span>
+                <div class="patient-avatar">
+                  <i class="bi bi-person-fill"></i>
+                </div>
 
-              </td>
+                <div class="patient-info">
 
+                  <strong>
+                    {{ visit.patientName }}
+                  </strong>
 
-              <!-- WARD -->
+                </div>
 
-              <td>
+              </div>
 
-                <span class="ward-badge">
-                  {{ visit.ward }}
-                </span>
-
-              </td>
-
-
-              <!-- VISITOR -->
-
-              <td>
-                {{ visitorName(visit) }}
-              </td>
+            </td>
 
 
-              <!-- PHONE -->
+            <!-- PATIENT NUMBER -->
+            <td>
 
-              <td>
-                {{ visit.visitorPhone || '-' }}
-              </td>
+              <span class="patient-number">
+                {{ visit.patientNumber }}
+              </span>
 
-
-              <!-- GENDER -->
-
-              <td>
-                {{ visit.visitorGender || '-' }}
-              </td>
+            </td>
 
 
-              <!-- RELATION -->
+            <!-- WARD -->
+            <td>
 
-              <td>
-                {{ visit.visitorRelation || '-' }}
-              </td>
+              <span class="ward-badge">
+                {{ visit.ward }}
+              </span>
 
-
-              <!-- SESSION -->
-
-              <td>
-
-                <span
-                  class="session-badge"
-                  [class.evening]="
-                    visit.session === 'Evening'
-                  "
-                >
-                  {{ visit.session }}
-                </span>
-
-              </td>
+            </td>
 
 
-              <!-- SLOT -->
+            <!-- VISITOR -->
+            <td>
 
-              <td>
+              <div class="visitor-name">
+
+                {{
+                  visit.visitorFirstName
+                }}
+                {{
+                  visit.visitorSecondName
+                }}
+                {{
+                  visit.visitorLastName
+                }}
+
+              </div>
+
+            </td>
+
+
+            <!-- PHONE -->
+            <td>
+
+              <span class="phone-number">
+                <i class="bi bi-telephone-fill"></i>
+                {{ visit.visitorPhone }}
+              </span>
+
+            </td>
+
+
+            <!-- GENDER -->
+            <td>
+
+              <span
+                class="gender-badge"
+                [class.male]="visit.visitorGender === 'Male'"
+                [class.female]="visit.visitorGender === 'Female'"
+              >
+
+                <i
+                  class="bi"
+                  [class.bi-gender-male]="visit.visitorGender === 'Male'"
+                  [class.bi-gender-female]="visit.visitorGender === 'Female'"
+                ></i>
+
+                {{ visit.visitorGender }}
+
+              </span>
+
+            </td>
+
+
+            <!-- RELATION -->
+            <td>
+
+              <span class="relation-text">
+                {{ visit.visitorRelation }}
+              </span>
+
+            </td>
+
+
+            <!-- SESSION -->
+            <td>
+
+              <span
+                class="session-badge"
+                [class.session-morning]="visit.session === 'Morning'"
+                [class.session-day]="visit.session === 'Day'"
+                [class.session-evening]="visit.session === 'Evening'"
+              >
+
+                <i
+                  class="bi"
+                  [class.bi-sunrise-fill]="visit.session === 'Morning'"
+                  [class.bi-sun-fill]="visit.session === 'Day'"
+                  [class.bi-sunset-fill]="visit.session === 'Evening'"
+                ></i>
+
+                {{ visit.session }}
+
+              </span>
+
+            </td>
+
+
+            <!-- SLOT -->
+            <td>
+
+              <span class="slot-badge">
                 Visitor {{ visit.slot }}
-              </td>
+              </span>
+
+            </td>
 
 
-              <!-- DATE -->
+            <!-- DATE -->
+            <td>
 
-              <td>
-                {{ visit.visitDate }}
-              </td>
+              <span class="date-text">
+                {{ formatDate(visit.visitDate) }}
+              </span>
+
+            </td>
 
 
-              <!-- CHECK IN -->
+            <!-- CHECK IN -->
+            <td>
 
-              <td>
+              <span class="time-text">
                 {{ formatTime(visit.checkIn) }}
-              </td>
+              </span>
+
+            </td>
 
 
-              <!-- CHECK OUT -->
+            <!-- CHECK OUT -->
+            <td>
 
-              <td>
-                {{ formatTime(visit.checkOut) }}
-              </td>
+              <span
+                class="time-text"
+                [class.no-checkout]="!visit.checkOut"
+              >
+
+                {{
+                  visit.checkOut
+                    ? formatTime(visit.checkOut)
+                    : '-'
+                }}
+
+              </span>
+
+            </td>
 
 
-              <!-- DURATION -->
+            <!-- DURATION -->
+            <td>
 
-              <td>
+              <span class="duration-text">
 
-                <strong>
-                  {{ formatDuration(visit.durationMinutes) }}
-                </strong>
+                {{
+                  visit.durationMinutes !== null
+                    ? formatDuration(visit.durationMinutes)
+                    : '-'
+                }}
 
-              </td>
+              </span>
+
+            </td>
 
 
-              <!-- STATUS -->
+            <!-- STATUS -->
+            <td>
 
-              <td>
+              <span
+                class="status-badge"
+                [class.status-completed]="visit.status === 'Completed'"
+                [class.status-checked]="visit.status === 'Checked In'"
+              >
 
-                @if (
-                  visit.status === 'Completed'
-                ) {
+                <i
+                  class="bi"
+                  [class.bi-check-circle-fill]="visit.status === 'Completed'"
+                  [class.bi-clock-fill]="visit.status === 'Checked In'"
+                ></i>
 
-                  <span class="completed">
-                    <i class="bi bi-check-circle me-1"></i>
-                    Completed
-                  </span>
+                {{ visit.status }}
 
-                }
+              </span>
 
-                @else {
+            </td>
 
-                  <span class="checked-in">
-                    <i class="bi bi-clock me-1"></i>
-                    Checked In
-                  </span>
-
-                }
-
-              </td>
-
-            </tr>
-
-          }
+          </tr>
 
 
           <!-- EMPTY -->
+          <tr *ngIf="paginatedVisits.length === 0">
 
-          @if (paginatedVisits.length === 0) {
+            <td
+              colspan="15"
+              class="empty-state"
+            >
 
-            <tr>
+              <div class="empty-icon">
+                <i class="bi bi-inbox"></i>
+              </div>
 
-              <td
-                colspan="15"
-                class="no-data"
+              <h3>No Visit Records Found</h3>
+
+              <p>
+                No visits match the selected filters.
+              </p>
+
+              <button
+                type="button"
+                class="empty-reset-btn"
+                (click)="resetFilters()"
               >
+                <i class="bi bi-arrow-counterclockwise"></i>
+                Reset Filters
+              </button>
 
-                <i class="bi bi-clipboard-x"></i>
+            </td>
 
-                <strong>
-                  No visit records found
-                </strong>
-
-                <span>
-                  Try changing your search or filter.
-                </span>
-
-              </td>
-
-            </tr>
-
-          }
+          </tr>
 
         </tbody>
 
@@ -437,152 +705,103 @@
     </div>
 
 
-    <!-- =====================================================
+    <!-- =======================================================
          PAGINATION
-         ===================================================== -->
+         ======================================================= -->
+    <div
+      class="pagination-section"
+      *ngIf="filteredVisits.length > 0"
+    >
 
-    @if (filteredVisits.length > 0) {
+      <!-- LEFT -->
+      <div class="pagination-info">
 
-      <div class="pagination-section">
+        Showing
 
+        <strong>
+          {{ paginationStart }}
+        </strong>
 
-        <!-- INFO -->
+        to
 
-        <div class="pagination-info">
+        <strong>
+          {{ paginationEnd }}
+        </strong>
 
-          Showing
+        of
 
-          <strong>
-            {{ startItem }}
-          </strong>
+        <strong>
+          {{ filteredVisits.length }}
+        </strong>
 
-          -
-
-          <strong>
-            {{ endItem }}
-          </strong>
-
-          of
-
-          <strong>
-            {{ filteredVisits.length }}
-          </strong>
-
-          visits
-
-        </div>
-
-
-        <!-- CONTROLS -->
-
-        <div class="pagination-controls">
-
-
-          <!-- PAGE SIZE -->
-
-          <div class="page-size">
-
-            <span>
-              Show
-            </span>
-
-            <select
-              [value]="pageSize"
-              (change)="
-                onPageSizeChange(
-                  $any($event.target).value
-                )
-              "
-            >
-
-              <option value="10">
-                10
-              </option>
-
-              <option value="20">
-                20
-              </option>
-
-              <option value="30">
-                30
-              </option>
-
-              <option value="50">
-                50
-              </option>
-
-              <option value="100">
-                100
-              </option>
-
-            </select>
-
-            <span>
-              per page
-            </span>
-
-          </div>
-
-
-          <!-- PREVIOUS -->
-
-          <button
-            type="button"
-            class="page-button"
-            [disabled]="currentPage === 1"
-            (click)="previousPage()"
-            title="Previous page"
-          >
-
-            <i class="bi bi-chevron-left"></i>
-
-          </button>
-
-
-          <!-- PAGE NUMBERS -->
-
-          @for (
-            page of pageNumbers;
-            track page
-          ) {
-
-            <button
-              type="button"
-              class="page-button"
-              [class.active]="
-                currentPage === page
-              "
-              (click)="goToPage(page)"
-            >
-
-              {{ page }}
-
-            </button>
-
-          }
-
-
-          <!-- NEXT -->
-
-          <button
-            type="button"
-            class="page-button"
-            [disabled]="
-              currentPage === totalPages
-            "
-            (click)="nextPage()"
-            title="Next page"
-          >
-
-            <i class="bi bi-chevron-right"></i>
-
-          </button>
-
-        </div>
+        records
 
       </div>
 
-    }
+
+      <!-- PAGE SIZE -->
+      <div class="page-size-control">
+
+        <label for="pageSize">
+          Rows:
+        </label>
+
+        <select
+          id="pageSize"
+          class="form-select"
+          [(ngModel)]="pageSize"
+          (ngModelChange)="changePageSize()"
+        >
+
+          <option [ngValue]="10">10</option>
+          <option [ngValue]="20">20</option>
+          <option [ngValue]="30">30</option>
+          <option [ngValue]="50">50</option>
+          <option [ngValue]="100">100</option>
+
+        </select>
+
+      </div>
+
+
+      <!-- PAGINATION BUTTONS -->
+      <div class="pagination-buttons">
+
+        <button
+          type="button"
+          class="page-btn"
+          [disabled]="currentPage === 1"
+          (click)="previousPage()"
+        >
+          <i class="bi bi-chevron-left"></i>
+        </button>
+
+
+        <button
+          type="button"
+          class="page-number"
+          *ngFor="let page of pageNumbers"
+          [class.active]="page === currentPage"
+          (click)="goToPage(page)"
+        >
+
+          {{ page }}
+
+        </button>
+
+
+        <button
+          type="button"
+          class="page-btn"
+          [disabled]="currentPage === totalPages"
+          (click)="nextPage()"
+        >
+          <i class="bi bi-chevron-right"></i>
+        </button>
+
+      </div>
+
+    </div>
 
   </div>
 

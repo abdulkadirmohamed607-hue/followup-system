@@ -22,7 +22,6 @@ import {
 
 
 @Component({
-
   selector: 'app-reports',
 
   standalone: true,
@@ -34,57 +33,67 @@ import {
 
   templateUrl: './reports.html',
 
-  styleUrl: './reports.css'
-
+  styleUrls: ['./reports.css']
 })
 export class Reports implements OnInit {
 
-
-  // =====================================================
-  // VISITS
-  // =====================================================
+  /* =========================================================
+     ALL VISITS
+     ========================================================= */
 
   visits: Visit[] = [];
 
 
-  // =====================================================
-  // FILTERS
-  // =====================================================
+  /* =========================================================
+     FILTERS
+     ========================================================= */
 
   searchText = '';
 
-  selectedSession:
-    VisitSession | 'All' = 'All';
+  selectedSession: VisitSession | 'All' = 'All';
 
   selectedStatus:
-    'Checked In' |
-    'Completed' |
-    'All' = 'All';
-
-  selectedDate = '';
+    | 'Checked In'
+    | 'Completed'
+    | 'All' = 'All';
 
 
-  // =====================================================
-  // PAGINATION
-  // =====================================================
+  /*
+   * DATE RANGE
+   *
+   * Example:
+   * dateFrom = 2026-01-01
+   * dateTo   = 2026-04-30
+   *
+   * This will return January through April.
+   */
+
+  dateFrom = '';
+
+  dateTo = '';
+
+
+  /* =========================================================
+     PAGINATION
+     ========================================================= */
 
   currentPage = 1;
 
   pageSize = 10;
 
 
-  // =====================================================
-  // CONSTRUCTOR
-  // =====================================================
+  /* =========================================================
+     CONSTRUCTOR
+     ========================================================= */
 
   constructor(
     private visitService: VisitService
   ) {}
 
 
-  // =====================================================
-  // INIT
-  // =====================================================
+  /* =========================================================
+     INIT
+     ========================================================= */
 
   ngOnInit(): void {
 
@@ -93,155 +102,161 @@ export class Reports implements OnInit {
   }
 
 
-  // =====================================================
-  // LOAD VISITS
-  // =====================================================
+  /* =========================================================
+     LOAD VISITS
+     ========================================================= */
 
   loadVisits(): void {
 
-    this.visits =
-      this.visitService.getVisits();
+    /*
+     * VisitService reads visits from localStorage.
+     *
+     * We intentionally get all stored visits here,
+     * then apply report filters below.
+     */
+
+     this.visits = this.visitService.getVisits();
 
   }
 
 
-  // =====================================================
-  // VISITOR NAME
-  // =====================================================
-
-  visitorName(
-    visit: Visit
-  ): string {
-
-    return [
-
-      visit.visitorFirstName,
-
-      visit.visitorSecondName,
-
-      visit.visitorLastName
-
-    ]
-
-      .filter(
-        name =>
-          !!name?.trim()
-      )
-
-      .join(' ');
-
-  }
-
-
-  // =====================================================
-  // FILTERED VISITS
-  // =====================================================
+  /* =========================================================
+     FILTERED VISITS
+     ========================================================= */
 
   get filteredVisits(): Visit[] {
 
-    const search =
-      this.searchText
-        .trim()
-        .toLowerCase();
+    const search = this.searchText
+      .trim()
+      .toLowerCase();
+
+
+    /*
+     * If user selects invalid date range,
+     * return no records.
+     */
+
+    if (this.isInvalidDateRange) {
+      return [];
+    }
 
 
     return this.visits.filter(
-      visit => {
+      (visit: Visit) => {
 
-        // -----------------------------------------------
-        // SAFE VALUES
-        // -----------------------------------------------
+        /* -----------------------------------------------------
+           SEARCH FILTER
+           ----------------------------------------------------- */
 
         const patientName =
-          visit.patientName ?? '';
+          visit.patientName?.toLowerCase() ?? '';
 
         const patientNumber =
-          visit.patientNumber ?? '';
+          visit.patientNumber?.toLowerCase() ?? '';
 
         const ward =
-          visit.ward ?? '';
+          visit.ward?.toLowerCase() ?? '';
+
+        const visitorFirstName =
+          visit.visitorFirstName?.toLowerCase() ?? '';
+
+        const visitorSecondName =
+          visit.visitorSecondName?.toLowerCase() ?? '';
+
+        const visitorLastName =
+          visit.visitorLastName?.toLowerCase() ?? '';
 
         const visitorPhone =
-          visit.visitorPhone ?? '';
+          visit.visitorPhone?.toLowerCase() ?? '';
 
-        const visitorGender =
-          visit.visitorGender ?? '';
+        const visitorCardNumber =
+          visit.visitorCardNumber?.toLowerCase() ?? '';
 
         const visitorRelation =
-          visit.visitorRelation ?? '';
+          visit.visitorRelation?.toLowerCase() ?? '';
 
-        const visitor =
-          this.visitorName(visit);
-
-
-        // -----------------------------------------------
-        // SEARCH
-        // -----------------------------------------------
 
         const matchesSearch =
           !search ||
 
-          patientName
-            .toLowerCase()
-            .includes(search) ||
+          patientName.includes(search) ||
 
-          patientNumber
-            .toLowerCase()
-            .includes(search) ||
+          patientNumber.includes(search) ||
 
-          ward
-            .toLowerCase()
-            .includes(search) ||
+          ward.includes(search) ||
 
-          visitor
-            .toLowerCase()
-            .includes(search) ||
+          visitorFirstName.includes(search) ||
 
-          visitorPhone
-            .toLowerCase()
-            .includes(search) ||
+          visitorSecondName.includes(search) ||
 
-          visitorGender
-            .toLowerCase()
-            .includes(search) ||
+          visitorLastName.includes(search) ||
 
-          visitorRelation
-            .toLowerCase()
-            .includes(search);
+          visitorPhone.includes(search) ||
+
+          visitorCardNumber.includes(search) ||
+
+          visitorRelation.includes(search);
 
 
-        // -----------------------------------------------
-        // SESSION
-        // -----------------------------------------------
+        /* -----------------------------------------------------
+           SESSION FILTER
+           ----------------------------------------------------- */
 
         const matchesSession =
           this.selectedSession === 'All' ||
 
-          visit.session ===
-            this.selectedSession;
+          visit.session === this.selectedSession;
 
 
-        // -----------------------------------------------
-        // STATUS
-        // -----------------------------------------------
+        /*
+         * IMPORTANT:
+         *
+         * All Sessions means:
+         *
+         * Morning
+         * Day
+         * Evening
+         *
+         * We don't need another special condition here.
+         *
+         * As long as the visit contains one of the three
+         * session values, it will be included.
+         */
+
+
+        /* -----------------------------------------------------
+           STATUS FILTER
+           ----------------------------------------------------- */
 
         const matchesStatus =
           this.selectedStatus === 'All' ||
 
-          visit.status ===
-            this.selectedStatus;
+          visit.status === this.selectedStatus;
 
 
-        // -----------------------------------------------
-        // DATE
-        // -----------------------------------------------
+        /* -----------------------------------------------------
+           DATE FROM
+           ----------------------------------------------------- */
 
-        const matchesDate =
-          !this.selectedDate ||
+        const matchesDateFrom =
+          !this.dateFrom ||
 
-          visit.visitDate ===
-            this.selectedDate;
+          visit.visitDate >= this.dateFrom;
 
+
+        /* -----------------------------------------------------
+           DATE TO
+           ----------------------------------------------------- */
+
+        const matchesDateTo =
+          !this.dateTo ||
+
+          visit.visitDate <= this.dateTo;
+
+
+        /* -----------------------------------------------------
+           RETURN FINAL RESULT
+           ----------------------------------------------------- */
 
         return (
 
@@ -251,7 +266,9 @@ export class Reports implements OnInit {
 
           matchesStatus &&
 
-          matchesDate
+          matchesDateFrom &&
+
+          matchesDateTo
 
         );
 
@@ -261,29 +278,44 @@ export class Reports implements OnInit {
   }
 
 
-  // =====================================================
-  // TOTAL PATIENTS
-  // =====================================================
+  /* =========================================================
+     INVALID DATE RANGE
+     ========================================================= */
 
-  get totalPatients(): number {
+  get isInvalidDateRange(): boolean {
 
-    const patientIds =
-      new Set(
-        this.filteredVisits.map(
-          visit =>
-            visit.patientId
-        )
-      );
+    if (!this.dateFrom || !this.dateTo) {
 
+      return false;
 
-    return patientIds.size;
+    }
+
+    return this.dateFrom > this.dateTo;
 
   }
 
 
-  // =====================================================
-  // TOTAL VISITS
-  // =====================================================
+  /* =========================================================
+     SUMMARY - TOTAL PATIENTS
+     ========================================================= */
+
+  get totalPatients(): number {
+
+    const uniquePatients =
+      new Set(
+        this.filteredVisits.map(
+          visit => visit.patientId
+        )
+      );
+
+    return uniquePatients.size;
+
+  }
+
+
+  /* =========================================================
+     SUMMARY - TOTAL VISITS
+     ========================================================= */
 
   get totalVisits(): number {
 
@@ -292,9 +324,23 @@ export class Reports implements OnInit {
   }
 
 
-  // =====================================================
-  // DAY VISITS
-  // =====================================================
+  /* =========================================================
+     SUMMARY - MORNING
+     ========================================================= */
+
+  get morningVisits(): number {
+
+    return this.filteredVisits.filter(
+      visit =>
+        visit.session === 'Morning'
+    ).length;
+
+  }
+
+
+  /* =========================================================
+     SUMMARY - DAY
+     ========================================================= */
 
   get dayVisits(): number {
 
@@ -306,9 +352,9 @@ export class Reports implements OnInit {
   }
 
 
-  // =====================================================
-  // EVENING VISITS
-  // =====================================================
+  /* =========================================================
+     SUMMARY - EVENING
+     ========================================================= */
 
   get eveningVisits(): number {
 
@@ -320,9 +366,9 @@ export class Reports implements OnInit {
   }
 
 
-  // =====================================================
-  // COMPLETED
-  // =====================================================
+  /* =========================================================
+     SUMMARY - COMPLETED
+     ========================================================= */
 
   get completedVisits(): number {
 
@@ -334,31 +380,29 @@ export class Reports implements OnInit {
   }
 
 
-  // =====================================================
-  // TOTAL PAGES
-  // =====================================================
+  /* =========================================================
+     PAGINATION - TOTAL PAGES
+     ========================================================= */
 
   get totalPages(): number {
 
-    const total =
-      this.filteredVisits.length;
-
-    if (total === 0) {
+    if (this.filteredVisits.length === 0) {
 
       return 1;
 
     }
 
     return Math.ceil(
-      total / this.pageSize
+      this.filteredVisits.length /
+      this.pageSize
     );
 
   }
 
 
-  // =====================================================
-  // PAGE NUMBERS
-  // =====================================================
+  /* =========================================================
+     PAGINATION - PAGE NUMBERS
+     ========================================================= */
 
   get pageNumbers(): number[] {
 
@@ -379,54 +423,19 @@ export class Reports implements OnInit {
   }
 
 
-  // =====================================================
-  // PAGINATED VISITS
-  // =====================================================
+  /* =========================================================
+     PAGINATION - PAGINATED VISITS
+     ========================================================= */
 
   get paginatedVisits(): Visit[] {
-
-    const total =
-      this.filteredVisits.length;
-
-
-    if (total === 0) {
-
-      return [];
-
-    }
-
-
-    /*
-     * Make sure current page
-     * never exceeds available pages.
-     */
-
-    if (
-      this.currentPage >
-      this.totalPages
-    ) {
-
-      this.currentPage =
-        this.totalPages;
-
-    }
-
-
-    if (this.currentPage < 1) {
-
-      this.currentPage = 1;
-
-    }
-
 
     const start =
       (this.currentPage - 1) *
       this.pageSize;
 
-
     const end =
-      start + this.pageSize;
-
+      start +
+      this.pageSize;
 
     return this.filteredVisits.slice(
       start,
@@ -436,20 +445,17 @@ export class Reports implements OnInit {
   }
 
 
-  // =====================================================
-  // START ITEM
-  // =====================================================
+  /* =========================================================
+     PAGINATION - START
+     ========================================================= */
 
-  get startItem(): number {
+  get paginationStart(): number {
 
-    if (
-      this.filteredVisits.length === 0
-    ) {
+    if (this.filteredVisits.length === 0) {
 
       return 0;
 
     }
-
 
     return (
       (this.currentPage - 1) *
@@ -459,39 +465,65 @@ export class Reports implements OnInit {
   }
 
 
-  // =====================================================
-  // END ITEM
-  // =====================================================
+  /* =========================================================
+     PAGINATION - END
+     ========================================================= */
 
-  get endItem(): number {
+  get paginationEnd(): number {
 
-    const total =
-      this.filteredVisits.length;
-
-
-    if (total === 0) {
+    if (this.filteredVisits.length === 0) {
 
       return 0;
 
     }
 
-
     return Math.min(
       this.currentPage *
-        this.pageSize,
-      total
+      this.pageSize,
+
+      this.filteredVisits.length
     );
 
   }
 
 
-  // =====================================================
-  // GO TO PAGE
-  // =====================================================
+  /* =========================================================
+     FILTER CHANGE
+     ========================================================= */
 
-  goToPage(
-    page: number
-  ): void {
+  onFilterChange(): void {
+
+    this.currentPage = 1;
+
+  }
+
+
+  /* =========================================================
+     RESET FILTERS
+     ========================================================= */
+
+  resetFilters(): void {
+
+    this.searchText = '';
+
+    this.selectedSession = 'All';
+
+    this.selectedStatus = 'All';
+
+    this.dateFrom = '';
+
+    this.dateTo = '';
+
+    this.currentPage = 1;
+
+  }
+
+
+  /* =========================================================
+     GO TO PAGE
+     ========================================================= */
+
+  goToPage(page: number): void {
 
     if (
       page < 1 ||
@@ -502,21 +534,18 @@ export class Reports implements OnInit {
 
     }
 
-
     this.currentPage = page;
 
   }
 
 
-  // =====================================================
-  // PREVIOUS PAGE
-  // =====================================================
+  /* =========================================================
+     PREVIOUS PAGE
+     ========================================================= */
 
   previousPage(): void {
 
-    if (
-      this.currentPage > 1
-    ) {
+    if (this.currentPage > 1) {
 
       this.currentPage--;
 
@@ -525,9 +554,9 @@ export class Reports implements OnInit {
   }
 
 
-  // =====================================================
-  // NEXT PAGE
-  // =====================================================
+  /* =========================================================
+     NEXT PAGE
+     ========================================================= */
 
   nextPage(): void {
 
@@ -543,56 +572,48 @@ export class Reports implements OnInit {
   }
 
 
-  // =====================================================
-  // PAGE SIZE CHANGE
-  // =====================================================
+  /* =========================================================
+     CHANGE PAGE SIZE
+     ========================================================= */
 
-  onPageSizeChange(
-    value: string
-  ): void {
+  changePageSize(): void {
 
-    const newSize =
-      Number(value);
+    this.currentPage = 1;
+
+  }
 
 
-    if (
-      ![10, 20, 30, 50, 100]
-        .includes(newSize)
-    ) {
+  /* =========================================================
+     FORMAT DATE
+     ========================================================= */
 
-      return;
+  formatDate(
+    date: string
+  ): string {
+
+    if (!date) {
+
+      return '-';
 
     }
 
+    const parts =
+      date.split('-');
 
-    this.pageSize =
-      newSize;
+    if (parts.length !== 3) {
 
+      return date;
 
-    this.currentPage = 1;
+    }
 
-  }
-
-
-  // =====================================================
-  // FILTER CHANGE
-  // =====================================================
-
-  onFilterChange(): void {
-
-    /*
-     * Whenever search/filter changes,
-     * return to page 1.
-     */
-
-    this.currentPage = 1;
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
 
   }
 
 
-  // =====================================================
-  // FORMAT TIME
-  // =====================================================
+  /* =========================================================
+     FORMAT TIME
+     ========================================================= */
 
   formatTime(
     value: string | null
@@ -604,39 +625,55 @@ export class Reports implements OnInit {
 
     }
 
-
-    const date =
-      new Date(value);
-
+    /*
+     * Handles:
+     * 08:30
+     * 08:30:00
+     * ISO date/time
+     */
 
     if (
-      Number.isNaN(
-        date.getTime()
-      )
+      value.includes('T')
     ) {
 
-      return '-';
+      const date =
+        new Date(value);
+
+      if (!isNaN(date.getTime())) {
+
+        return date.toLocaleTimeString(
+          [],
+          {
+            hour: '2-digit',
+            minute: '2-digit'
+          }
+        );
+
+      }
 
     }
 
 
-    return date.toLocaleTimeString(
-      [],
-      {
-        hour: '2-digit',
-        minute: '2-digit'
-      }
-    );
+    const parts =
+      value.split(':');
+
+    if (parts.length >= 2) {
+
+      return `${parts[0]}:${parts[1]}`;
+
+    }
+
+    return value;
 
   }
 
 
-  // =====================================================
-  // FORMAT DURATION
-  // =====================================================
+  /* =========================================================
+     FORMAT DURATION
+     ========================================================= */
 
   formatDuration(
-    minutes: number | null
+    minutes: number
   ): string {
 
     if (
@@ -649,169 +686,51 @@ export class Reports implements OnInit {
     }
 
 
-    const hours =
-      Math.floor(
-        minutes / 60
-      );
+    if (minutes < 60) {
 
-
-    const mins =
-      minutes % 60;
-
-
-    if (hours > 0) {
-
-      return `${hours}h ${mins}m`;
+      return `${minutes} min`;
 
     }
 
 
-    return `${mins} min`;
+    const hours =
+      Math.floor(minutes / 60);
+
+    const remainingMinutes =
+      minutes % 60;
+
+
+    if (remainingMinutes === 0) {
+
+      return `${hours} hr`;
+
+    }
+
+
+    return `${hours} hr ${remainingMinutes} min`;
 
   }
 
 
-  // =====================================================
-  // RESET
-  // =====================================================
+  /* =========================================================
+     EXPORT EXCEL
+     ========================================================= */
 
-  resetFilters(): void {
-
-    this.searchText = '';
-
-    this.selectedSession =
-      'All';
-
-    this.selectedStatus =
-      'All';
-
-    this.selectedDate = '';
-
-    this.currentPage = 1;
-
-  }
-
-
-  // =====================================================
-  // EXPORT EXCEL
-  // IMPORTANT:
-  // Export ALL filtered records
-  // NOT only current page
-  // =====================================================
-
-  async exportExcel(): Promise<void> {
-
-    const XLSX =
-      await import('xlsx');
-
-
-    const data =
-      this.filteredVisits.map(
-        (visit, index) => ({
-
-          '#':
-            index + 1,
-
-          'Patient':
-            visit.patientName,
-
-          'Patient Number':
-            visit.patientNumber,
-
-          'Ward':
-            visit.ward,
-
-          'Visitor':
-            this.visitorName(
-              visit
-            ),
-
-          'Phone':
-            visit.visitorPhone,
-
-          'Gender':
-            visit.visitorGender,
-
-          'Relation':
-            visit.visitorRelation,
-
-          'Session':
-            visit.session,
-
-          'Slot':
-            `Visitor ${visit.slot}`,
-
-          'Visit Date':
-            visit.visitDate,
-
-          'Check In':
-            this.formatTime(
-              visit.checkIn
-            ),
-
-          'Check Out':
-            this.formatTime(
-              visit.checkOut
-            ),
-
-          'Duration':
-            this.formatDuration(
-              visit.durationMinutes
-            ),
-
-          'Status':
-            visit.status
-
-        })
-      );
-
-
-    const worksheet =
-      XLSX.utils.json_to_sheet(
-        data
-      );
-
-
-    const workbook =
-      XLSX.utils.book_new();
-
-
-    XLSX.utils.book_append_sheet(
-      workbook,
-      worksheet,
-      'Visit Report'
-    );
-
-
-    XLSX.writeFile(
-      workbook,
-      `patient-visit-report-${this.getToday()}.xlsx`
-    );
-
-  }
-
-
-  // =====================================================
-  // PDF
-  // EXPORT ALL FILTERED RECORDS
-  // =====================================================
-
-  exportPDF(): void {
+  exportExcel(): void {
 
     /*
-     * Build a temporary table using ALL
-     * filtered visits instead of the
-     * paginated table on screen.
+     * We export ALL filtered records,
+     * not only records displayed on current page.
      */
 
-    const visits =
+    const records =
       this.filteredVisits;
 
 
-    if (visits.length === 0) {
+    if (records.length === 0) {
 
       alert(
-        'There are no visit records to export.'
+        'There are no records to export.'
       );
 
       return;
@@ -819,47 +738,159 @@ export class Reports implements OnInit {
     }
 
 
+    const headers = [
+      'No.',
+      'Patient',
+      'Patient Number',
+      'Ward',
+      'Visitor',
+      'Phone',
+      'Gender',
+      'Relation',
+      'Session',
+      'Slot',
+      'Date',
+      'Check In',
+      'Check Out',
+      'Duration',
+      'Status'
+    ];
+
+
     const rows =
-      visits.map(
-        (visit, index) => `
+      records.map(
+        (visit: Visit, index: number) => [
 
-          <tr>
+          index + 1,
 
-            <td>${index + 1}</td>
+          visit.patientName,
 
-            <td>${visit.patientName}</td>
+          visit.patientNumber,
 
-            <td>${visit.patientNumber}</td>
+          visit.ward,
 
-            <td>${visit.ward}</td>
+          `${visit.visitorFirstName} ${visit.visitorSecondName} ${visit.visitorLastName}`,
 
-            <td>${this.visitorName(visit)}</td>
+          visit.visitorPhone,
 
-            <td>${visit.visitorPhone || '-'}</td>
+          visit.visitorGender,
 
-            <td>${visit.visitorGender || '-'}</td>
+          visit.visitorRelation,
 
-            <td>${visit.visitorRelation || '-'}</td>
+          visit.session,
 
-            <td>${visit.session}</td>
+          `Visitor ${visit.slot}`,
 
-            <td>Visitor ${visit.slot}</td>
+          this.formatDate(
+            visit.visitDate
+          ),
 
-            <td>${visit.visitDate}</td>
+          this.formatTime(
+            visit.checkIn
+          ),
 
-            <td>${this.formatTime(visit.checkIn)}</td>
+          visit.checkOut
+            ? this.formatTime(
+                visit.checkOut
+              )
+            : '',
 
-            <td>${this.formatTime(visit.checkOut)}</td>
+          visit.durationMinutes !== null
+            ? this.formatDuration(
+                visit.durationMinutes
+              )
+            : '',
 
-            <td>${this.formatDuration(visit.durationMinutes)}</td>
+          visit.status
 
-            <td>${visit.status}</td>
+        ]
+      );
 
-          </tr>
 
-        `
-      )
-      .join('');
+    /*
+     * Create CSV.
+     *
+     * This works without requiring another
+     * Excel package.
+     */
+
+    const csvRows = [
+      headers,
+      ...rows
+    ];
+
+
+    const csv =
+      csvRows
+        .map(
+          row =>
+            row
+              .map(
+                value =>
+                  `"${String(value ?? '').replace(/"/g, '""')}"`
+              )
+              .join(',')
+        )
+        .join('\n');
+
+
+    const blob =
+      new Blob(
+        [csv],
+        {
+          type: 'text/csv;charset=utf-8;'
+        }
+      );
+
+
+    const url =
+      window.URL.createObjectURL(
+        blob
+      );
+
+
+    const link =
+      document.createElement(
+        'a'
+      );
+
+    link.href = url;
+
+    link.download =
+      this.getExportFileName(
+        'visit-report',
+        'csv'
+      );
+
+    link.click();
+
+
+    window.URL.revokeObjectURL(
+      url
+    );
+
+  }
+
+
+  /* =========================================================
+     EXPORT PDF
+     ========================================================= */
+
+  exportPDF(): void {
+
+    const records =
+      this.filteredVisits;
+
+
+    if (records.length === 0) {
+
+      alert(
+        'There are no records to export.'
+      );
+
+      return;
+
+    }
 
 
     const printWindow =
@@ -872,7 +903,7 @@ export class Reports implements OnInit {
     if (!printWindow) {
 
       alert(
-        'Please allow pop-ups to export the report.'
+        'Unable to open print window. Please allow pop-ups.'
       );
 
       return;
@@ -880,63 +911,199 @@ export class Reports implements OnInit {
     }
 
 
+    const rows =
+      records.map(
+        (visit: Visit, index: number) => `
+
+          <tr>
+
+            <td>${index + 1}</td>
+
+            <td>${this.escapeHtml(
+              visit.patientName
+            )}</td>
+
+            <td>${this.escapeHtml(
+              visit.patientNumber
+            )}</td>
+
+            <td>${this.escapeHtml(
+              visit.ward
+            )}</td>
+
+            <td>${this.escapeHtml(
+              `${visit.visitorFirstName} ${visit.visitorSecondName} ${visit.visitorLastName}`
+            )}</td>
+
+            <td>${this.escapeHtml(
+              visit.visitorPhone
+            )}</td>
+
+            <td>${this.escapeHtml(
+              visit.visitorGender
+            )}</td>
+
+            <td>${this.escapeHtml(
+              visit.visitorRelation
+            )}</td>
+
+            <td>${this.escapeHtml(
+              visit.session
+            )}</td>
+
+            <td>Visitor ${visit.slot}</td>
+
+            <td>${this.escapeHtml(
+              this.formatDate(
+                visit.visitDate
+              )
+            )}</td>
+
+            <td>${this.escapeHtml(
+              this.formatTime(
+                visit.checkIn
+              )
+            )}</td>
+
+            <td>${this.escapeHtml(
+              visit.checkOut
+                ? this.formatTime(
+                    visit.checkOut
+                  )
+                : '-'
+            )}</td>
+
+            <td>${this.escapeHtml(
+              visit.durationMinutes !== null
+                ? this.formatDuration(
+                    visit.durationMinutes
+                  )
+                : '-'
+            )}</td>
+
+            <td>${this.escapeHtml(
+              visit.status
+            )}</td>
+
+          </tr>
+
+        `
+      )
+      .join('');
+
+
+    const dateRangeText =
+      this.getDateRangeText();
+
+
     printWindow.document.write(`
+
+      <!DOCTYPE html>
 
       <html>
 
         <head>
 
           <title>
-            Patient Visit Report
+            Visit Report
           </title>
-
 
           <style>
 
-            body {
-              font-family: Arial, sans-serif;
-              padding: 25px;
-              color: #44515a;
+            * {
+              box-sizing: border-box;
             }
 
+            body {
+              font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+              padding: 25px;
+
+              color: #1f2937;
+            }
 
             h1 {
-              color: #164e70;
-              margin-bottom: 5px;
+              margin: 0;
+
+              color: #0b2f6a;
+
+              font-size: 22px;
             }
 
+            .subtitle {
+              margin-top: 5px;
 
-            p {
-              color: #6c7a86;
+              color: #667085;
+
+              font-size: 12px;
             }
 
+            .meta {
+              margin-top: 15px;
+
+              padding: 10px;
+
+              border: 1px solid #dbe4ef;
+
+              background: #f5f8fc;
+
+              font-size: 11px;
+            }
 
             table {
               width: 100%;
-              border-collapse: collapse;
+
               margin-top: 20px;
+
+              border-collapse: collapse;
+
+              font-size: 8px;
             }
-
-
-            th,
-            td {
-              border: 1px solid #ccc;
-              padding: 8px;
-              font-size: 10px;
-              text-align: left;
-              white-space: nowrap;
-            }
-
 
             th {
-              background: #dcecf6;
-              color: #164e70;
-              font-weight: bold;
+              background: #0b2f6a;
+
+              color: white;
+
+              padding: 7px;
+
+              text-align: left;
             }
 
+            td {
+              padding: 6px;
+
+              border: 1px solid #dfe5ec;
+
+              vertical-align: top;
+            }
 
             tr:nth-child(even) {
-              background: #f8fbfd;
+              background: #f8fafc;
+            }
+
+            .footer {
+              margin-top: 15px;
+
+              color: #667085;
+
+              font-size: 10px;
+            }
+
+            @media print {
+
+              body {
+                padding: 10px;
+              }
+
+              @page {
+                size: landscape;
+                margin: 10mm;
+              }
+
             }
 
           </style>
@@ -947,20 +1114,40 @@ export class Reports implements OnInit {
         <body>
 
           <h1>
-            Patient Visit Report
+            Visit Report
           </h1>
 
+          <div class="subtitle">
+            Patient and Visitor Attendance Report
+          </div>
 
-          <p>
-            Generated:
-            ${new Date().toLocaleString()}
-          </p>
+          <div class="meta">
 
+            <strong>Session:</strong>
+            ${this.escapeHtml(
+              this.selectedSession
+            )}
 
-          <p>
-            Total Records:
-            ${visits.length}
-          </p>
+            &nbsp;&nbsp;&nbsp;
+
+            <strong>Status:</strong>
+            ${this.escapeHtml(
+              this.selectedStatus
+            )}
+
+            &nbsp;&nbsp;&nbsp;
+
+            <strong>Date:</strong>
+            ${this.escapeHtml(
+              dateRangeText
+            )}
+
+            &nbsp;&nbsp;&nbsp;
+
+            <strong>Total Records:</strong>
+            ${records.length}
+
+          </div>
 
 
           <table>
@@ -970,39 +1157,24 @@ export class Reports implements OnInit {
               <tr>
 
                 <th>#</th>
-
                 <th>Patient</th>
-
-                <th>Patient Number</th>
-
+                <th>Patient No.</th>
                 <th>Ward</th>
-
                 <th>Visitor</th>
-
                 <th>Phone</th>
-
                 <th>Gender</th>
-
                 <th>Relation</th>
-
                 <th>Session</th>
-
                 <th>Slot</th>
-
                 <th>Date</th>
-
                 <th>Check In</th>
-
                 <th>Check Out</th>
-
                 <th>Duration</th>
-
                 <th>Status</th>
 
               </tr>
 
             </thead>
-
 
             <tbody>
 
@@ -1011,6 +1183,24 @@ export class Reports implements OnInit {
             </tbody>
 
           </table>
+
+
+          <div class="footer">
+
+            Generated from FollowUp System
+
+          </div>
+
+
+          <script>
+
+            window.onload = function() {
+
+              window.print();
+
+            };
+
+          </script>
 
         </body>
 
@@ -1021,24 +1211,12 @@ export class Reports implements OnInit {
 
     printWindow.document.close();
 
-    printWindow.focus();
-
-
-    setTimeout(
-      () => {
-
-        printWindow.print();
-
-      },
-      500
-    );
-
   }
 
 
-  // =====================================================
-  // PRINT
-  // =====================================================
+  /* =========================================================
+     PRINT CURRENT REPORT
+     ========================================================= */
 
   printReport(): void {
 
@@ -1047,35 +1225,109 @@ export class Reports implements OnInit {
   }
 
 
-  // =====================================================
-  // TODAY
-  // =====================================================
+  /* =========================================================
+     DATE RANGE TEXT
+     ========================================================= */
 
-  private getToday(): string {
+  private getDateRangeText(): string {
 
-    const now =
-      new Date();
+    if (
+      this.dateFrom &&
+      this.dateTo
+    ) {
+
+      return `${this.formatDate(
+        this.dateFrom
+      )} - ${this.formatDate(
+        this.dateTo
+      )}`;
+
+    }
 
 
-    return [
+    if (this.dateFrom) {
 
-      now.getFullYear(),
+      return `From ${this.formatDate(
+        this.dateFrom
+      )}`;
 
-      String(
-        now.getMonth() + 1
-      ).padStart(
-        2,
-        '0'
-      ),
+    }
 
-      String(
-        now.getDate()
-      ).padStart(
-        2,
-        '0'
+
+    if (this.dateTo) {
+
+      return `Up to ${this.formatDate(
+        this.dateTo
+      )}`;
+
+    }
+
+
+    return 'All Dates';
+
+  }
+
+
+  /* =========================================================
+     EXPORT FILE NAME
+     ========================================================= */
+
+  private getExportFileName(
+    prefix: string,
+    extension: string
+  ): string {
+
+    const datePart =
+      this.dateFrom &&
+      this.dateTo
+
+        ? `${this.dateFrom}_to_${this.dateTo}`
+
+        : this.dateFrom
+
+          ? `from_${this.dateFrom}`
+
+          : this.dateTo
+
+            ? `to_${this.dateTo}`
+
+            : 'all-dates';
+
+
+    return `${prefix}_${datePart}.${extension}`;
+
+  }
+
+
+  /* =========================================================
+     ESCAPE HTML
+     ========================================================= */
+
+  private escapeHtml(
+    value: string
+  ): string {
+
+    return String(value ?? '')
+      .replace(
+        /&/g,
+        '&amp;'
       )
-
-    ].join('-');
+      .replace(
+        /</g,
+        '&lt;'
+      )
+      .replace(
+        />/g,
+        '&gt;'
+      )
+      .replace(
+        /"/g,
+        '&quot;'
+      )
+      .replace(
+        /'/g,
+        '&#039;'
+      );
 
   }
 

@@ -6,7 +6,6 @@ import {
   VisitSlot
 } from '../models/visit';
 
-
 @Injectable({
   providedIn: 'root'
 })
@@ -25,9 +24,9 @@ export class VisitService {
   }
 
 
-  // =====================================================
-  // LOAD VISITS
-  // =====================================================
+  /* =========================================================
+     LOAD
+  ========================================================= */
 
   private loadVisits(): void {
 
@@ -41,9 +40,7 @@ export class VisitService {
       this.visits = [];
 
       return;
-
     }
-
 
     try {
 
@@ -55,20 +52,17 @@ export class VisitService {
           ? parsed
           : [];
 
-    }
-
-    catch {
+    } catch {
 
       this.visits = [];
 
     }
-
   }
 
 
-  // =====================================================
-  // SAVE
-  // =====================================================
+  /* =========================================================
+     SAVE
+  ========================================================= */
 
   private persist(): void {
 
@@ -82,9 +76,9 @@ export class VisitService {
   }
 
 
-  // =====================================================
-  // GET ALL
-  // =====================================================
+  /* =========================================================
+     GET ALL VISITS
+  ========================================================= */
 
   getVisits(): Visit[] {
 
@@ -95,9 +89,9 @@ export class VisitService {
   }
 
 
-  // =====================================================
-  // GET VISITS BY PATIENT
-  // =====================================================
+  /* =========================================================
+     GET PATIENT VISITS
+  ========================================================= */
 
   getPatientVisits(
     patientId: number
@@ -111,9 +105,9 @@ export class VisitService {
   }
 
 
-  // =====================================================
-  // GET VISITS FOR DATE
-  // =====================================================
+  /* =========================================================
+     GET VISITS BY DATE
+  ========================================================= */
 
   getVisitsByDate(
     date: string
@@ -127,9 +121,9 @@ export class VisitService {
   }
 
 
-  // =====================================================
-  // GET VISITS BY PATIENT + DATE
-  // =====================================================
+  /* =========================================================
+     GET PATIENT VISITS BY DATE
+  ========================================================= */
 
   getPatientVisitsByDate(
     patientId: number,
@@ -145,9 +139,9 @@ export class VisitService {
   }
 
 
-  // =====================================================
-  // GET SPECIFIC SLOT
-  // =====================================================
+  /* =========================================================
+     GET SLOT
+  ========================================================= */
 
   getSlotVisit(
     patientId: number,
@@ -167,9 +161,9 @@ export class VisitService {
   }
 
 
-  // =====================================================
-  // CHECK SLOT AVAILABLE
-  // =====================================================
+  /* =========================================================
+     CHECK SLOT AVAILABLE
+  ========================================================= */
 
   isSlotAvailable(
     patientId: number,
@@ -188,9 +182,13 @@ export class VisitService {
   }
 
 
-  // =====================================================
-  // MAX VISITORS PER SESSION
-  // =====================================================
+  /* =========================================================
+     MAX VISITORS
+     
+     Morning = 2
+     Day     = 2
+     Evening = 3
+  ========================================================= */
 
   getMaxSlots(
     session: VisitSession
@@ -211,9 +209,9 @@ export class VisitService {
   }
 
 
-  // =====================================================
-  // GET USED SLOTS
-  // =====================================================
+  /* =========================================================
+     USED SLOTS
+  ========================================================= */
 
   getUsedSlots(
     patientId: number,
@@ -231,9 +229,9 @@ export class VisitService {
   }
 
 
-  // =====================================================
-  // COUNT VISITORS
-  // =====================================================
+  /* =========================================================
+     COUNT VISITS
+  ========================================================= */
 
   countPatientSessionVisits(
     patientId: number,
@@ -250,13 +248,17 @@ export class VisitService {
   }
 
 
-  // =====================================================
-  // ADD VISIT
-  // =====================================================
+  /* =========================================================
+     ADD VISIT
+  ========================================================= */
 
   addVisit(
     visit: Visit
   ): boolean {
+
+    /*
+     * Prevent duplicate slot
+     */
 
     const exists =
       this.getSlotVisit(
@@ -273,11 +275,19 @@ export class VisitService {
     }
 
 
+    /*
+     * Get maximum allowed visitors
+     */
+
     const maxSlots =
       this.getMaxSlots(
         visit.session
       );
 
+
+    /*
+     * Prevent invalid slot
+     */
 
     if (
       visit.slot > maxSlots
@@ -288,6 +298,10 @@ export class VisitService {
     }
 
 
+    /*
+     * Count current visitors
+     */
+
     const currentCount =
       this.countPatientSessionVisits(
         visit.patientId,
@@ -295,6 +309,10 @@ export class VisitService {
         visit.visitDate
       );
 
+
+    /*
+     * Prevent exceeding session limit
+     */
 
     if (
       currentCount >= maxSlots
@@ -305,6 +323,10 @@ export class VisitService {
     }
 
 
+    /*
+     * Save visitor
+     */
+
     this.visits = [
       ...this.visits,
       visit
@@ -313,15 +335,14 @@ export class VisitService {
 
     this.persist();
 
-
     return true;
 
   }
 
 
-  // =====================================================
-  // CHECK OUT
-  // =====================================================
+  /* =========================================================
+     CHECKOUT
+  ========================================================= */
 
   checkoutVisit(
     visitId: number,
@@ -333,7 +354,6 @@ export class VisitService {
         item =>
           item.id === visitId
       );
-
 
     if (!visit) {
 
@@ -368,10 +388,8 @@ export class VisitService {
     visit.checkOut =
       checkoutTime;
 
-
     visit.durationMinutes =
       duration;
-
 
     visit.status =
       'Completed';
@@ -379,15 +397,14 @@ export class VisitService {
 
     this.persist();
 
-
     return true;
 
   }
 
 
-  // =====================================================
-  // DELETE
-  // =====================================================
+  /* =========================================================
+     DELETE VISIT
+  ========================================================= */
 
   deleteVisit(
     id: number
@@ -399,15 +416,14 @@ export class VisitService {
           visit.id !== id
       );
 
-
     this.persist();
 
   }
 
 
-  // =====================================================
-  // GENERATE ID
-  // =====================================================
+  /* =========================================================
+     GENERATE ID
+  ========================================================= */
 
   generateId(): number {
 
@@ -419,13 +435,13 @@ export class VisitService {
 
     }
 
-
-    return Math.max(
-      ...this.visits.map(
-        visit =>
-          visit.id
-      )
-    ) + 1;
+    return (
+      Math.max(
+        ...this.visits.map(
+          visit => visit.id
+        )
+      ) + 1
+    );
 
   }
 
