@@ -1,15 +1,23 @@
 import { Component } from '@angular/core';
+
 import {
   FormsModule,
   NgForm
 } from '@angular/forms';
+
 import { Router } from '@angular/router';
 
 import { Patient } from '../../../core/models/patient';
-import { PatientService } from '../../../core/services/patient.service';
+
+import {
+  PatientService
+} from '../../../core/services/patient.service';
+
 
 @Component({
+
   selector: 'app-add-user',
+
   standalone: true,
 
   imports: [
@@ -17,9 +25,15 @@ import { PatientService } from '../../../core/services/patient.service';
   ],
 
   templateUrl: './add-user.html',
+
   styleUrl: './add-user.css'
+
 })
 export class AddUser {
+
+  // =====================================================
+  // FORM FIELDS
+  // =====================================================
 
   firstName = '';
 
@@ -32,16 +46,32 @@ export class AddUser {
   ward = '';
 
   admissionDate =
-    new Date().toISOString().split('T')[0];
+    new Date()
+      .toISOString()
+      .split('T')[0];
 
   status:
     'Admitted' | 'Discharged'
     = 'Admitted';
 
 
+  // =====================================================
+  // LOADING
+  // =====================================================
+
+  isSaving = false;
+
+
+  // =====================================================
+  // CONSTRUCTOR
+  // =====================================================
+
   constructor(
+
     private router: Router,
+
     private patientService: PatientService
+
   ) {}
 
 
@@ -49,11 +79,13 @@ export class AddUser {
   // SAVE PATIENT
   // =====================================================
 
-  savePatient(form: NgForm): void {
+  savePatient(
+    form: NgForm
+  ): void {
 
-    // -----------------------------------------------
+    // ---------------------------------------------------
     // VALIDATE FORM
-    // -----------------------------------------------
+    // ---------------------------------------------------
 
     if (form.invalid) {
 
@@ -62,13 +94,12 @@ export class AddUser {
       );
 
       return;
-
     }
 
 
-    // -----------------------------------------------
+    // ---------------------------------------------------
     // CLEAN PATIENT NUMBER
-    // -----------------------------------------------
+    // ---------------------------------------------------
 
     const cleanPatientNumber =
       this.patientNumber
@@ -76,9 +107,9 @@ export class AddUser {
         .toUpperCase();
 
 
-    // -----------------------------------------------
-    // CHECK DUPLICATE PATIENT
-    // -----------------------------------------------
+    // ---------------------------------------------------
+    // CHECK DUPLICATE IN CURRENT CACHE
+    // ---------------------------------------------------
 
     if (
       this.patientService.patientExists(
@@ -91,18 +122,17 @@ export class AddUser {
       );
 
       return;
-
     }
 
 
-    // -----------------------------------------------
+    // ---------------------------------------------------
     // CREATE PATIENT
-    // -----------------------------------------------
+    // ---------------------------------------------------
 
     const patient: Patient = {
 
-      id:
-        this.patientService.generateId(),
+      // PostgreSQL will generate the real ID
+      id: 0,
 
       firstName:
         this.firstName.trim(),
@@ -125,33 +155,107 @@ export class AddUser {
       status:
         this.status,
 
-      createdAt:
-        new Date().toISOString()
+      // PostgreSQL will generate createdAt
+      createdAt: ''
 
     };
 
 
-    // -----------------------------------------------
-    // SAVE
-    // -----------------------------------------------
+    // ---------------------------------------------------
+    // START SAVING
+    // ---------------------------------------------------
 
-    this.patientService.addPatient(
-      patient
-    );
+    this.isSaving = true;
 
 
-    alert(
-      'Patient added successfully!'
-    );
+    // ---------------------------------------------------
+    // SEND TO DJANGO API
+    // ---------------------------------------------------
+
+    this.patientService
+      .addPatient(patient)
+      .subscribe({
+
+        // -----------------------------------------------
+        // SUCCESS
+        // -----------------------------------------------
+
+        next: () => {
+
+          this.isSaving = false;
+
+          alert(
+            'Patient added successfully!'
+          );
+
+          this.router.navigate(
+            ['/users']
+          );
+
+        },
 
 
-    // -----------------------------------------------
-    // GO BACK TO PATIENTS
-    // -----------------------------------------------
+        // -----------------------------------------------
+        // ERROR
+        // -----------------------------------------------
 
-    this.router.navigate(
-      ['/users']
-    );
+        error: error => {
+
+          console.error(
+            'Failed to add patient:',
+            error
+          );
+
+          this.isSaving = false;
+
+
+          // ---------------------------------------------
+          // DUPLICATE / VALIDATION ERROR
+          // ---------------------------------------------
+
+          if (
+            error?.status === 400
+          ) {
+
+            alert(
+              'Patient could not be added. Please check the patient information and make sure the Patient Number is unique.'
+            );
+
+          }
+
+          // ---------------------------------------------
+          // UNAUTHORIZED
+          // ---------------------------------------------
+
+          else if (
+            error?.status === 401
+          ) {
+
+            alert(
+              'Your session has expired. Please login again.'
+            );
+
+            this.router.navigate(
+              ['/login']
+            );
+
+          }
+
+          // ---------------------------------------------
+          // OTHER ERROR
+          // ---------------------------------------------
+
+          else {
+
+            alert(
+              'Failed to add patient. Please make sure the backend server is running.'
+            );
+
+          }
+
+        }
+
+      });
 
   }
 

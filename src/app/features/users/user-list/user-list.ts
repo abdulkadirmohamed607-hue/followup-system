@@ -1,4 +1,3 @@
-
 import {
   Component,
   computed,
@@ -23,6 +22,7 @@ import {
 
 
 @Component({
+
   selector: 'app-user-list',
 
   standalone: true,
@@ -34,9 +34,9 @@ import {
   templateUrl: './user-list.html',
 
   styleUrl: './user-list.css'
+
 })
 export class UserList {
-
 
   // =====================================================
   // SEARCH
@@ -65,7 +65,6 @@ export class UserList {
   currentPage =
     signal(1);
 
-
   pageSize =
     signal(10);
 
@@ -75,8 +74,13 @@ export class UserList {
   // =====================================================
 
   constructor(
-    private patientService: PatientService,
-    private router: Router
+
+    private patientService:
+      PatientService,
+
+    private router:
+      Router
+
   ) {}
 
 
@@ -84,9 +88,17 @@ export class UserList {
   // PATIENTS
   // =====================================================
 
+  /*
+   * Read directly from the reactive signal
+   * inside PatientService.
+   *
+   * Whenever the service updates patients,
+   * this component updates automatically.
+   */
+
   get patients(): Patient[] {
 
-    return this.patientService.getPatients();
+    return this.patientService.patients();
 
   }
 
@@ -122,15 +134,14 @@ export class UserList {
               patient.lastName
             ]
               .filter(
-                name =>
-                  !!name
+                name => !!name
               )
               .join(' ')
               .toLowerCase();
 
 
           // ---------------------------------------------
-          // SEARCH
+          // PATIENT NUMBER
           // ---------------------------------------------
 
           const patientNumber =
@@ -140,6 +151,10 @@ export class UserList {
               .toLowerCase();
 
 
+          // ---------------------------------------------
+          // WARD
+          // ---------------------------------------------
+
           const ward =
             String(
               patient.ward ?? ''
@@ -147,20 +162,15 @@ export class UserList {
               .toLowerCase();
 
 
+          // ---------------------------------------------
+          // SEARCH
+          // ---------------------------------------------
+
           const matchesSearch =
             !search ||
-
-            fullName.includes(
-              search
-            ) ||
-
-            patientNumber.includes(
-              search
-            ) ||
-
-            ward.includes(
-              search
-            );
+            fullName.includes(search) ||
+            patientNumber.includes(search) ||
+            ward.includes(search);
 
 
           // ---------------------------------------------
@@ -360,12 +370,14 @@ export class UserList {
       if (total <= 7) {
 
         return Array.from(
+
           {
             length: total
           },
 
           (_, index) =>
             index + 1
+
         );
 
       }
@@ -392,9 +404,7 @@ export class UserList {
       }
 
 
-      // -----------------------------------------------
       // MIDDLE PAGES
-      // -----------------------------------------------
 
       const start =
         Math.max(
@@ -450,10 +460,6 @@ export class UserList {
   goToPage(
     page: number
   ): void {
-
-    // -----------------------------------------------
-    // IGNORE ELLIPSIS
-    // -----------------------------------------------
 
     if (page === -1) {
 
@@ -524,9 +530,7 @@ export class UserList {
       this.totalPages();
 
 
-    if (
-      current < total
-    ) {
+    if (current < total) {
 
       this.currentPage.set(
         current + 1
@@ -567,11 +571,9 @@ export class UserList {
     );
 
 
-    // -----------------------------------------------
-    // RESET TO FIRST PAGE
-    // -----------------------------------------------
-
-    this.currentPage.set(1);
+    this.currentPage.set(
+      1
+    );
 
 
     this.scrollTableToTop();
@@ -592,12 +594,9 @@ export class UserList {
     );
 
 
-    // -----------------------------------------------
-    // IMPORTANT:
-    // Return to first page after searching
-    // -----------------------------------------------
-
-    this.currentPage.set(1);
+    this.currentPage.set(
+      1
+    );
 
   }
 
@@ -620,7 +619,6 @@ export class UserList {
       );
 
     }
-
     else {
 
       this.selectedStatus.set(
@@ -630,11 +628,9 @@ export class UserList {
     }
 
 
-    // -----------------------------------------------
-    // RESET PAGINATION
-    // -----------------------------------------------
-
-    this.currentPage.set(1);
+    this.currentPage.set(
+      1
+    );
 
   }
 
@@ -645,7 +641,9 @@ export class UserList {
 
   resetFilters(): void {
 
-    this.searchTerm.set('');
+    this.searchTerm.set(
+      ''
+    );
 
 
     this.selectedStatus.set(
@@ -694,39 +692,92 @@ export class UserList {
     }
 
 
-    this.patientService.deletePatient(
-      id
-    );
+    this.patientService
+      .deletePatient(id)
+      .subscribe({
+
+        // ---------------------------------------------
+        // SUCCESS
+        // ---------------------------------------------
+
+        next: () => {
+
+          /*
+           * PatientService has already removed
+           * the patient from its signal.
+           *
+           * filteredPatients(), pagination and
+           * summary counts will update automatically.
+           */
+
+          const total =
+            this.filteredPatients().length;
 
 
-    // -----------------------------------------------
-    // CHECK CURRENT PAGE
-    // -----------------------------------------------
+          const totalPages =
+            Math.max(
 
-    const total =
-      this.filteredPatients().length;
+              1,
 
+              Math.ceil(
+                total /
+                this.pageSize()
+              )
 
-    const totalPages =
-      Math.max(
-        1,
-        Math.ceil(
-          total /
-          this.pageSize()
-        )
-      );
+            );
 
 
-    if (
-      this.currentPage() >
-      totalPages
-    ) {
+          if (
+            this.currentPage() >
+            totalPages
+          ) {
 
-      this.currentPage.set(
-        totalPages
-      );
+            this.currentPage.set(
+              totalPages
+            );
 
-    }
+          }
+
+        },
+
+
+        // ---------------------------------------------
+        // ERROR
+        // ---------------------------------------------
+
+        error: error => {
+
+          console.error(
+            'Failed to delete patient:',
+            error
+          );
+
+
+          if (
+            error?.status === 401
+          ) {
+
+            alert(
+              'Your session has expired. Please login again.'
+            );
+
+
+            this.router.navigate(
+              ['/login']
+            );
+
+          }
+          else {
+
+            alert(
+              'Failed to delete patient. Please try again.'
+            );
+
+          }
+
+        }
+
+      });
 
   }
 
@@ -736,6 +787,15 @@ export class UserList {
   // =====================================================
 
   private scrollTableToTop(): void {
+
+    if (
+      typeof document === 'undefined'
+    ) {
+
+      return;
+
+    }
+
 
     setTimeout(() => {
 
@@ -748,8 +808,11 @@ export class UserList {
       if (table) {
 
         table.scrollIntoView({
+
           behavior: 'smooth',
+
           block: 'start'
+
         });
 
       }

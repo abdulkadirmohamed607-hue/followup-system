@@ -33,7 +33,6 @@ import {
 })
 export class UserUpload {
 
-
   selectedFile:
     File | null = null;
 
@@ -148,10 +147,13 @@ export class UserUpload {
 
           const workbook =
             XLSX.read(
+
               data,
+
               {
                 type: 'array'
               }
+
             );
 
 
@@ -202,9 +204,9 @@ export class UserUpload {
             new Set<string>();
 
 
-          /*
-           * Existing patients.
-           */
+          // =================================================
+          // EXISTING PATIENTS
+          // =================================================
 
           const existingPatients =
             this.patientService
@@ -213,19 +215,27 @@ export class UserUpload {
 
           const existingNumbers =
             new Set(
+
               existingPatients.map(
                 patient =>
                   this.normalizeText(
                     patient.patientNumber
                   )
               )
+
             );
 
 
-          let skippedDuplicates = 0;
+          let skippedDuplicates =
+            0;
 
+
+          // =================================================
+          // PROCESS EXCEL ROWS
+          // =================================================
 
           rows.forEach(
+
             (
               row: any,
               index: number
@@ -238,7 +248,9 @@ export class UserUpload {
 
               const patientNumber =
                 this.getValue(
+
                   row,
+
                   [
 
                     'Patient Number',
@@ -264,13 +276,9 @@ export class UserUpload {
                     'ID'
 
                   ]
+
                 );
 
-
-              /*
-               * Patient Number is mandatory because
-               * it is our unique identifier.
-               */
 
               if (!patientNumber) {
 
@@ -293,9 +301,9 @@ export class UserUpload {
                 );
 
 
-              /*
-               * Already in localStorage.
-               */
+              // ==========================================
+              // DUPLICATE IN DATABASE/CACHE
+              // ==========================================
 
               if (
                 existingNumbers.has(
@@ -310,9 +318,9 @@ export class UserUpload {
               }
 
 
-              /*
-               * Duplicate inside Excel.
-               */
+              // ==========================================
+              // DUPLICATE IN SAME EXCEL FILE
+              // ==========================================
 
               if (
                 numbersInExcel.has(
@@ -338,7 +346,9 @@ export class UserUpload {
 
               const firstName =
                 this.getValue(
+
                   row,
+
                   [
 
                     'First Name',
@@ -352,6 +362,7 @@ export class UserUpload {
                     'first'
 
                   ]
+
                 );
 
 
@@ -361,7 +372,9 @@ export class UserUpload {
 
               const secondName =
                 this.getValue(
+
                   row,
+
                   [
 
                     'Second Name',
@@ -379,6 +392,7 @@ export class UserUpload {
                     'Middle'
 
                   ]
+
                 );
 
 
@@ -388,7 +402,9 @@ export class UserUpload {
 
               const lastName =
                 this.getValue(
+
                   row,
+
                   [
 
                     'Last Name',
@@ -402,6 +418,7 @@ export class UserUpload {
                     'surname'
 
                   ]
+
                 );
 
 
@@ -411,7 +428,9 @@ export class UserUpload {
 
               const ward =
                 this.getValue(
+
                   row,
+
                   [
 
                     'Ward',
@@ -425,6 +444,7 @@ export class UserUpload {
                     'wardName'
 
                   ]
+
                 );
 
 
@@ -434,7 +454,9 @@ export class UserUpload {
 
               const admissionDate =
                 this.getValue(
+
                   row,
+
                   [
 
                     'Admission Date',
@@ -450,6 +472,7 @@ export class UserUpload {
                     'dateAdmitted'
 
                   ]
+
                 );
 
 
@@ -482,22 +505,29 @@ export class UserUpload {
 
               importedPatients.push({
 
-                id:
-                  this.patientService
-                    .generateId()
-                  +
-                  importedPatients.length,
+                /*
+                 * PostgreSQL will generate the real ID.
+                 */
+                id: 0,
 
-                firstName,
+                firstName:
+                  firstName.trim(),
 
                 secondName:
-                  secondName || '-',
+                  secondName
+                    ? secondName.trim()
+                    : '-',
 
-                lastName,
+                lastName:
+                  lastName.trim(),
 
-                patientNumber,
+                patientNumber:
+                  patientNumber
+                    .trim()
+                    .toUpperCase(),
 
-                ward,
+                ward:
+                  ward.trim(),
 
                 admissionDate:
                   this.normalizeDate(
@@ -507,14 +537,21 @@ export class UserUpload {
                 status:
                   'Admitted',
 
-                createdAt:
-                  new Date().toISOString()
+                /*
+                 * PostgreSQL will generate createdAt.
+                 */
+                createdAt: ''
 
               });
 
             }
+
           );
 
+
+          // =================================================
+          // STORE PREVIEW
+          // =================================================
 
           this.patients =
             importedPatients;
@@ -523,6 +560,10 @@ export class UserUpload {
           this.duplicateCount =
             skippedDuplicates;
 
+
+          // =================================================
+          // MESSAGE
+          // =================================================
 
           if (
             this.patients.length === 0
@@ -538,17 +579,21 @@ export class UserUpload {
               `${this.patients.length} new patient(s) loaded successfully.` +
 
               (
+
                 skippedDuplicates > 0
+
                   ? ` ${skippedDuplicates} duplicate patient(s) were skipped.`
+
                   : ''
+
               ) +
 
               ` Review the preview before uploading.`;
 
           }
 
-
         }
+
         catch (
           error: any
         ) {
@@ -562,6 +607,7 @@ export class UserUpload {
             'Failed to read Excel file.';
 
         }
+
         finally {
 
           this.isReading = false;
@@ -655,6 +701,10 @@ export class UserUpload {
     value: any
   ): string {
 
+    // ---------------------------------------------------
+    // EMPTY DATE
+    // ---------------------------------------------------
+
     if (!value) {
 
       return new Date()
@@ -664,9 +714,9 @@ export class UserUpload {
     }
 
 
-    /*
-     * Excel serial date.
-     */
+    // ---------------------------------------------------
+    // EXCEL SERIAL DATE
+    // ---------------------------------------------------
 
     if (
       typeof value === 'number'
@@ -705,9 +755,9 @@ export class UserUpload {
     }
 
 
-    /*
-     * JavaScript date.
-     */
+    // ---------------------------------------------------
+    // JAVASCRIPT DATE
+    // ---------------------------------------------------
 
     const parsed =
       new Date(value);
@@ -753,49 +803,105 @@ export class UserUpload {
     this.errorMessage = '';
 
 
-    try {
+    // ===================================================
+    // SEND PATIENTS TO DJANGO API
+    // ===================================================
 
-      const result =
-        this.patientService.addPatients(
-          this.patients
-        );
+    this.patientService
+      .addPatients(
+        this.patients
+      )
+      .subscribe({
 
+        // -----------------------------------------------
+        // SUCCESS
+        // -----------------------------------------------
 
-      this.message =
-        `${result.added} patient(s) uploaded successfully.`;
+        next: (
+          createdPatients: Patient[]
+        ) => {
 
-
-      if (
-        result.duplicates > 0
-      ) {
-
-        this.message +=
-          ` ${result.duplicates} duplicate patient(s) were skipped.`;
-
-      }
-
-
-      this.patients = [];
-
-      this.selectedFile = null;
-
-      this.duplicateCount = 0;
+          const uploadedCount =
+            createdPatients.length;
 
 
-    }
-    catch {
+          this.message =
+            `${uploadedCount} patient(s) uploaded successfully.`;
 
-      this.errorMessage =
-        'Failed to upload patients.';
 
-    }
-    finally {
+          /*
+           * Duplicate patients were already detected
+           * during Excel preview.
+           */
 
-      this.isUploading = false;
+          if (
+            this.duplicateCount > 0
+          ) {
 
-      this.cdr.detectChanges();
+            this.message +=
+              ` ${this.duplicateCount} duplicate patient(s) were skipped.`;
 
-    }
+          }
+
+
+          this.patients = [];
+
+          this.selectedFile = null;
+
+          this.duplicateCount = 0;
+
+          this.isUploading = false;
+
+
+          this.cdr.detectChanges();
+
+        },
+
+
+        // -----------------------------------------------
+        // ERROR
+        // -----------------------------------------------
+
+        error: error => {
+
+          console.error(
+            'Failed to upload patients:',
+            error
+          );
+
+
+          this.isUploading = false;
+
+
+          if (
+            error?.status === 401
+          ) {
+
+            this.errorMessage =
+              'Your session has expired. Please login again.';
+
+          }
+          else if (
+            error?.status === 400
+          ) {
+
+            this.errorMessage =
+              'Some patient information is invalid or a Patient Number already exists.';
+
+          }
+          else {
+
+            this.errorMessage =
+              'Failed to upload patients. Please make sure the backend server is running.';
+
+          }
+
+
+          this.cdr.detectChanges();
+
+        }
+
+      });
 
   }
 

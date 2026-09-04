@@ -1,42 +1,89 @@
-import { Injectable, PLATFORM_ID, inject } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import {
+  Injectable,
+  PLATFORM_ID,
+  inject,
+  signal
+} from '@angular/core';
 
-import { Patient } from '../models/patient';
+import {
+  isPlatformBrowser
+} from '@angular/common';
+
+import {
+  HttpClient
+} from '@angular/common/http';
+
+import {
+  Observable,
+  tap
+} from 'rxjs';
+
+import {
+  Patient
+} from '../models/patient';
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class PatientService {
 
-  private readonly storageKey = 'followup_patients';
+  // =====================================================
+  // API
+  // =====================================================
 
-  private readonly platformId = inject(PLATFORM_ID);
+  private readonly apiUrl =
+    'http://127.0.0.1:8000/api/patients';
 
-  private patients: Patient[] = [];
+
+  // =====================================================
+  // PLATFORM / SSR
+  // =====================================================
+
+  private readonly platformId =
+    inject(PLATFORM_ID);
 
 
-  constructor() {
+  // =====================================================
+  // PATIENTS SIGNAL
+  // =====================================================
+
+  /*
+   * This is the main source of patient data
+   * inside the Angular application.
+   *
+   * Data comes from Django/PostgreSQL.
+   *
+   * Because this is a signal, Angular automatically
+   * updates components whenever the value changes.
+   */
+
+  readonly patients =
+    signal<Patient[]>([]);
+
+
+  // =====================================================
+  // CONSTRUCTOR
+  // =====================================================
+
+  constructor(
+    private http: HttpClient
+  ) {
 
     /*
-     * IMPORTANT:
-     * localStorage only exists in the browser.
+     * Only load patients in the browser.
      *
-     * During Angular SSR, this service also runs
-     * inside Node.js where localStorage does not exist.
+     * This prevents SSR from trying to access
+     * browser-only functionality.
      */
-    if (isPlatformBrowser(this.platformId)) {
+
+    if (
+      isPlatformBrowser(
+        this.platformId
+      )
+    ) {
 
       this.loadPatients();
-
-      /*
-       * Seed demo patients only when the browser
-       * has no patients stored.
-       */
-      if (this.patients.length === 0) {
-
-        this.seedPatients();
-
-      }
 
     }
 
@@ -49,157 +96,164 @@ export class PatientService {
 
   private isBrowser(): boolean {
 
-    return isPlatformBrowser(this.platformId);
-
-  }
-
-
-  // =====================================================
-  // LOAD PATIENTS
-  // =====================================================
-
-  private loadPatients(): void {
-
-    /*
-     * Never access localStorage during SSR.
-     */
-    if (!this.isBrowser()) {
-
-      this.patients = [];
-
-      return;
-
-    }
-
-
-    const stored =
-      localStorage.getItem(this.storageKey);
-
-
-    if (!stored) {
-
-      this.patients = [];
-
-      return;
-
-    }
-
-
-    try {
-
-      const parsed =
-        JSON.parse(stored);
-
-
-      this.patients =
-        Array.isArray(parsed)
-          ? parsed
-          : [];
-
-    }
-    catch {
-
-      this.patients = [];
-
-    }
-
-  }
-
-
-  // =====================================================
-  // SAVE
-  // =====================================================
-
-  private persist(): void {
-
-    /*
-     * localStorage is available only in browser.
-     */
-    if (!this.isBrowser()) {
-
-      return;
-
-    }
-
-
-    localStorage.setItem(
-      this.storageKey,
-      JSON.stringify(this.patients)
+    return isPlatformBrowser(
+      this.platformId
     );
 
   }
 
 
   // =====================================================
-  // SEED DATA
+  // LOAD PATIENTS FROM DATABASE
   // =====================================================
 
-  private seedPatients(): void {
+  loadPatients(): void {
 
-    this.patients = [
+    if (
+      !this.isBrowser()
+    ) {
 
-      {
-        id: 1,
-        firstName: 'John',
-        secondName: 'Peter',
-        lastName: 'Smith',
-        patientNumber: 'PT-00125',
-        ward: 'Medical Ward',
-        admissionDate:
-          new Date()
-            .toISOString()
-            .split('T')[0],
-        status: 'Admitted',
-        createdAt:
-          new Date().toISOString()
-      },
+      return;
 
-      {
-        id: 2,
-        firstName: 'Ahmed',
-        secondName: 'Mohamed',
-        lastName: 'Ali',
-        patientNumber: 'PT-00126',
-        ward: 'Surgical Ward',
-        admissionDate:
-          new Date()
-            .toISOString()
-            .split('T')[0],
-        status: 'Admitted',
-        createdAt:
-          new Date().toISOString()
-      },
+    }
 
-      {
-        id: 3,
-        firstName: 'Asha',
-        secondName: 'Hassan',
-        lastName: 'Juma',
-        patientNumber: 'PT-00127',
-        ward: 'Pediatric Ward',
-        admissionDate:
-          new Date()
-            .toISOString()
-            .split('T')[0],
-        status: 'Admitted',
-        createdAt:
-          new Date().toISOString()
-      }
 
-    ];
+    this.http
+      .get<any[]>(
+        `${this.apiUrl}/`
+      )
+      .subscribe({
 
-    this.persist();
+        next: data => {
+
+          const mappedPatients =
+            data.map(
+              patient =>
+                this.mapFromApi(
+                  patient
+                )
+            );
+
+
+          /*
+           * Update signal.
+           *
+           * Every component using patients()
+           * will automatically refresh.
+           */
+
+          this.patients.set(
+            mappedPatients
+          );
+
+        },
+
+
+        error: error => {
+
+          console.error(
+            'Failed to load patients from API:',
+            error
+          );
+
+        }
+
+      });
 
   }
 
 
   // =====================================================
-  // GET ALL
+  // API → ANGULAR
+  // =====================================================
+
+  private mapFromApi(
+    data: any
+  ): Patient {
+
+    return {
+
+      id:
+        Number(data.id),
+
+      firstName:
+        data.first_name ?? '',
+
+      secondName:
+        data.second_name ?? '',
+
+      lastName:
+        data.last_name ?? '',
+
+      patientNumber:
+        data.patient_number ?? '',
+
+      ward:
+        data.ward ?? '',
+
+      admissionDate:
+        data.admission_date ?? '',
+
+      status:
+        data.status === 'Discharged'
+          ? 'Discharged'
+          : 'Admitted',
+
+      createdAt:
+        data.created_at ?? ''
+
+    };
+
+  }
+
+
+  // =====================================================
+  // ANGULAR → API
+  // =====================================================
+
+  private mapToApi(
+    patient: Patient
+  ): any {
+
+    return {
+
+      first_name:
+        patient.firstName.trim(),
+
+      second_name:
+        patient.secondName.trim(),
+
+      last_name:
+        patient.lastName.trim(),
+
+      patient_number:
+        patient.patientNumber
+          .trim()
+          .toUpperCase(),
+
+      ward:
+        patient.ward.trim(),
+
+      admission_date:
+        patient.admissionDate,
+
+      status:
+        patient.status
+
+    };
+
+  }
+
+
+  // =====================================================
+  // GET ALL PATIENTS
   // =====================================================
 
   getPatients(): Patient[] {
 
-    return [...this.patients];
+    return [
+      ...this.patients()
+    ];
 
   }
 
@@ -210,7 +264,7 @@ export class PatientService {
 
   getAdmittedPatients(): Patient[] {
 
-    return this.patients.filter(
+    return this.patients().filter(
       patient =>
         patient.status === 'Admitted'
     );
@@ -219,14 +273,14 @@ export class PatientService {
 
 
   // =====================================================
-  // FIND BY INTERNAL ID
+  // GET PATIENT BY ID
   // =====================================================
 
   getPatientById(
     id: number
   ): Patient | undefined {
 
-    return this.patients.find(
+    return this.patients().find(
       patient =>
         patient.id === id
     );
@@ -235,7 +289,7 @@ export class PatientService {
 
 
   // =====================================================
-  // FIND BY PATIENT NUMBER
+  // GET PATIENT BY NUMBER
   // =====================================================
 
   getPatientByNumber(
@@ -255,7 +309,7 @@ export class PatientService {
     }
 
 
-    return this.patients.find(
+    return this.patients().find(
       patient =>
         patient.patientNumber
           .trim()
@@ -266,7 +320,7 @@ export class PatientService {
 
 
   // =====================================================
-  // CHECK DUPLICATE
+  // CHECK DUPLICATE PATIENT
   // =====================================================
 
   patientExists(
@@ -281,41 +335,140 @@ export class PatientService {
 
 
   // =====================================================
-  // ADD SINGLE PATIENT
+  // ADD PATIENT
   // =====================================================
 
   addPatient(
     patient: Patient
-  ): boolean {
+  ): Observable<Patient> {
 
-    /*
-     * Patient Number is the unique identifier.
-     * We never allow two patients with the
-     * same patient number.
-     */
+    const payload =
+      this.mapToApi(
+        patient
+      );
 
-    if (
-      this.patientExists(
-        patient.patientNumber
+
+    return this.http
+      .post<any>(
+        `${this.apiUrl}/`,
+        payload
       )
-    ) {
+      .pipe(
 
-      return false;
+        tap(
+          createdPatient => {
 
-    }
+            const mappedPatient =
+              this.mapFromApi(
+                createdPatient
+              );
 
 
-    this.patients = [
+            /*
+             * Add new patient to signal.
+             */
 
-      ...this.patients,
+            this.patients.update(
+              patients => [
+                ...patients,
+                mappedPatient
+              ]
+            );
 
-      patient
+          }
+        )
 
-    ];
+      );
 
-    this.persist();
+  }
 
-    return true;
+
+  // =====================================================
+  // UPDATE PATIENT
+  // =====================================================
+
+  updatePatient(
+    patient: Patient
+  ): Observable<Patient> {
+
+    const payload =
+      this.mapToApi(
+        patient
+      );
+
+
+    return this.http
+      .put<any>(
+        `${this.apiUrl}/${patient.id}/`,
+        payload
+      )
+      .pipe(
+
+        tap(
+          updatedPatient => {
+
+            const mappedPatient =
+              this.mapFromApi(
+                updatedPatient
+              );
+
+
+            /*
+             * Replace the old patient with
+             * the updated patient.
+             */
+
+            this.patients.update(
+              patients =>
+                patients.map(
+                  existing =>
+                    existing.id ===
+                    patient.id
+                      ? mappedPatient
+                      : existing
+                )
+            );
+
+          }
+        )
+
+      );
+
+  }
+
+
+  // =====================================================
+  // DELETE PATIENT
+  // =====================================================
+
+  deletePatient(
+    id: number
+  ): Observable<void> {
+
+    return this.http
+      .delete<void>(
+        `${this.apiUrl}/${id}/`
+      )
+      .pipe(
+
+        tap(() => {
+
+          /*
+           * Remove patient from signal after
+           * successful deletion from database.
+           */
+
+          this.patients.update(
+            patients =>
+              patients.filter(
+                patient =>
+                  patient.id !== id
+              )
+          );
+
+        })
+
+      );
 
   }
 
@@ -326,224 +479,135 @@ export class PatientService {
 
   addPatients(
     newPatients: Patient[]
-  ): {
-    added: number;
-    duplicates: number;
-  } {
-
-    let added = 0;
-
-    let duplicates = 0;
-
+  ): Observable<Patient[]> {
 
     /*
-     * Existing patient numbers.
+     * For now Excel upload sends patients
+     * one by one.
+     *
+     * Later we can create a dedicated Django
+     * bulk-upload endpoint.
      */
 
-    const existingNumbers =
-      new Set(
-        this.patients.map(
-          patient =>
-            patient.patientNumber
-              .trim()
-              .toLowerCase()
-        )
-      );
-
-
-    /*
-     * Prevent duplicates inside
-     * the same Excel file.
-     */
-
-    const importedNumbers =
-      new Set<string>();
-
-
-    const patientsToAdd:
-      Patient[] = [];
-
-
-    for (
-      const patient of newPatients
-    ) {
-
-      const number =
-        patient.patientNumber
-          .trim()
-          .toLowerCase();
-
-
-      if (!number) {
-
-        duplicates++;
-
-        continue;
-
-      }
-
-
-      /*
-       * Already exists in localStorage.
-       */
-
-      if (
-        existingNumbers.has(number)
-      ) {
-
-        duplicates++;
-
-        continue;
-
-      }
-
-
-      /*
-       * Duplicate inside Excel.
-       */
-
-      if (
-        importedNumbers.has(number)
-      ) {
-
-        duplicates++;
-
-        continue;
-
-      }
-
-
-      importedNumbers.add(number);
-
-      patientsToAdd.push(patient);
-
-      added++;
-
-    }
-
-
-    if (
-      patientsToAdd.length > 0
-    ) {
-
-      this.patients = [
-
-        ...this.patients,
-
-        ...patientsToAdd
-
-      ];
-
-      this.persist();
-
-    }
-
-
-    return {
-      added,
-      duplicates
-    };
-
-  }
-
-
-  // =====================================================
-  // UPDATE
-  // =====================================================
-
-  updatePatient(
-    patient: Patient
-  ): boolean {
-
-    const index =
-      this.patients.findIndex(
-        existing =>
-          existing.id === patient.id
-      );
-
-
-    if (index === -1) {
-
-      return false;
-
-    }
-
-
-    /*
-     * Make sure another patient
-     * does not already use this number.
-     */
-
-    const duplicate =
-      this.patients.some(
-        existing =>
-          existing.id !== patient.id &&
-          existing.patientNumber
-            .trim()
-            .toLowerCase() ===
-          patient.patientNumber
-            .trim()
-            .toLowerCase()
-      );
-
-
-    if (duplicate) {
-
-      return false;
-
-    }
-
-
-    this.patients[index] =
-      patient;
-
-    this.persist();
-
-    return true;
-
-  }
-
-
-  // =====================================================
-  // DELETE
-  // =====================================================
-
-  deletePatient(
-    id: number
-  ): void {
-
-    this.patients =
-      this.patients.filter(
+    const requests =
+      newPatients.map(
         patient =>
-          patient.id !== id
+          this.http.post<any>(
+            `${this.apiUrl}/`,
+            this.mapToApi(
+              patient
+            )
+          )
       );
 
-    this.persist();
 
-  }
+    return new Observable(
+      subscriber => {
+
+        // ---------------------------------------------
+        // NO PATIENTS
+        // ---------------------------------------------
+
+        if (
+          requests.length === 0
+        ) {
+
+          subscriber.next([]);
+
+          subscriber.complete();
+
+          return;
+
+        }
 
 
-  // =====================================================
-  // GENERATE ID
-  // =====================================================
+        // ---------------------------------------------
+        // CREATED PATIENTS
+        // ---------------------------------------------
 
-  generateId(): number {
-
-    if (
-      this.patients.length === 0
-    ) {
-
-      return 1;
-
-    }
+        const createdPatients:
+          Patient[] = [];
 
 
-    return Math.max(
-      ...this.patients.map(
-        patient =>
-          patient.id
-      )
-    ) + 1;
+        let completed = 0;
+
+
+        // ---------------------------------------------
+        // SEND REQUESTS
+        // ---------------------------------------------
+
+        requests.forEach(
+          request => {
+
+            request.subscribe({
+
+              next: data => {
+
+                const mappedPatient =
+                  this.mapFromApi(
+                    data
+                  );
+
+
+                createdPatients.push(
+                  mappedPatient
+                );
+
+
+                completed++;
+
+
+                // -----------------------------------
+                // ALL REQUESTS COMPLETED
+                // -----------------------------------
+
+                if (
+                  completed ===
+                  requests.length
+                ) {
+
+                  /*
+                   * Add uploaded patients to
+                   * the reactive signal.
+                   */
+
+                  this.patients.update(
+                    patients => [
+                      ...patients,
+                      ...createdPatients
+                    ]
+                  );
+
+
+                  subscriber.next(
+                    createdPatients
+                  );
+
+
+                  subscriber.complete();
+
+                }
+
+              },
+
+
+              error: error => {
+
+                subscriber.error(
+                  error
+                );
+
+              }
+
+            });
+
+          }
+
+        );
+
+      }
+
+    );
 
   }
 
