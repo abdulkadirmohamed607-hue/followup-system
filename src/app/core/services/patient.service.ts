@@ -15,7 +15,12 @@ import {
 
 import {
   Observable,
-  tap
+  of,
+  shareReplay,
+  tap,
+  map,
+  catchError,
+  throwError
 } from 'rxjs';
 
 import {
@@ -48,18 +53,16 @@ export class PatientService {
   // PATIENTS SIGNAL
   // =====================================================
 
-  /*
-   * This is the main source of patient data
-   * inside the Angular application.
-   *
-   * Data comes from Django/PostgreSQL.
-   *
-   * Because this is a signal, Angular automatically
-   * updates components whenever the value changes.
-   */
-
   readonly patients =
     signal<Patient[]>([]);
+
+
+  // =====================================================
+  // CURRENT LOAD REQUEST
+  // =====================================================
+
+  private patientsLoad$:
+    Observable<Patient[]> | null = null;
 
 
   // =====================================================
@@ -71,21 +74,16 @@ export class PatientService {
   ) {
 
     /*
-     * Only load patients in the browser.
+     * IMPORTANT:
      *
-     * This prevents SSR from trying to access
-     * browser-only functionality.
+     * Do NOT load patients automatically here.
+     *
+     * The component that needs patients will call
+     * ensurePatientsLoaded().
+     *
+     * This prevents unnecessary requests during
+     * Angular SSR / hydration.
      */
-
-    if (
-      isPlatformBrowser(
-        this.platformId
-      )
-    ) {
-
-      this.loadPatients();
-
-    }
 
   }
 
@@ -104,61 +102,205 @@ export class PatientService {
 
 
   // =====================================================
-  // LOAD PATIENTS FROM DATABASE
+  // LOAD PATIENTS
   // =====================================================
 
-  loadPatients(): void {
+  loadPatients():
+    Observable<Patient[]> {
+
+    // -----------------------------------------------------
+    // SSR
+    // -----------------------------------------------------
 
     if (
       !this.isBrowser()
     ) {
 
-      return;
+      return of(
+        []
+      );
 
     }
 
 
-    this.http
-      .get<any[]>(
-        `${this.apiUrl}/`
-      )
-      .subscribe({
+    // -----------------------------------------------------
+    // IF PATIENTS ALREADY EXIST
+    // -----------------------------------------------------
 
-        next: data => {
+    if (
+      this.patients().length > 0
+    ) {
 
-          const mappedPatients =
-            data.map(
+      return of(
+        this.patients()
+      );
+
+    }
+
+
+    // -----------------------------------------------------
+    // IF REQUEST ALREADY EXISTS
+    // -----------------------------------------------------
+
+    if (
+      this.patientsLoad$
+    ) {
+
+      return this.patientsLoad$;
+
+    }
+
+
+    // -----------------------------------------------------
+    // CREATE NEW REQUEST
+    // -----------------------------------------------------
+
+    this.patientsLoad$ =
+      this.http
+        .get<any>(
+          `${this.apiUrl}/`
+        )
+        .pipe(
+
+          // ===============================================
+          // HANDLE DJANGO RESPONSE
+          // ===============================================
+
+          map(response => {
+
+            /*
+             * Django DRF can return:
+             *
+             * [
+             *   {...},
+             *   {...}
+             * ]
+             *
+             * OR:
+             *
+             * {
+             *   count: 10,
+             *   results: [...]
+             * }
+             */
+
+            let data: any[] = [];
+
+
+            if (
+              Array.isArray(response)
+            ) {
+
+              data =
+                response;
+
+            }
+            else if (
+              Array.isArray(
+                response?.results
+              )
+            ) {
+
+              data =
+                response.results;
+
+            }
+
+
+            return data.map(
               patient =>
                 this.mapFromApi(
                   patient
                 )
             );
 
-
-          /*
-           * Update signal.
-           *
-           * Every component using patients()
-           * will automatically refresh.
-           */
-
-          this.patients.set(
-            mappedPatients
-          );
-
-        },
+          }),
 
 
-        error: error => {
+          // ===============================================
+          // UPDATE SIGNAL
+          // ===============================================
 
-          console.error(
-            'Failed to load patients from API:',
-            error
-          );
+          tap(
+            mappedPatients => {
 
-        }
+              this.patients.set(
+                mappedPatients
+              );
 
-      });
+            }
+          ),
+
+
+          // ===============================================
+          // HANDLE ERROR
+          // ===============================================
+
+          catchError(error => {
+
+            /*
+             * Very important:
+             *
+             * If the request fails, remove the cached
+             * Observable so the next attempt can create
+             * a fresh HTTP request.
+             */
+
+            this.patientsLoad$ =
+              null;
+
+
+            return throwError(
+              () => error
+            );
+
+          }),
+
+
+          // ===============================================
+          // SHARE REQUEST
+          // ===============================================
+
+          shareReplay({
+            bufferSize: 1,
+            refCount: false
+          })
+
+        );
+
+
+    return this.patientsLoad$;
+
+  }
+
+
+  // =====================================================
+  // ENSURE PATIENTS ARE LOADED
+  // =====================================================
+
+  ensurePatientsLoaded():
+    Observable<Patient[]> {
+
+    // -----------------------------------------------------
+    // DATA ALREADY AVAILABLE
+    // -----------------------------------------------------
+
+    if (
+      this.patients().length > 0
+    ) {
+
+      return of(
+        this.patients()
+      );
+
+    }
+
+
+    // -----------------------------------------------------
+    // LOAD FROM API
+    // -----------------------------------------------------
+
+    return this.loadPatients();
 
   }
 
@@ -174,7 +316,9 @@ export class PatientService {
     return {
 
       id:
-        Number(data.id),
+        Number(
+          data.id
+        ),
 
       firstName:
         data.first_name ?? '',
@@ -264,10 +408,11 @@ export class PatientService {
 
   getAdmittedPatients(): Patient[] {
 
-    return this.patients().filter(
-      patient =>
-        patient.status === 'Admitted'
-    );
+    return this.patients()
+      .filter(
+        patient =>
+          patient.status === 'Admitted'
+      );
 
   }
 
@@ -280,10 +425,11 @@ export class PatientService {
     id: number
   ): Patient | undefined {
 
-    return this.patients().find(
-      patient =>
-        patient.id === id
-    );
+    return this.patients()
+      .find(
+        patient =>
+          patient.id === id
+      );
 
   }
 
@@ -309,12 +455,14 @@ export class PatientService {
     }
 
 
-    return this.patients().find(
-      patient =>
-        patient.patientNumber
-          .trim()
-          .toLowerCase() === number
-    );
+    return this.patients()
+      .find(
+        patient =>
+          patient.patientNumber
+            .trim()
+            .toLowerCase() ===
+          number
+      );
 
   }
 
@@ -355,18 +503,15 @@ export class PatientService {
       )
       .pipe(
 
+        map(
+          createdPatient =>
+            this.mapFromApi(
+              createdPatient
+            )
+        ),
+
         tap(
-          createdPatient => {
-
-            const mappedPatient =
-              this.mapFromApi(
-                createdPatient
-              );
-
-
-            /*
-             * Add new patient to signal.
-             */
+          mappedPatient => {
 
             this.patients.update(
               patients => [
@@ -404,19 +549,15 @@ export class PatientService {
       )
       .pipe(
 
+        map(
+          updatedPatient =>
+            this.mapFromApi(
+              updatedPatient
+            )
+        ),
+
         tap(
-          updatedPatient => {
-
-            const mappedPatient =
-              this.mapFromApi(
-                updatedPatient
-              );
-
-
-            /*
-             * Replace the old patient with
-             * the updated patient.
-             */
+          mappedPatient => {
 
             this.patients.update(
               patients =>
@@ -424,7 +565,9 @@ export class PatientService {
                   existing =>
                     existing.id ===
                     patient.id
+
                       ? mappedPatient
+
                       : existing
                 )
             );
@@ -453,11 +596,6 @@ export class PatientService {
 
         tap(() => {
 
-          /*
-           * Remove patient from signal after
-           * successful deletion from database.
-           */
-
           this.patients.update(
             patients =>
               patients.filter(
@@ -481,32 +619,25 @@ export class PatientService {
     newPatients: Patient[]
   ): Observable<Patient[]> {
 
-    /*
-     * For now Excel upload sends patients
-     * one by one.
-     *
-     * Later we can create a dedicated Django
-     * bulk-upload endpoint.
-     */
-
     const requests =
       newPatients.map(
         patient =>
-          this.http.post<any>(
-            `${this.apiUrl}/`,
-            this.mapToApi(
-              patient
+          this.http
+            .post<any>(
+              `${this.apiUrl}/`,
+              this.mapToApi(
+                patient
+              )
             )
-          )
       );
 
 
     return new Observable(
       subscriber => {
 
-        // ---------------------------------------------
+        // -----------------------------------------------
         // NO PATIENTS
-        // ---------------------------------------------
+        // -----------------------------------------------
 
         if (
           requests.length === 0
@@ -521,9 +652,9 @@ export class PatientService {
         }
 
 
-        // ---------------------------------------------
+        // -----------------------------------------------
         // CREATED PATIENTS
-        // ---------------------------------------------
+        // -----------------------------------------------
 
         const createdPatients:
           Patient[] = [];
@@ -532,9 +663,9 @@ export class PatientService {
         let completed = 0;
 
 
-        // ---------------------------------------------
+        // -----------------------------------------------
         // SEND REQUESTS
-        // ---------------------------------------------
+        // -----------------------------------------------
 
         requests.forEach(
           request => {
@@ -557,19 +688,14 @@ export class PatientService {
                 completed++;
 
 
-                // -----------------------------------
-                // ALL REQUESTS COMPLETED
-                // -----------------------------------
+                // -------------------------------------
+                // ALL COMPLETED
+                // -------------------------------------
 
                 if (
                   completed ===
                   requests.length
                 ) {
-
-                  /*
-                   * Add uploaded patients to
-                   * the reactive signal.
-                   */
 
                   this.patients.update(
                     patients => [

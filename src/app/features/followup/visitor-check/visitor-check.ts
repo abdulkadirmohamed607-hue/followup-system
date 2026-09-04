@@ -1,59 +1,122 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import {
+  Component,
+  OnInit,
+  PLATFORM_ID,
+  inject
+} from '@angular/core';
 
-import { Patient } from '../../../core/models/patient';
+import {
+  CommonModule,
+  isPlatformBrowser
+} from '@angular/common';
+
+import {
+  FormsModule,
+  NgForm
+} from '@angular/forms';
+
+import {
+  Patient
+} from '../../../core/models/patient';
+
 import {
   Visit,
   VisitSession,
   VisitSlot,
-  VisitorGender
+  VisitorGender,
+  VisitorRelation
 } from '../../../core/models/visit';
 
-import { PatientService } from '../../../core/services/patient.service';
-import { VisitService } from '../../../core/services/visit.service';
+import {
+  PatientService
+} from '../../../core/services/patient.service';
+
+import {
+  VisitService
+} from '../../../core/services/visit.service';
+
 
 @Component({
   selector: 'app-visitor-check',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+
+  imports: [
+    CommonModule,
+    FormsModule
+  ],
+
   templateUrl: './visitor-check.html',
+
   styleUrl: './visitor-check.css'
 })
 export class VisitorCheck implements OnInit {
 
   Math = Math;
 
+  private readonly platformId =
+    inject(PLATFORM_ID);
+
+
+  // =========================================================
+  // PATIENTS
+  // =========================================================
+
   patients: Patient[] = [];
+
   searchText = '';
 
   currentPage = 1;
+
   pageSize = 10;
+
+
+  // =========================================================
+  // SESSION
+  // =========================================================
 
   selectedSession: VisitSession = 'Day';
 
-  /* =========================
-     VISITOR FORM
-  ========================= */
+
+  // =========================================================
+  // MESSAGES
+  // =========================================================
+
+  message = '';
+
+  errorMessage = '';
+
+
+  // =========================================================
+  // VISITOR FORM
+  // =========================================================
 
   showVisitorForm = false;
 
   selectedPatient: Patient | null = null;
-  selectedSlot: VisitSlot = 1;
+
+  selectedSlot: VisitSlot | null = null;
+
 
   visitorFirstName = '';
+
   visitorSecondName = '';
+
   visitorLastName = '';
+
   visitorCardNumber = '';
+
   visitorPhone = '';
-  visitorGender: VisitorGender | '' = '';
-  visitorRelation = '';
 
-  checkIn = this.getDateTimeLocal();
+  visitorGender: VisitorGender = 'Male';
 
-  /* =========================
-     VIEW VISITORS MODAL
-  ========================= */
+  visitorRelation: VisitorRelation = 'Relative';
+
+  checkIn = '';
+
+
+  // =========================================================
+  // VIEW VISITORS
+  // =========================================================
 
   showVisitorsModal = false;
 
@@ -61,108 +124,220 @@ export class VisitorCheck implements OnInit {
 
   patientVisitors: Visit[] = [];
 
-  /* =========================
-     PAGE STATE
-  ========================= */
 
-  today = this.getToday();
-  currentTime = new Date();
+  // =========================================================
+  // DATE / TIME
+  // =========================================================
 
-  message = '';
-  errorMessage = '';
+  today = '';
+
+  currentTime = '';
+
+
+  // =========================================================
+  // CONSTRUCTOR
+  // =========================================================
 
   constructor(
     private patientService: PatientService,
     private visitService: VisitService
   ) {}
 
+
+  // =========================================================
+  // INIT
+  // =========================================================
+
   ngOnInit(): void {
+
+    this.today =
+      this.getToday();
+
+    this.currentTime =
+      this.getCurrentTime();
+
+
+    /*
+     * Important:
+     * Wait for patients from API before displaying them.
+     *
+     * This fixes the problem where Visitor Check
+     * was empty after direct browser reload.
+     */
     this.loadPatients();
+
+
+    /*
+     * Do not call visits API during SSR.
+     */
+    if (
+      isPlatformBrowser(
+        this.platformId
+      )
+    ) {
+
+      this.visitService.loadVisits();
+
+    }
   }
 
-  /* =========================================================
-     PATIENTS
-  ========================================================= */
+
+  // =========================================================
+  // LOAD PATIENTS
+  // =========================================================
 
   loadPatients(): void {
-    this.patients = this.patientService.getAdmittedPatients();
-    this.currentPage = 1;
+
+    this.patientService
+      .ensurePatientsLoaded()
+      .subscribe({
+
+        next: patients => {
+
+          /*
+           * Visitor Check only shows admitted patients.
+           */
+          this.patients =
+            patients.filter(
+              patient =>
+                patient.status === 'Admitted'
+            );
+
+
+          this.currentPage = 1;
+
+        },
+
+        error: error => {
+
+          console.error(
+            'Failed to load patients for Visitor Check:',
+            error
+          );
+
+
+          this.patients = [];
+
+          this.errorMessage =
+            'Failed to load patients. Please try again.';
+
+        }
+
+      });
   }
+
+
+  // =========================================================
+  // FILTERED PATIENTS
+  // =========================================================
 
   get filteredPatients(): Patient[] {
 
-    const search = this.searchText
-      .trim()
-      .toLowerCase();
-
-    if (!search) {
-      return this.patients;
-    }
-
-    return this.patients.filter(patient => {
-
-      const name = [
-        patient.firstName,
-        patient.secondName,
-        patient.lastName
-      ]
-        .filter(value => !!value?.trim())
-        .join(' ')
+    const search =
+      this.searchText
+        .trim()
         .toLowerCase();
 
-      return (
-        name.includes(search) ||
-        patient.patientNumber
-          .toLowerCase()
-          .includes(search) ||
-        patient.ward
-          .toLowerCase()
-          .includes(search)
-      );
-    });
+
+    if (!search) {
+
+      return this.patients;
+
+    }
+
+
+    return this.patients.filter(
+      patient => {
+
+        const fullName =
+          `${patient.firstName} ${patient.secondName} ${patient.lastName}`
+            .toLowerCase();
+
+
+        return (
+          fullName.includes(search) ||
+
+          patient.patientNumber
+            .toLowerCase()
+            .includes(search) ||
+
+          patient.ward
+            .toLowerCase()
+            .includes(search)
+        );
+
+      }
+    );
   }
+
+
+  // =========================================================
+  // PAGINATION
+  // =========================================================
+
+  get totalPages(): number {
+
+    return Math.max(
+      1,
+      Math.ceil(
+        this.filteredPatients.length /
+        this.pageSize
+      )
+    );
+  }
+
 
   get paginatedPatients(): Patient[] {
 
     const start =
-      (this.currentPage - 1) * this.pageSize;
+      (this.currentPage - 1) *
+      this.pageSize;
 
-    const end =
-      start + this.pageSize;
 
     return this.filteredPatients.slice(
       start,
-      end
+      start + this.pageSize
     );
   }
 
-  get totalPages(): number {
-
-    return Math.ceil(
-      this.filteredPatients.length /
-      this.pageSize
-    );
-  }
 
   get pageNumbers(): number[] {
 
-    const total = this.totalPages;
+    const total =
+      this.totalPages;
 
+
+    /*
+     * Simple pagination for normal number
+     * of pages.
+     *
+     * Adds -1 for dots when there are many pages.
+     */
     if (total <= 7) {
 
       return Array.from(
-        { length: total },
-        (_, index) => index + 1
+        {
+          length: total
+        },
+        (_, index) =>
+          index + 1
       );
+
     }
+
 
     const pages: number[] = [];
 
+
     pages.push(1);
 
+
     if (this.currentPage > 4) {
+
       pages.push(-1);
+
     }
+
 
     const start =
       Math.max(
@@ -176,49 +351,82 @@ export class VisitorCheck implements OnInit {
         this.currentPage + 1
       );
 
+
     for (
       let page = start;
       page <= end;
       page++
     ) {
-      pages.push(page);
+
+      if (
+        !pages.includes(page)
+      ) {
+
+        pages.push(page);
+
+      }
+
     }
+
 
     if (
       this.currentPage <
       total - 3
     ) {
+
       pages.push(-1);
+
     }
 
+
     pages.push(total);
+
 
     return pages;
   }
 
-  goToPage(page: number): void {
 
-    if (
-      page < 1 ||
-      page > this.totalPages
-    ) {
-      return;
-    }
+  // =========================================================
+  // SEARCH
+  // =========================================================
 
-    this.currentPage = page;
+  onSearchChange(): void {
 
-    this.scrollTableToTop();
+    this.currentPage = 1;
+
   }
+
+
+  // =========================================================
+  // PAGE SIZE
+  // =========================================================
+
+  changePageSize(): void {
+
+    this.currentPage = 1;
+
+  }
+
+
+  // =========================================================
+  // PREVIOUS PAGE
+  // =========================================================
 
   previousPage(): void {
 
-    if (this.currentPage > 1) {
+    if (
+      this.currentPage > 1
+    ) {
 
       this.currentPage--;
 
-      this.scrollTableToTop();
     }
   }
+
+
+  // =========================================================
+  // NEXT PAGE
+  // =========================================================
 
   nextPage(): void {
 
@@ -229,88 +437,112 @@ export class VisitorCheck implements OnInit {
 
       this.currentPage++;
 
-      this.scrollTableToTop();
     }
   }
 
-  changePageSize(): void {
 
-    this.currentPage = 1;
+  // =========================================================
+  // GO TO PAGE
+  // =========================================================
 
-    this.scrollTableToTop();
+  goToPage(
+    page: number
+  ): void {
+
+    if (
+      page === -1
+    ) {
+
+      return;
+
+    }
+
+
+    if (
+      page < 1 ||
+      page > this.totalPages
+    ) {
+
+      return;
+
+    }
+
+
+    this.currentPage =
+      page;
   }
 
-  onSearchChange(): void {
 
-    this.currentPage = 1;
-  }
-
-  /* =========================================================
-     PATIENT NAME
-  ========================================================= */
+  // =========================================================
+  // PATIENT NAME
+  // =========================================================
 
   getPatientName(
     patient: Patient
   ): string {
 
-    return [
-      patient.firstName,
-      patient.secondName,
-      patient.lastName
-    ]
-      .filter(
-        name => !!name?.trim()
-      )
-      .join(' ');
-  }
-
-  /* =========================================================
-     SESSION / SLOT
-  ========================================================= */
-
-  getMaxSlots(): number {
-
-    return this.visitService.getMaxSlots(
-      this.selectedSession
-    );
-  }
-
-  isSlotAllowed(
-    slot: VisitSlot
-  ): boolean {
-
     return (
-      slot <= this.getMaxSlots()
-    );
+      `${patient.firstName} ` +
+      `${patient.secondName} ` +
+      `${patient.lastName}`
+    )
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 
-  getSlot(
-    patient: Patient,
-    slot: VisitSlot
-  ): Visit | undefined {
 
-    return this.visitService.getSlotVisit(
-      patient.id,
-      this.selectedSession,
-      slot,
-      this.today
-    );
+  // =========================================================
+  // SELECT SESSION
+  // =========================================================
+
+  selectSession(
+    session: VisitSession
+  ): void {
+
+    this.selectedSession =
+      session;
+
+
+    this.message = '';
+
+    this.errorMessage = '';
+
+
+    /*
+     * Close form when changing session.
+     */
+    this.closeForm();
+
   }
+
+
+  // =========================================================
+  // MAX VISITORS
+  // =========================================================
+
+  getMaxVisitors(): number {
+
+    if (
+      this.selectedSession ===
+      'Evening'
+    ) {
+
+      return 3;
+
+    }
+
+
+    return 2;
+  }
+
+
+  // =========================================================
+  // CHECK SLOT USED
+  // =========================================================
 
   isSlotUsed(
     patient: Patient,
-    slot: VisitSlot
-  ): boolean {
-
-    return !!this.getSlot(
-      patient,
-      slot
-    );
-  }
-
-  isCheckedIn(
-    patient: Patient,
-    slot: VisitSlot
+    slot: number
   ): boolean {
 
     const visit =
@@ -319,86 +551,143 @@ export class VisitorCheck implements OnInit {
         slot
       );
 
-    return !!visit &&
-      visit.status === 'Checked In';
+
+    return !!visit;
   }
 
-  selectSession(
-    session: VisitSession
-  ): void {
 
-    this.selectedSession = session;
+  // =========================================================
+  // GET SLOT
+  // =========================================================
 
-    this.currentPage = 1;
-
-    this.closeForm();
-
-    this.message = '';
-    this.errorMessage = '';
-  }
-
-  /* =========================================================
-     OPEN VISITOR FORM
-  ========================================================= */
-
-  openVisitorForm(
+  getSlot(
     patient: Patient,
-    slot: VisitSlot
-  ): void {
+    slot: number
+  ): Visit | undefined {
 
-    if (!this.isSlotAllowed(slot)) {
+    return this.visitService
+      .getSlotVisit(
+        patient.id,
+        this.selectedSession,
+        slot,
+        this.getToday()
+      );
+  }
 
-      this.errorMessage =
-        `Visitor ${slot} is not available during ${this.selectedSession}.`;
 
-      return;
-    }
+  // =========================================================
+  // CHECK WHETHER VISITOR IS STILL CHECKED IN
+  // =========================================================
 
-    const existing =
+  isCheckedIn(
+    patient: Patient,
+    slot: number
+  ): boolean {
+
+    const visit =
       this.getSlot(
         patient,
         slot
       );
 
-    if (existing) {
 
-      if (
-        existing.status ===
-        'Checked In'
-      ) {
+    if (!visit) {
 
-        const checkout =
-          confirm(
-            'This visitor is currently checked in. Do you want to check them out now?'
-          );
+      return false;
 
-        if (checkout) {
-          this.checkout(existing);
-        }
-      }
+    }
+
+
+    return (
+      visit.status ===
+      'Checked In'
+    );
+  }
+
+
+  // =========================================================
+  // OPEN VISITOR FORM
+  // =========================================================
+
+  openVisitorForm(
+    patient: Patient,
+    slot: number
+  ): void {
+
+    this.message = '';
+
+    this.errorMessage = '';
+
+
+    // -------------------------------------------------------
+    // PATIENT STATUS
+    // -------------------------------------------------------
+
+    if (
+      patient.status !==
+      'Admitted'
+    ) {
+
+      this.errorMessage =
+        'Only admitted patients can receive visitors.';
 
       return;
     }
 
+
+    // -------------------------------------------------------
+    // SLOT LIMIT
+    // -------------------------------------------------------
+
+    const maximum =
+      this.getMaxVisitors();
+
+
+    if (
+      slot < 1 ||
+      slot > maximum
+    ) {
+
+      this.errorMessage =
+        `${this.selectedSession} session allows only ${maximum} visitors.`;
+
+      return;
+    }
+
+
+    // -------------------------------------------------------
+    // CHECK DUPLICATE
+    // -------------------------------------------------------
+
+    if (
+      this.isSlotUsed(
+        patient,
+        slot
+      )
+    ) {
+
+      this.errorMessage =
+        `Visitor ${slot} has already been registered for this patient during the ${this.selectedSession} session.`;
+
+      return;
+    }
+
+
+    // -------------------------------------------------------
+    // SET SELECTED PATIENT
+    // -------------------------------------------------------
+
     this.selectedPatient =
       patient;
+
 
     this.selectedSlot =
       slot;
 
-    this.resetVisitorForm();
 
-    this.message = '';
-    this.errorMessage = '';
-
-    this.showVisitorForm = true;
-  }
-
-  /* =========================================================
-     RESET VISITOR FORM
-  ========================================================= */
-
-  resetVisitorForm(): void {
+    // -------------------------------------------------------
+    // RESET FORM
+    // -------------------------------------------------------
 
     this.visitorFirstName = '';
 
@@ -410,126 +699,203 @@ export class VisitorCheck implements OnInit {
 
     this.visitorPhone = '';
 
-    this.visitorGender = '';
+    this.visitorGender =
+      'Male';
 
-    this.visitorRelation = '';
+    this.visitorRelation =
+      'Relative';
+
 
     this.checkIn =
       this.getDateTimeLocal();
+
+
+    // -------------------------------------------------------
+    // SHOW MODAL
+    // -------------------------------------------------------
+
+    this.showVisitorForm =
+      true;
   }
 
-  /* =========================================================
-     SAVE VISITOR
-  ========================================================= */
+
+  // =========================================================
+  // SAVE VISITOR
+  // =========================================================
 
   saveVisitor(
-    form: any
+    visitorForm: NgForm
   ): void {
 
+    this.message = '';
+
+    this.errorMessage = '';
+
+
+    // -------------------------------------------------------
+    // FORM VALIDATION
+    // -------------------------------------------------------
+
     if (
-      !form ||
-      form.invalid ||
+      visitorForm.invalid
+    ) {
+
+      visitorForm.control.markAllAsTouched();
+
+      this.errorMessage =
+        'Please fill in all required visitor information.';
+
+      return;
+    }
+
+
+    // -------------------------------------------------------
+    // PATIENT
+    // -------------------------------------------------------
+
+    if (
       !this.selectedPatient
     ) {
 
       this.errorMessage =
-        'Please fill all required visitor information.';
+        'Please select a patient.';
 
       return;
     }
 
-    if (!this.visitorGender) {
 
-      this.errorMessage =
-        'Please select visitor gender.';
-
-      return;
-    }
+    // -------------------------------------------------------
+    // SLOT
+    // -------------------------------------------------------
 
     if (
-      !this.visitorRelation.trim()
+      this.selectedSlot === null
     ) {
 
       this.errorMessage =
-        'Please enter visitor relation to the patient.';
+        'Visitor slot is missing.';
 
       return;
     }
 
+
+    // -------------------------------------------------------
+    // CHECK DUPLICATE AGAIN
+    // -------------------------------------------------------
+
     if (
-      !this.isSlotAllowed(
+      this.isSlotUsed(
+        this.selectedPatient,
         this.selectedSlot
       )
     ) {
 
       this.errorMessage =
-        `Visitor ${this.selectedSlot} is not allowed for ${this.selectedSession}.`;
+        `Visitor ${this.selectedSlot} has already been registered for this patient during the ${this.selectedSession} session.`;
 
       return;
     }
 
-    const existing =
-      this.getSlot(
-        this.selectedPatient,
-        this.selectedSlot
-      );
 
-    if (existing) {
+    // -------------------------------------------------------
+    // CREATE VISIT
+    // -------------------------------------------------------
 
-      this.errorMessage =
-        'This visitor slot has already been used.';
+    const visit: Partial<Visit> = {
 
-      return;
-    }
-
-    const visit: Visit = {
-
-      id:
-        this.visitService.generateId(),
+      patient:
+        this.selectedPatient.id,
 
       patientId:
         this.selectedPatient.id,
-
-      patientNumber:
-        this.selectedPatient.patientNumber,
 
       patientName:
         this.getPatientName(
           this.selectedPatient
         ),
 
+      patientNumber:
+        this.selectedPatient.patientNumber,
+
       ward:
         this.selectedPatient.ward,
 
+
+      firstName:
+        this.visitorFirstName
+          .trim(),
+
+      secondName:
+        this.visitorSecondName
+          .trim(),
+
+      lastName:
+        this.visitorLastName
+          .trim(),
+
+
       visitorFirstName:
-        this.visitorFirstName.trim(),
+        this.visitorFirstName
+          .trim(),
 
       visitorSecondName:
-        this.visitorSecondName.trim(),
+        this.visitorSecondName
+          .trim(),
 
       visitorLastName:
-        this.visitorLastName.trim(),
+        this.visitorLastName
+          .trim(),
 
-      visitorCardNumber:
-        this.visitorCardNumber.trim(),
+
+      phone:
+        this.visitorPhone
+          .trim(),
 
       visitorPhone:
-        this.visitorPhone.trim(),
+        this.visitorPhone
+          .trim(),
+
+
+      cardNumber:
+        this.visitorCardNumber
+          .trim(),
+
+      visitorCardNumber:
+        this.visitorCardNumber
+          .trim(),
+
+
+      gender:
+        this.visitorGender,
 
       visitorGender:
         this.visitorGender,
 
+
+      relation:
+        this.visitorRelation,
+
       visitorRelation:
-        this.visitorRelation.trim(),
+        this.visitorRelation,
+
 
       session:
         this.selectedSession,
 
+
+      visitorNumber:
+        this.selectedSlot,
+
       slot:
         this.selectedSlot,
 
+
       visitDate:
-        this.today,
+        this.getToday(),
+
+      visitTime:
+        this.getCurrentTime(),
+
 
       checkIn:
         this.checkIn,
@@ -544,313 +910,658 @@ export class VisitorCheck implements OnInit {
         'Checked In'
     };
 
-    const saved =
-      this.visitService.addVisit(
-        visit
-      );
 
-    if (!saved) {
+    // -------------------------------------------------------
+    // SEND TO BACKEND
+    // -------------------------------------------------------
 
-      this.errorMessage =
-        'This visitor slot is already occupied or the session limit has been reached.';
+    this.visitService
+      .addVisit(visit)
+      .subscribe({
 
-      return;
-    }
+        next: savedVisit => {
 
-    this.message =
-      `Visitor ${this.selectedSlot} checked in successfully.`;
+          console.log(
+            'Visitor saved successfully:',
+            savedVisit
+          );
 
-    this.closeForm();
+
+          this.message =
+            `Visitor ${this.selectedSlot} has been successfully checked in.`;
+
+
+
+          // -------------------------------------------------
+          // CLOSE FORM
+          // -------------------------------------------------
+
+          this.closeForm();
+
+
+          // -------------------------------------------------
+          // REFRESH VISITS
+          // -------------------------------------------------
+
+          if (
+            isPlatformBrowser(
+              this.platformId
+            )
+          ) {
+
+            this.visitService
+              .loadVisits();
+
+          }
+
+        },
+
+
+        error: error => {
+
+          console.error(
+            'Failed to save visitor:',
+            error
+          );
+
+
+          this.errorMessage =
+            this.getBackendErrorMessage(
+              error
+            );
+
+        }
+
+      });
   }
 
-  /* =========================================================
-     CHECKOUT
-  ========================================================= */
+
+  // =========================================================
+  // CHECK OUT
+  // =========================================================
 
   checkout(
     visit: Visit
   ): void {
 
-    const now =
+    if (!visit) {
+
+      return;
+
+    }
+
+
+    if (!visit.id) {
+
+      this.errorMessage =
+        'Invalid visit record.';
+
+      return;
+
+    }
+
+
+    const checkoutTime =
       this.getDateTimeLocal();
 
-    const confirmed =
-      confirm(
-        `Check out ${visit.visitorFirstName} ${visit.visitorSecondName} ${visit.visitorLastName}?`
-      );
-
-    if (!confirmed) {
-      return;
-    }
 
     const success =
       this.visitService.checkoutVisit(
         visit.id,
-        now
+        checkoutTime
       );
+
 
     if (success) {
 
       this.message =
-        'Visitor checked out successfully.';
+        `${this.getVisitorFullName(visit)} has been checked out successfully.`;
+
 
       /*
-       * If the visitor details modal is currently open,
-       * refresh its data as well.
+       * Refresh visitors in the modal.
        */
       if (
-        this.showVisitorsModal &&
-        this.viewedPatient &&
-        this.viewedPatient.id ===
-        visit.patientId
+        this.viewedPatient
       ) {
 
         this.loadPatientVisitors(
-          this.viewedPatient
+          this.viewedPatient.id
         );
+
       }
+
     }
   }
 
-  /* =========================================================
-     VIEW PATIENT VISITORS
-  ========================================================= */
+
+  // =========================================================
+  // VIEW VISITORS
+  // =========================================================
 
   viewVisitors(
     patient: Patient
   ): void {
 
+    this.message = '';
+
+    this.errorMessage = '';
+
+
     this.viewedPatient =
       patient;
 
+
     this.loadPatientVisitors(
-      patient
+      patient.id
     );
 
-    this.showVisitorsModal = true;
 
-    this.message = '';
-    this.errorMessage = '';
+    this.showVisitorsModal =
+      true;
   }
 
+
+  // =========================================================
+  // LOAD PATIENT VISITORS
+  // =========================================================
+
   loadPatientVisitors(
-    patient: Patient
+    patientId: number
   ): void {
 
-    /*
-     * We show visitors for TODAY only.
-     * This keeps the View button focused on
-     * today's visiting activity.
-     */
     this.patientVisitors =
       this.visitService
         .getPatientVisitsByDate(
-          patient.id,
-          this.today
-        )
-        .sort(
-          (a, b) =>
-            a.slot - b.slot
+          patientId,
+          this.getToday()
         );
   }
 
-  closeVisitorsModal(): void {
 
-    this.showVisitorsModal =
-      false;
-
-    this.viewedPatient =
-      null;
-
-    this.patientVisitors = [];
-  }
-
-  getVisitorFullName(
-    visit: Visit
-  ): string {
-
-    return [
-      visit.visitorFirstName,
-      visit.visitorSecondName,
-      visit.visitorLastName
-    ]
-      .filter(
-        name => !!name?.trim()
-      )
-      .join(' ');
-  }
-
-  /* =========================================================
-     FORM CLOSE
-  ========================================================= */
+  // =========================================================
+  // CLOSE FORM
+  // =========================================================
 
   closeForm(): void {
 
     this.showVisitorForm =
       false;
 
+
     this.selectedPatient =
       null;
+
+
+    this.selectedSlot =
+      null;
+
+
+    this.visitorFirstName = '';
+
+    this.visitorSecondName = '';
+
+    this.visitorLastName = '';
+
+    this.visitorCardNumber = '';
+
+    this.visitorPhone = '';
+
+    this.visitorGender =
+      'Male';
+
+    this.visitorRelation =
+      'Relative';
+
+
+    this.checkIn = '';
+
   }
 
-  /* =========================================================
-     FORMAT TIME
-  ========================================================= */
+
+  // =========================================================
+  // CLOSE VISITOR FORM
+  // Alias
+  // =========================================================
+
+  closeVisitorForm(): void {
+
+    this.closeForm();
+
+  }
+
+
+  // =========================================================
+  // CLOSE VISITORS MODAL
+  // =========================================================
+
+  closeVisitorsModal(): void {
+
+    this.showVisitorsModal =
+      false;
+
+
+    this.viewedPatient =
+      null;
+
+
+    this.patientVisitors =
+      [];
+  }
+
+
+  // =========================================================
+  // GET VISITOR FULL NAME
+  // =========================================================
+
+  getVisitorFullName(
+    visit: Visit
+  ): string {
+
+    const first =
+      visit.visitorFirstName ||
+      visit.firstName ||
+      '';
+
+
+    const second =
+      visit.visitorSecondName ||
+      visit.secondName ||
+      '';
+
+
+    const last =
+      visit.visitorLastName ||
+      visit.lastName ||
+      '';
+
+
+    return (
+      `${first} ${second} ${last}`
+    )
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+
+  // =========================================================
+  // FORMAT TIME
+  // =========================================================
 
   formatTime(
-    value: string | null
+    time: string | null | undefined
   ): string {
 
-    if (!value) {
+    if (!time) {
+
       return '-';
+
     }
 
-    const date =
-      new Date(value);
 
-    return date.toLocaleTimeString(
-      [],
-      {
-        hour: '2-digit',
-        minute: '2-digit'
-      }
-    );
-  }
-
-  /* =========================================================
-     FORMAT DATE
-  ========================================================= */
-
-  formatDateTime(
-    value: string | null
-  ): string {
-
-    if (!value) {
-      return '-';
-    }
-
-    const date =
-      new Date(value);
-
-    return date.toLocaleString(
-      [],
-      {
-        dateStyle: 'medium',
-        timeStyle: 'short'
-      }
-    );
-  }
-
-  /* =========================================================
-     FORMAT DURATION
-  ========================================================= */
-
-  formatDuration(
-    minutes: number | null
-  ): string {
-
+    /*
+     * Handle datetime-local:
+     * 2026-09-04T12:30
+     */
     if (
-      minutes === null ||
-      minutes === undefined
+      time.includes('T')
     ) {
-      return '-';
-    }
 
-    const hours =
-      Math.floor(
-        minutes / 60
-      );
+      const date =
+        new Date(time);
 
-    const mins =
-      minutes % 60;
 
-    if (hours > 0) {
+      if (
+        !isNaN(
+          date.getTime()
+        )
+      ) {
 
-      return `${hours}h ${mins}m`;
-    }
-
-    return `${mins} min`;
-  }
-
-  /* =========================================================
-     TABLE SCROLL
-  ========================================================= */
-
-  private scrollTableToTop(): void {
-
-    setTimeout(() => {
-
-      const table =
-        document.querySelector(
-          '.patients-card'
+        return date.toLocaleTimeString(
+          'en-US',
+          {
+            hour: '2-digit',
+            minute: '2-digit'
+          }
         );
 
-      if (table) {
-
-        table.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
       }
 
-    }, 50);
+    }
+
+
+    /*
+     * Handle normal time:
+     * 12:30:00
+     */
+    const parts =
+      time.split(':');
+
+
+    if (
+      parts.length >= 2
+    ) {
+
+      let hour =
+        Number(parts[0]);
+
+      const minute =
+        parts[1];
+
+
+      if (
+        !isNaN(hour)
+      ) {
+
+        const suffix =
+          hour >= 12
+            ? 'PM'
+            : 'AM';
+
+
+        hour =
+          hour % 12 || 12;
+
+
+        return (
+          `${String(hour).padStart(2, '0')}:${minute} ${suffix}`
+        );
+
+      }
+
+    }
+
+
+    return time;
   }
 
-  /* =========================================================
-     TODAY
-  ========================================================= */
 
-  private getToday(): string {
+  // =========================================================
+  // FORMAT DATE
+  // =========================================================
+
+  formatDate(
+    date: string | null | undefined
+  ): string {
+
+    if (!date) {
+
+      return '-';
+
+    }
+
+
+    const parsed =
+      new Date(date);
+
+
+    if (
+      isNaN(
+        parsed.getTime()
+      )
+    ) {
+
+      return date;
+
+    }
+
+
+    return parsed.toLocaleDateString(
+      'en-GB'
+    );
+  }
+
+
+  // =========================================================
+  // GET TODAY
+  // =========================================================
+
+  getToday(): string {
 
     const now =
       new Date();
 
-    return [
-      now.getFullYear(),
-
-      String(
-        now.getMonth() + 1
-      ).padStart(2, '0'),
-
-      String(
-        now.getDate()
-      ).padStart(2, '0')
-
-    ].join('-');
-  }
-
-  /* =========================================================
-     LOCAL DATETIME
-  ========================================================= */
-
-  private getDateTimeLocal(): string {
-
-    const now =
-      new Date();
 
     const year =
       now.getFullYear();
 
+
     const month =
       String(
         now.getMonth() + 1
-      ).padStart(2, '0');
+      )
+        .padStart(
+          2,
+          '0'
+        );
+
 
     const day =
       String(
         now.getDate()
-      ).padStart(2, '0');
+      )
+        .padStart(
+          2,
+          '0'
+        );
+
+
+    return (
+      `${year}-${month}-${day}`
+    );
+  }
+
+
+  // =========================================================
+  // GET CURRENT TIME
+  // =========================================================
+
+  getCurrentTime(): string {
+
+    const now =
+      new Date();
+
 
     const hours =
       String(
         now.getHours()
-      ).padStart(2, '0');
+      )
+        .padStart(
+          2,
+          '0'
+        );
+
 
     const minutes =
       String(
         now.getMinutes()
-      ).padStart(2, '0');
+      )
+        .padStart(
+          2,
+          '0'
+        );
 
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
+
+    const seconds =
+      String(
+        now.getSeconds()
+      )
+        .padStart(
+          2,
+          '0'
+        );
+
+
+    return (
+      `${hours}:${minutes}:${seconds}`
+    );
   }
+
+
+  // =========================================================
+  // GET DATETIME LOCAL
+  // =========================================================
+
+  getDateTimeLocal(): string {
+
+    const now =
+      new Date();
+
+
+    const year =
+      now.getFullYear();
+
+
+    const month =
+      String(
+        now.getMonth() + 1
+      )
+        .padStart(
+          2,
+          '0'
+        );
+
+
+    const day =
+      String(
+        now.getDate()
+      )
+        .padStart(
+          2,
+          '0'
+        );
+
+
+    const hours =
+      String(
+        now.getHours()
+      )
+        .padStart(
+          2,
+          '0'
+        );
+
+
+    const minutes =
+      String(
+        now.getMinutes()
+      )
+        .padStart(
+          2,
+          '0'
+        );
+
+
+    return (
+      `${year}-${month}-${day}T${hours}:${minutes}`
+    );
+  }
+
+
+  // =========================================================
+  // BACKEND ERROR MESSAGE
+  // =========================================================
+
+  getBackendErrorMessage(
+    error: any
+  ): string {
+
+    if (
+      error?.error
+    ) {
+
+      const backendError =
+        error.error;
+
+
+      // -----------------------------------------------
+      // detail
+      // -----------------------------------------------
+
+      if (
+        typeof backendError.detail ===
+        'string'
+      ) {
+
+        return backendError.detail;
+
+      }
+
+
+      // -----------------------------------------------
+      // DRF FIELD ERRORS
+      // -----------------------------------------------
+
+      if (
+        typeof backendError ===
+        'object'
+      ) {
+
+        const messages: string[] =
+          [];
+
+
+        Object.keys(
+          backendError
+        ).forEach(
+          key => {
+
+            const value =
+              backendError[key];
+
+
+            if (
+              Array.isArray(value)
+            ) {
+
+              messages.push(
+                `${key}: ${value.join(', ')}`
+              );
+
+            }
+
+            else if (
+              typeof value ===
+              'string'
+            ) {
+
+              messages.push(
+                `${key}: ${value}`
+              );
+
+            }
+
+          }
+        );
+
+
+        if (
+          messages.length > 0
+        ) {
+
+          return messages.join(
+            ' '
+          );
+
+        }
+
+      }
+
+    }
+
+
+    if (
+      error?.message
+    ) {
+
+      return error.message;
+
+    }
+
+
+    return (
+      'Failed to save visitor. Please try again.'
+    );
+  }
+
 }

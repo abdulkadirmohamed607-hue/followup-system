@@ -2,11 +2,14 @@ import {
   Component,
   OnInit,
   computed,
-  signal
+  signal,
+  PLATFORM_ID,
+  inject
 } from '@angular/core';
 
 import {
-  CommonModule
+  CommonModule,
+  isPlatformBrowser
 } from '@angular/common';
 
 import {
@@ -41,6 +44,14 @@ import {
 export class UserManagement implements OnInit {
 
   // =====================================================
+  // PLATFORM
+  // =====================================================
+
+  private readonly platformId =
+    inject(PLATFORM_ID);
+
+
+  // =====================================================
   // USERS
   // =====================================================
 
@@ -58,7 +69,8 @@ export class UserManagement implements OnInit {
   // ROLE FILTER
   // =====================================================
 
-  selectedRole = signal<'All' | 'ADMIN' | 'USER'>('All');
+  selectedRole =
+    signal<'All' | 'ADMIN' | 'USER'>('All');
 
 
   // =====================================================
@@ -79,7 +91,8 @@ export class UserManagement implements OnInit {
   // STATUS UPDATE
   // =====================================================
 
-  updatingStatusUserId = signal<number | null>(null);
+  updatingStatusUserId =
+    signal<number | null>(null);
 
 
   // =====================================================
@@ -102,21 +115,24 @@ export class UserManagement implements OnInit {
 
   showUserModal = signal(false);
 
-  showResetPasswordModal = signal(false);
+  showResetPasswordModal =
+    signal(false);
 
 
   // =====================================================
   // EDIT MODE
   // =====================================================
 
-  editingUserId = signal<number | null>(null);
+  editingUserId =
+    signal<number | null>(null);
 
 
   // =====================================================
   // RESET PASSWORD USER
   // =====================================================
 
-  resetPasswordUser = signal<SystemUser | null>(null);
+  resetPasswordUser =
+    signal<SystemUser | null>(null);
 
 
   // =====================================================
@@ -156,7 +172,8 @@ export class UserManagement implements OnInit {
   // =====================================================
 
   constructor(
-    private userManagementService: UserManagementService
+    private userManagementService:
+      UserManagementService
   ) {}
 
 
@@ -166,7 +183,28 @@ export class UserManagement implements OnInit {
 
   ngOnInit(): void {
 
-    this.loadUsers();
+    /*
+     * IMPORTANT:
+     *
+     * User Management must NOT call the API
+     * during Angular SSR.
+     *
+     * During SSR there is no browser localStorage,
+     * therefore there is no JWT access token.
+     *
+     * The actual API request will happen once
+     * the application is running in the browser.
+     */
+
+    if (
+      isPlatformBrowser(
+        this.platformId
+      )
+    ) {
+
+      this.loadUsers();
+
+    }
 
   }
 
@@ -177,13 +215,36 @@ export class UserManagement implements OnInit {
 
   loadUsers(): void {
 
+    /*
+     * Extra protection:
+     *
+     * Never call the protected users endpoint
+     * from the SSR server.
+     */
+
+    if (
+      !isPlatformBrowser(
+        this.platformId
+      )
+    ) {
+
+      return;
+
+    }
+
+
     this.loading.set(true);
 
     this.errorMessage.set('');
 
+
     this.userManagementService
       .getUsers()
       .subscribe({
+
+        // =================================================
+        // SUCCESS
+        // =================================================
 
         next: users => {
 
@@ -193,16 +254,31 @@ export class UserManagement implements OnInit {
 
         },
 
-        error: (error: HttpErrorResponse) => {
+
+        // =================================================
+        // ERROR
+        // =================================================
+
+        error: (
+          error: HttpErrorResponse
+        ) => {
 
           this.loading.set(false);
+
 
           console.error(
             'LOAD USERS ERROR:',
             error
           );
 
-          if (error.status === 403) {
+
+          // ===============================================
+          // 403
+          // ===============================================
+
+          if (
+            error.status === 403
+          ) {
 
             this.errorMessage.set(
               'You are not authorized to view system users.'
@@ -212,7 +288,14 @@ export class UserManagement implements OnInit {
 
           }
 
-          if (error.status === 401) {
+
+          // ===============================================
+          // 401
+          // ===============================================
+
+          if (
+            error.status === 401
+          ) {
 
             this.errorMessage.set(
               'Your session has expired. Please login again.'
@@ -222,7 +305,14 @@ export class UserManagement implements OnInit {
 
           }
 
-          if (error.status === 0) {
+
+          // ===============================================
+          // 0
+          // ===============================================
+
+          if (
+            error.status === 0
+          ) {
 
             this.errorMessage.set(
               'Unable to connect to Django server.'
@@ -231,6 +321,11 @@ export class UserManagement implements OnInit {
             return;
 
           }
+
+
+          // ===============================================
+          // OTHER
+          // ===============================================
 
           this.errorMessage.set(
             'Unable to load system users.'
@@ -254,48 +349,59 @@ export class UserManagement implements OnInit {
         .trim()
         .toLowerCase();
 
+
     const role =
       this.selectedRole();
 
-    return this.users().filter(user => {
 
-      const fullName =
-        [
-          user.first_name,
-          user.last_name
-        ]
-          .filter(Boolean)
-          .join(' ')
-          .toLowerCase();
+    return this.users().filter(
+      user => {
 
-      const matchesSearch =
-        !search ||
+        const fullName =
+          [
+            user.first_name,
+            user.last_name
+          ]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase();
 
-        user.username
-          .toLowerCase()
-          .includes(search) ||
 
-        fullName
-          .includes(search) ||
+        const matchesSearch =
+          !search ||
 
-        String(user.email ?? '')
-          .toLowerCase()
-          .includes(search) ||
+          user.username
+            .toLowerCase()
+            .includes(search) ||
 
-        String(user.phone ?? '')
-          .toLowerCase()
-          .includes(search);
+          fullName
+            .includes(search) ||
 
-      const matchesRole =
-        role === 'All' ||
-        user.role === role;
+          String(
+            user.email ?? ''
+          )
+            .toLowerCase()
+            .includes(search) ||
 
-      return (
-        matchesSearch &&
-        matchesRole
-      );
+          String(
+            user.phone ?? ''
+          )
+            .toLowerCase()
+            .includes(search);
 
-    });
+
+        const matchesRole =
+          role === 'All' ||
+          user.role === role;
+
+
+        return (
+          matchesSearch &&
+          matchesRole
+        );
+
+      }
+    );
 
   });
 
@@ -314,7 +420,9 @@ export class UserManagement implements OnInit {
   get activeUsers(): number {
 
     return this.users()
-      .filter(user => user.is_active)
+      .filter(
+        user => user.is_active
+      )
       .length;
 
   }
@@ -323,7 +431,10 @@ export class UserManagement implements OnInit {
   get adminUsers(): number {
 
     return this.users()
-      .filter(user => user.role === 'ADMIN')
+      .filter(
+        user =>
+          user.role === 'ADMIN'
+      )
       .length;
 
   }
@@ -332,7 +443,10 @@ export class UserManagement implements OnInit {
   get normalUsers(): number {
 
     return this.users()
-      .filter(user => user.role === 'USER')
+      .filter(
+        user =>
+          user.role === 'USER'
+      )
       .length;
 
   }
@@ -364,13 +478,17 @@ export class UserManagement implements OnInit {
       value === 'USER'
     ) {
 
-      this.selectedRole.set(value);
+      this.selectedRole.set(
+        value
+      );
 
       return;
 
     }
 
-    this.selectedRole.set('All');
+    this.selectedRole.set(
+      'All'
+    );
 
   }
 
@@ -383,7 +501,9 @@ export class UserManagement implements OnInit {
 
     this.searchTerm.set('');
 
-    this.selectedRole.set('All');
+    this.selectedRole.set(
+      'All'
+    );
 
   }
 
@@ -401,6 +521,7 @@ export class UserManagement implements OnInit {
       user
     );
 
+
     if (
       this.updatingStatusUserId() !== null
     ) {
@@ -413,23 +534,28 @@ export class UserManagement implements OnInit {
 
     }
 
+
     const newStatus =
       !user.is_active;
+
 
     const action =
       newStatus
         ? 'activate'
         : 'deactivate';
 
+
     const confirmation =
       newStatus
         ? `Are you sure you want to activate "${user.username}"?`
         : `Are you sure you want to deactivate "${user.username}"?`;
 
+
     const confirmed =
       window.confirm(
         confirmation
       );
+
 
     if (!confirmed) {
 
@@ -441,6 +567,7 @@ export class UserManagement implements OnInit {
 
     }
 
+
     console.log(
       'STATUS CHANGE CONFIRMED:',
       {
@@ -450,6 +577,7 @@ export class UserManagement implements OnInit {
         newStatus
       }
     );
+
 
     this.updatingStatusUserId.set(
       user.id
@@ -484,7 +612,7 @@ export class UserManagement implements OnInit {
             updatedUser
           );
 
-          // Update frontend immediately
+
           this.users.update(
             currentUsers =>
               currentUsers.map(
@@ -492,25 +620,23 @@ export class UserManagement implements OnInit {
                   currentUser.id === user.id
                     ? {
                         ...currentUser,
-                        is_active: newStatus
+                        is_active:
+                          newStatus
                       }
                     : currentUser
               )
           );
 
+
           this.updatingStatusUserId.set(
             null
           );
+
 
           this.successMessage.set(
             newStatus
               ? `User "${user.username}" activated successfully.`
               : `User "${user.username}" deactivated successfully.`
-          );
-
-          console.log(
-            `User "${user.username}" status changed to:`,
-            newStatus
           );
 
         },
@@ -529,25 +655,31 @@ export class UserManagement implements OnInit {
             error
           );
 
+
           console.error(
             'STATUS:',
             error.status
           );
+
 
           console.error(
             'ERROR BODY:',
             error.error
           );
 
+
           this.updatingStatusUserId.set(
             null
           );
 
 
-          if (error.status === 400) {
+          if (
+            error.status === 400
+          ) {
 
             const detail =
               error.error?.detail;
+
 
             this.errorMessage.set(
               detail ||
@@ -559,7 +691,9 @@ export class UserManagement implements OnInit {
           }
 
 
-          if (error.status === 401) {
+          if (
+            error.status === 401
+          ) {
 
             this.errorMessage.set(
               'Your session has expired. Please login again.'
@@ -570,7 +704,9 @@ export class UserManagement implements OnInit {
           }
 
 
-          if (error.status === 403) {
+          if (
+            error.status === 403
+          ) {
 
             this.errorMessage.set(
               'Only administrators can change user account status.'
@@ -581,7 +717,9 @@ export class UserManagement implements OnInit {
           }
 
 
-          if (error.status === 404) {
+          if (
+            error.status === 404
+          ) {
 
             this.errorMessage.set(
               'User account was not found.'
@@ -592,7 +730,9 @@ export class UserManagement implements OnInit {
           }
 
 
-          if (error.status === 0) {
+          if (
+            error.status === 0
+          ) {
 
             this.errorMessage.set(
               'Unable to connect to Django server.'
@@ -622,9 +762,13 @@ export class UserManagement implements OnInit {
 
     this.resetUserForm();
 
-    this.editingUserId.set(null);
+    this.editingUserId.set(
+      null
+    );
 
-    this.showUserModal.set(true);
+    this.showUserModal.set(
+      true
+    );
 
   }
 
@@ -642,40 +786,53 @@ export class UserManagement implements OnInit {
       user
     );
 
+
     this.editingUserId.set(
       user.id
     );
 
+
     this.username =
       user.username;
+
 
     this.firstName =
       user.first_name;
 
+
     this.lastName =
       user.last_name;
+
 
     this.email =
       user.email;
 
+
     this.phone =
       user.phone;
+
 
     this.role =
       user.role;
 
+
     this.isActive =
       user.is_active;
+
 
     this.password = '';
 
     this.confirmPassword = '';
 
+
     this.errorMessage.set('');
 
     this.successMessage.set('');
 
-    this.showUserModal.set(true);
+
+    this.showUserModal.set(
+      true
+    );
 
   }
 
@@ -686,13 +843,19 @@ export class UserManagement implements OnInit {
 
   closeUserModal(): void {
 
-    if (this.saving()) {
+    if (
+      this.saving()
+    ) {
 
       return;
 
     }
 
-    this.showUserModal.set(false);
+
+    this.showUserModal.set(
+      false
+    );
+
 
     this.resetUserForm();
 
@@ -714,7 +877,9 @@ export class UserManagement implements OnInit {
     // REQUIRED FIELDS
     // ===================================================
 
-    if (!this.username.trim()) {
+    if (
+      !this.username.trim()
+    ) {
 
       this.errorMessage.set(
         'Username is required.'
@@ -725,7 +890,9 @@ export class UserManagement implements OnInit {
     }
 
 
-    if (!this.firstName.trim()) {
+    if (
+      !this.firstName.trim()
+    ) {
 
       this.errorMessage.set(
         'First name is required.'
@@ -736,7 +903,9 @@ export class UserManagement implements OnInit {
     }
 
 
-    if (!this.lastName.trim()) {
+    if (
+      !this.lastName.trim()
+    ) {
 
       this.errorMessage.set(
         'Last name is required.'
@@ -755,7 +924,9 @@ export class UserManagement implements OnInit {
       this.editingUserId() === null
     ) {
 
-      if (!this.password) {
+      if (
+        !this.password
+      ) {
 
         this.errorMessage.set(
           'Password is required.'
@@ -817,6 +988,7 @@ export class UserManagement implements OnInit {
               user
             );
 
+
             this.users.update(
               current => [
                 user,
@@ -824,15 +996,19 @@ export class UserManagement implements OnInit {
               ]
             );
 
+
             this.saving.set(false);
+
 
             this.successMessage.set(
               'User created successfully.'
             );
 
+
             this.showUserModal.set(
               false
             );
+
 
             this.resetUserForm();
 
@@ -853,6 +1029,7 @@ export class UserManagement implements OnInit {
 
         });
 
+
       return;
 
     }
@@ -866,7 +1043,9 @@ export class UserManagement implements OnInit {
       this.editingUserId();
 
 
-    if (userId === null) {
+    if (
+      userId === null
+    ) {
 
       return;
 
@@ -947,19 +1126,14 @@ export class UserManagement implements OnInit {
           );
 
 
-          // =================================================
-          // IMPORTANT:
-          // Update the existing frontend object using
-          // the ID we sent to Django.
-          // =================================================
-
           this.users.update(
             currentUsers =>
               currentUsers.map(
                 currentUser => {
 
                   if (
-                    currentUser.id !== userId
+                    currentUser.id !==
+                    userId
                   ) {
 
                     return currentUser;
@@ -970,11 +1144,9 @@ export class UserManagement implements OnInit {
                   return {
                     ...currentUser,
 
-                    // Keep username from existing object
                     username:
                       currentUser.username,
 
-                    // Update edited fields
                     first_name:
                       this.firstName.trim(),
 
@@ -993,7 +1165,6 @@ export class UserManagement implements OnInit {
                     is_active:
                       this.isActive,
 
-                    // Preserve backend/system fields
                     must_change_password:
                       updatedUser.must_change_password ??
                       currentUser.must_change_password,
@@ -1017,32 +1188,16 @@ export class UserManagement implements OnInit {
           );
 
 
-          // =================================================
-          // STOP SAVING
-          // =================================================
-
           this.saving.set(false);
 
-
-          // =================================================
-          // CLOSE MODAL
-          // =================================================
 
           this.showUserModal.set(
             false
           );
 
 
-          // =================================================
-          // RESET FORM
-          // =================================================
-
           this.resetUserForm();
 
-
-          // =================================================
-          // SUCCESS MESSAGE
-          // =================================================
 
           this.successMessage.set(
             `User "${updatedUser.username ?? this.username}" updated successfully.`
@@ -1067,10 +1222,12 @@ export class UserManagement implements OnInit {
 
           this.saving.set(false);
 
+
           console.error(
             'UPDATE USER ERROR:',
             error
           );
+
 
           this.handleSaveError(
             error
@@ -1097,13 +1254,17 @@ export class UserManagement implements OnInit {
     );
 
 
-    if (error.status === 400) {
+    if (
+      error.status === 400
+    ) {
 
       const data =
         error.error;
 
 
-      if (data?.username) {
+      if (
+        data?.username
+      ) {
 
         this.errorMessage.set(
           this.extractErrorMessage(
@@ -1117,7 +1278,9 @@ export class UserManagement implements OnInit {
       }
 
 
-      if (data?.password) {
+      if (
+        data?.password
+      ) {
 
         this.errorMessage.set(
           this.extractErrorMessage(
@@ -1131,7 +1294,9 @@ export class UserManagement implements OnInit {
       }
 
 
-      if (data?.email) {
+      if (
+        data?.email
+      ) {
 
         this.errorMessage.set(
           this.extractErrorMessage(
@@ -1154,7 +1319,9 @@ export class UserManagement implements OnInit {
     }
 
 
-    if (error.status === 403) {
+    if (
+      error.status === 403
+    ) {
 
       this.errorMessage.set(
         'Only administrators can manage users.'
@@ -1165,7 +1332,9 @@ export class UserManagement implements OnInit {
     }
 
 
-    if (error.status === 401) {
+    if (
+      error.status === 401
+    ) {
 
       this.errorMessage.set(
         'Your session has expired. Please login again.'
@@ -1176,7 +1345,9 @@ export class UserManagement implements OnInit {
     }
 
 
-    if (error.status === 0) {
+    if (
+      error.status === 0
+    ) {
 
       this.errorMessage.set(
         'Unable to connect to Django server.'
@@ -1203,14 +1374,20 @@ export class UserManagement implements OnInit {
     fallback: string
   ): string {
 
-    if (Array.isArray(value)) {
+    if (
+      Array.isArray(value)
+    ) {
 
-      return String(value[0]);
+      return String(
+        value[0]
+      );
 
     }
 
 
-    if (typeof value === 'string') {
+    if (
+      typeof value === 'string'
+    ) {
 
       return value;
 
@@ -1242,7 +1419,9 @@ export class UserManagement implements OnInit {
 
 
     this.userManagementService
-      .deleteUser(user.id)
+      .deleteUser(
+        user.id
+      )
       .subscribe({
 
         next: () => {
@@ -1273,7 +1452,9 @@ export class UserManagement implements OnInit {
           );
 
 
-          if (error.status === 400) {
+          if (
+            error.status === 400
+          ) {
 
             this.errorMessage.set(
               'You cannot delete your own account.'
@@ -1284,7 +1465,9 @@ export class UserManagement implements OnInit {
           }
 
 
-          if (error.status === 403) {
+          if (
+            error.status === 403
+          ) {
 
             this.errorMessage.set(
               'Only administrators can delete users.'
@@ -1295,7 +1478,9 @@ export class UserManagement implements OnInit {
           }
 
 
-          if (error.status === 401) {
+          if (
+            error.status === 401
+          ) {
 
             this.errorMessage.set(
               'Your session has expired. Please login again.'
@@ -1329,13 +1514,16 @@ export class UserManagement implements OnInit {
       user
     );
 
+
     this.resetPassword = '';
 
     this.resetConfirmPassword = '';
 
+
     this.errorMessage.set('');
 
     this.successMessage.set('');
+
 
     this.showResetPasswordModal.set(
       true
@@ -1350,7 +1538,9 @@ export class UserManagement implements OnInit {
 
   closeResetPassword(): void {
 
-    if (this.saving()) {
+    if (
+      this.saving()
+    ) {
 
       return;
 
@@ -1361,9 +1551,11 @@ export class UserManagement implements OnInit {
       false
     );
 
+
     this.resetPasswordUser.set(
       null
     );
+
 
     this.resetPassword = '';
 
@@ -1380,18 +1572,23 @@ export class UserManagement implements OnInit {
 
     this.errorMessage.set('');
 
+
     const user =
       this.resetPasswordUser();
 
 
-    if (!user) {
+    if (
+      !user
+    ) {
 
       return;
 
     }
 
 
-    if (!this.resetPassword) {
+    if (
+      !this.resetPassword
+    ) {
 
       this.errorMessage.set(
         'New password is required.'
@@ -1441,13 +1638,16 @@ export class UserManagement implements OnInit {
 
           this.saving.set(false);
 
+
           this.showResetPasswordModal.set(
             false
           );
 
+
           this.resetPasswordUser.set(
             null
           );
+
 
           this.resetPassword = '';
 
@@ -1467,19 +1667,24 @@ export class UserManagement implements OnInit {
 
           this.saving.set(false);
 
+
           console.error(
             'RESET PASSWORD ERROR:',
             error
           );
 
 
-          if (error.status === 400) {
+          if (
+            error.status === 400
+          ) {
 
             const data =
               error.error;
 
 
-            if (data?.new_password) {
+            if (
+              data?.new_password
+            ) {
 
               this.errorMessage.set(
                 this.extractErrorMessage(
@@ -1493,7 +1698,9 @@ export class UserManagement implements OnInit {
             }
 
 
-            if (data?.confirm_password) {
+            if (
+              data?.confirm_password
+            ) {
 
               this.errorMessage.set(
                 this.extractErrorMessage(
@@ -1516,7 +1723,9 @@ export class UserManagement implements OnInit {
           }
 
 
-          if (error.status === 403) {
+          if (
+            error.status === 403
+          ) {
 
             this.errorMessage.set(
               'Only administrators can reset passwords.'
@@ -1527,7 +1736,9 @@ export class UserManagement implements OnInit {
           }
 
 
-          if (error.status === 401) {
+          if (
+            error.status === 401
+          ) {
 
             this.errorMessage.set(
               'Your session has expired. Please login again.'
@@ -1572,6 +1783,7 @@ export class UserManagement implements OnInit {
     this.confirmPassword = '';
 
     this.isActive = true;
+
 
     this.editingUserId.set(
       null

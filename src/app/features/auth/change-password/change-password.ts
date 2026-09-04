@@ -1,3 +1,4 @@
+
 import {
   Component
 } from '@angular/core';
@@ -73,6 +74,10 @@ export class ChangePassword {
   showConfirmPassword = false;
 
 
+  // ==========================================
+  // CONSTRUCTOR
+  // ==========================================
+
   constructor(
 
     private authService: AuthService,
@@ -87,6 +92,8 @@ export class ChangePassword {
   // ==========================================
 
   changePassword(): void {
+
+    // Clear previous messages
 
     this.errorMessage = '';
 
@@ -127,6 +134,10 @@ export class ChangePassword {
     }
 
 
+    // ========================================
+    // CONFIRM PASSWORD VALIDATION
+    // ========================================
+
     if (
       this.newPassword !==
       this.confirmPassword
@@ -139,6 +150,10 @@ export class ChangePassword {
 
     }
 
+
+    // ========================================
+    // SAME PASSWORD VALIDATION
+    // ========================================
 
     if (
       this.oldPassword ===
@@ -154,7 +169,7 @@ export class ChangePassword {
 
 
     // ========================================
-    // LOADING
+    // START LOADING
     // ========================================
 
     this.loading = true;
@@ -162,15 +177,20 @@ export class ChangePassword {
 
     // ========================================
     // SEND REQUEST TO DJANGO
+    //
+    // AuthService expects 2 arguments:
+    // 1. old password
+    // 2. new password
+    //
+    // confirmPassword is validated above
+    // on the frontend.
     // ========================================
 
     this.authService.changePassword(
 
       this.oldPassword,
 
-      this.newPassword,
-
-      this.confirmPassword
+      this.newPassword
 
     ).subscribe({
 
@@ -186,7 +206,9 @@ export class ChangePassword {
           'Password changed successfully. Redirecting...';
 
 
-        // Clear form
+        // ====================================
+        // CLEAR FORM
+        // ====================================
 
         this.oldPassword = '';
 
@@ -228,36 +250,81 @@ export class ChangePassword {
 
 
         // ====================================
-        // CURRENT PASSWORD INCORRECT
+        // BAD REQUEST
         // ====================================
 
         if (
           error.status === 400
         ) {
 
+
+          // ----------------------------------
+          // CURRENT PASSWORD
+          // ----------------------------------
+
           if (
             error.error?.old_password
           ) {
 
-            this.errorMessage =
-              'Current password is incorrect.';
+            const message =
+              error.error.old_password;
+
+
+            if (
+              Array.isArray(message)
+            ) {
+
+              this.errorMessage =
+                message[0];
+
+            } else {
+
+              this.errorMessage =
+                message ||
+                'Current password is incorrect.';
+
+            }
 
             return;
 
           }
 
+
+          // ----------------------------------
+          // CONFIRM PASSWORD
+          // ----------------------------------
 
           if (
             error.error?.confirm_password
           ) {
 
-            this.errorMessage =
-              'New password and confirmation password do not match.';
+            const message =
+              error.error.confirm_password;
+
+
+            if (
+              Array.isArray(message)
+            ) {
+
+              this.errorMessage =
+                message[0];
+
+            } else {
+
+              this.errorMessage =
+                message ||
+                'New password and confirmation password do not match.';
+
+            }
 
             return;
 
           }
 
+
+          // ----------------------------------
+          // NEW PASSWORD
+          // ----------------------------------
 
           if (
             error.error?.new_password
@@ -286,6 +353,26 @@ export class ChangePassword {
           }
 
 
+          // ----------------------------------
+          // DETAIL MESSAGE
+          // ----------------------------------
+
+          if (
+            error.error?.detail
+          ) {
+
+            this.errorMessage =
+              error.error.detail;
+
+            return;
+
+          }
+
+
+          // ----------------------------------
+          // DEFAULT 400 ERROR
+          // ----------------------------------
+
           this.errorMessage =
             'Unable to change password. Please check your information.';
 
@@ -305,7 +392,9 @@ export class ChangePassword {
           this.errorMessage =
             'Your session has expired. Please login again.';
 
+
           this.authService.clearAuthentication();
+
 
           setTimeout(() => {
 
@@ -314,6 +403,22 @@ export class ChangePassword {
             );
 
           }, 1200);
+
+          return;
+
+        }
+
+
+        // ====================================
+        // FORBIDDEN
+        // ====================================
+
+        if (
+          error.status === 403
+        ) {
+
+          this.errorMessage =
+            'You do not have permission to change your password.';
 
           return;
 

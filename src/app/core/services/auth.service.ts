@@ -13,18 +13,18 @@ import {
 } from '@angular/common/http';
 
 import {
-  Router
-} from '@angular/router';
-
-import {
   Observable,
   tap
 } from 'rxjs';
 
 import {
+  Router
+} from '@angular/router';
+
+import {
   AuthUser,
-  ChangePasswordResponse,
   LoginResponse,
+  ChangePasswordResponse,
   UserRole
 } from '../models/auth-user';
 
@@ -34,31 +34,17 @@ import {
 })
 export class AuthService {
 
-  // ==========================================
-  // API
-  // ==========================================
-
-  private readonly API_URL =
+  private readonly apiUrl =
     'http://127.0.0.1:8000/api/auth';
 
-
-  // ==========================================
-  // STORAGE KEYS
-  // ==========================================
-
-  private readonly ACCESS_TOKEN_KEY =
+  private readonly accessTokenKey =
     'followup_access_token';
 
-  private readonly REFRESH_TOKEN_KEY =
+  private readonly refreshTokenKey =
     'followup_refresh_token';
 
-  private readonly USER_KEY =
+  private readonly authUserKey =
     'followup_auth_user';
-
-
-  // ==========================================
-  // PLATFORM
-  // ==========================================
 
   private readonly platformId =
     inject(PLATFORM_ID);
@@ -70,9 +56,9 @@ export class AuthService {
   ) {}
 
 
-  // ==========================================
-  // CHECK BROWSER
-  // ==========================================
+  // =========================================================
+  // BROWSER CHECK
+  // =========================================================
 
   private isBrowser(): boolean {
 
@@ -83,79 +69,61 @@ export class AuthService {
   }
 
 
-  // ==========================================
+  // =========================================================
   // LOGIN
-  // ==========================================
+  // =========================================================
 
   login(
     username: string,
     password: string
   ): Observable<LoginResponse> {
 
-    return this.http.post<LoginResponse>(
-      `${this.API_URL}/login/`,
-      {
-        username: username.trim(),
-        password: password
-      }
-    ).pipe(
+    return this.http
+      .post<LoginResponse>(
+        `${this.apiUrl}/login/`,
+        {
+          username,
+          password
+        }
+      )
+      .pipe(
 
-      tap(response => {
+        tap(response => {
 
-        this.saveAuthentication(
-          response
-        );
+          if (!this.isBrowser()) {
+            return;
+          }
 
-      })
+          const user =
+            this.normalizeUser(
+              response.user
+            );
 
-    );
+          localStorage.setItem(
+            this.accessTokenKey,
+            response.access
+          );
 
-  }
+          localStorage.setItem(
+            this.refreshTokenKey,
+            response.refresh
+          );
 
+          localStorage.setItem(
+            this.authUserKey,
+            JSON.stringify(user)
+          );
 
-  // ==========================================
-  // SAVE AUTHENTICATION
-  // ==========================================
+        })
 
-  private saveAuthentication(
-    response: LoginResponse
-  ): void {
-
-    if (!this.isBrowser()) {
-      return;
-    }
-
-
-    const user =
-      this.normalizeUser(
-        response.user
       );
 
-
-    localStorage.setItem(
-      this.ACCESS_TOKEN_KEY,
-      response.access
-    );
-
-
-    localStorage.setItem(
-      this.REFRESH_TOKEN_KEY,
-      response.refresh
-    );
-
-
-    localStorage.setItem(
-      this.USER_KEY,
-      JSON.stringify(user)
-    );
-
   }
 
 
-  // ==========================================
+  // =========================================================
   // NORMALIZE USER
-  // Django → Angular
-  // ==========================================
+  // =========================================================
 
   private normalizeUser(
     user: AuthUser
@@ -166,59 +134,46 @@ export class AuthService {
       ...user,
 
       role:
-        user.role.toLowerCase() as UserRole
+        String(user.role)
+          .toLowerCase() as UserRole
 
     };
 
   }
 
 
-  // ==========================================
+  // =========================================================
   // CURRENT USER
-  // ==========================================
+  // =========================================================
 
-  getCurrentUser(): AuthUser | null {
+  getCurrentUser():
+    AuthUser | null {
 
     if (!this.isBrowser()) {
       return null;
     }
 
+    const storedUser =
+      localStorage.getItem(
+        this.authUserKey
+      );
+
+    if (!storedUser) {
+      return null;
+    }
 
     try {
 
-      const data =
-        localStorage.getItem(
-          this.USER_KEY
-        );
+      return this.normalizeUser(
+        JSON.parse(storedUser)
+      );
 
+    }
+    catch {
 
-      if (!data) {
-        return null;
-      }
-
-
-      const user =
-        JSON.parse(data) as AuthUser;
-
-
-      if (
-        !user ||
-        !user.username ||
-        !user.role
-      ) {
-
-        this.clearAuthentication();
-
-        return null;
-
-      }
-
-
-      return user;
-
-    } catch {
-
-      this.clearAuthentication();
+      localStorage.removeItem(
+        this.authUserKey
+      );
 
       return null;
 
@@ -227,99 +182,292 @@ export class AuthService {
   }
 
 
-  // ==========================================
+  // =========================================================
   // ACCESS TOKEN
-  // ==========================================
+  // =========================================================
 
-  getAccessToken(): string | null {
+  getAccessToken():
+    string | null {
 
     if (!this.isBrowser()) {
       return null;
     }
 
-
     return localStorage.getItem(
-      this.ACCESS_TOKEN_KEY
+      this.accessTokenKey
     );
 
   }
 
 
-  // ==========================================
+  // =========================================================
   // REFRESH TOKEN
-  // ==========================================
+  // =========================================================
 
-  getRefreshToken(): string | null {
+  getRefreshToken():
+    string | null {
 
     if (!this.isBrowser()) {
       return null;
     }
 
-
     return localStorage.getItem(
-      this.REFRESH_TOKEN_KEY
+      this.refreshTokenKey
     );
 
   }
 
 
-  // ==========================================
-  // LOGIN STATUS
-  // ==========================================
+  // =========================================================
+  // SAVE NEW ACCESS TOKEN
+  // =========================================================
 
-  isLoggedIn(): boolean {
+  saveAccessToken(
+    accessToken: string
+  ): void {
+
+    if (!this.isBrowser()) {
+      return;
+    }
+
+    localStorage.setItem(
+      this.accessTokenKey,
+      accessToken
+    );
+
+  }
+
+
+  // =========================================================
+  // SAVE AUTHENTICATION
+  // =========================================================
+
+  private saveAuthentication(
+    response: LoginResponse
+  ): void {
+
+    if (!this.isBrowser()) {
+      return;
+    }
+
+    const user =
+      this.normalizeUser(
+        response.user
+      );
+
+    localStorage.setItem(
+      this.accessTokenKey,
+      response.access
+    );
+
+    localStorage.setItem(
+      this.refreshTokenKey,
+      response.refresh
+    );
+
+    localStorage.setItem(
+      this.authUserKey,
+      JSON.stringify(user)
+    );
+
+  }
+
+
+  // =========================================================
+  // REFRESH ACCESS TOKEN
+  // =========================================================
+
+  refreshAccessToken():
+    Observable<{ access: string }> {
+
+    const refreshToken =
+      this.getRefreshToken();
+
+    if (!refreshToken) {
+
+      throw new Error(
+        'Refresh token is not available.'
+      );
+
+    }
+
+    return this.http
+      .post<{ access: string }>(
+        `${this.apiUrl}/token/refresh/`,
+        {
+          refresh: refreshToken
+        }
+      )
+      .pipe(
+
+        tap(response => {
+
+          if (
+            response?.access
+          ) {
+
+            this.saveAccessToken(
+              response.access
+            );
+
+          }
+
+        })
+
+      );
+
+  }
+
+
+  // =========================================================
+  // CHANGE PASSWORD
+  // =========================================================
+
+  changePassword(
+    oldPassword: string,
+    newPassword: string
+  ):
+    Observable<ChangePasswordResponse> {
+
+    return this.http
+      .post<ChangePasswordResponse>(
+        `${this.apiUrl}/change-password/`,
+        {
+          old_password: oldPassword,
+          new_password: newPassword
+        }
+      )
+      .pipe(
+
+        tap(response => {
+
+          if (!this.isBrowser()) {
+            return;
+          }
+
+          const user =
+            this.getCurrentUser();
+
+          if (!user) {
+            return;
+          }
+
+          const updatedUser: AuthUser = {
+
+            ...user,
+
+            must_change_password:
+              response.must_change_password
+
+          };
+
+          localStorage.setItem(
+            this.authUserKey,
+            JSON.stringify(updatedUser)
+          );
+
+        })
+
+      );
+
+  }
+
+
+  // =========================================================
+  // LOAD CURRENT USER
+  // =========================================================
+
+  loadCurrentUser():
+    Observable<AuthUser> {
+
+    return this.http
+      .get<AuthUser>(
+        `${this.apiUrl}/me/`
+      )
+      .pipe(
+
+        tap(user => {
+
+          if (!this.isBrowser()) {
+            return;
+          }
+
+          const normalizedUser =
+            this.normalizeUser(
+              user
+            );
+
+          localStorage.setItem(
+            this.authUserKey,
+            JSON.stringify(
+              normalizedUser
+            )
+          );
+
+        })
+
+      );
+
+  }
+
+
+  // =========================================================
+  // AUTH STATUS
+  // =========================================================
+
+  isLoggedIn():
+    boolean {
 
     return !!this.getAccessToken();
 
   }
 
 
-  // ==========================================
-  // ADMIN
-  // ==========================================
-
-  isAdmin(): boolean {
-
-    return (
-      this.getCurrentUser()?.role === 'admin'
-    );
-
-  }
-
-
-  // ==========================================
-  // NORMAL USER
-  // ==========================================
-
-  isUser(): boolean {
-
-    return (
-      this.getCurrentUser()?.role === 'user'
-    );
-
-  }
-
-
-  // ==========================================
+  // =========================================================
   // ROLE CHECK
-  // ==========================================
+  // =========================================================
+
+  isAdmin():
+    boolean {
+
+    const user =
+      this.getCurrentUser();
+
+    return user?.role === 'admin';
+
+  }
+
+
+  isUser():
+    boolean {
+
+    const user =
+      this.getCurrentUser();
+
+    return user?.role === 'user';
+
+  }
+
 
   hasRole(
     role: UserRole
-  ): boolean {
+  ):
+    boolean {
 
     return (
-      this.getCurrentUser()?.role === role
+      this.getCurrentUser()
+        ?.role === role
     );
 
   }
 
 
-  // ==========================================
-  // MUST CHANGE PASSWORD
-  // ==========================================
+  // =========================================================
+  // PASSWORD CHANGE CHECK
+  // =========================================================
 
-  mustChangePassword(): boolean {
+  mustChangePassword():
+    boolean {
 
     return (
       this.getCurrentUser()
@@ -329,108 +477,9 @@ export class AuthService {
   }
 
 
-  // ==========================================
-  // CHANGE PASSWORD
-  // ==========================================
-
-  changePassword(
-    oldPassword: string,
-    newPassword: string,
-    confirmPassword: string
-  ): Observable<ChangePasswordResponse> {
-
-    return this.http.post<ChangePasswordResponse>(
-      `${this.API_URL}/change-password/`,
-      {
-        old_password: oldPassword,
-        new_password: newPassword,
-        confirm_password: confirmPassword
-      }
-    ).pipe(
-
-      tap(() => {
-
-        if (!this.isBrowser()) {
-          return;
-        }
-
-
-        const currentUser =
-          this.getCurrentUser();
-
-
-        if (!currentUser) {
-          return;
-        }
-
-
-        currentUser.must_change_password =
-          false;
-
-
-        localStorage.setItem(
-          this.USER_KEY,
-          JSON.stringify(currentUser)
-        );
-
-      })
-
-    );
-
-  }
-
-
-  // ==========================================
-  // LOAD CURRENT USER
-  // ==========================================
-
-  loadCurrentUser(): Observable<AuthUser> {
-
-    return this.http.get<AuthUser>(
-      `${this.API_URL}/me/`
-    ).pipe(
-
-      tap(user => {
-
-        if (!this.isBrowser()) {
-          return;
-        }
-
-
-        const normalizedUser =
-          this.normalizeUser(user);
-
-
-        localStorage.setItem(
-          this.USER_KEY,
-          JSON.stringify(normalizedUser)
-        );
-
-      })
-
-    );
-
-  }
-
-
-  // ==========================================
-  // LOGOUT
-  // ==========================================
-
-  logout(): void {
-
-    this.clearAuthentication();
-
-    this.router.navigateByUrl(
-      '/login'
-    );
-
-  }
-
-
-  // ==========================================
+  // =========================================================
   // CLEAR AUTHENTICATION
-  // ==========================================
+  // =========================================================
 
   clearAuthentication(): void {
 
@@ -438,18 +487,32 @@ export class AuthService {
       return;
     }
 
-
     localStorage.removeItem(
-      this.ACCESS_TOKEN_KEY
+      this.accessTokenKey
     );
 
     localStorage.removeItem(
-      this.REFRESH_TOKEN_KEY
+      this.refreshTokenKey
     );
 
     localStorage.removeItem(
-      this.USER_KEY
+      this.authUserKey
     );
+
+  }
+
+
+  // =========================================================
+  // LOGOUT
+  // =========================================================
+
+  logout(): void {
+
+    this.clearAuthentication();
+
+    this.router.navigate([
+      '/login'
+    ]);
 
   }
 
