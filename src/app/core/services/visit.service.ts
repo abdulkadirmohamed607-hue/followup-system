@@ -1,10 +1,20 @@
-import { Injectable } from '@angular/core';
+
+import {
+  Injectable,
+  PLATFORM_ID,
+  inject
+} from '@angular/core';
+
+import {
+  isPlatformBrowser
+} from '@angular/common';
 
 import {
   Visit,
   VisitSession,
   VisitSlot
 } from '../models/visit';
+
 
 @Injectable({
   providedIn: 'root'
@@ -14,12 +24,42 @@ export class VisitService {
   private readonly storageKey =
     'followup_visits';
 
+  private readonly platformId =
+    inject(PLATFORM_ID);
+
   private visits: Visit[] = [];
 
 
   constructor() {
 
-    this.loadVisits();
+    /*
+     * localStorage exists only in the browser.
+     *
+     * During Angular SSR, this service runs
+     * inside Node.js where localStorage does not exist.
+     */
+    if (
+      isPlatformBrowser(
+        this.platformId
+      )
+    ) {
+
+      this.loadVisits();
+
+    }
+
+  }
+
+
+  /* =========================================================
+     CHECK BROWSER
+  ========================================================= */
+
+  private isBrowser(): boolean {
+
+    return isPlatformBrowser(
+      this.platformId
+    );
 
   }
 
@@ -30,33 +70,51 @@ export class VisitService {
 
   private loadVisits(): void {
 
+    /*
+     * Never access localStorage during SSR.
+     */
+    if (!this.isBrowser()) {
+
+      this.visits = [];
+
+      return;
+
+    }
+
+
     const stored =
       localStorage.getItem(
         this.storageKey
       );
+
 
     if (!stored) {
 
       this.visits = [];
 
       return;
+
     }
+
 
     try {
 
       const parsed =
         JSON.parse(stored);
 
+
       this.visits =
         Array.isArray(parsed)
           ? parsed
           : [];
 
-    } catch {
+    }
+    catch {
 
       this.visits = [];
 
     }
+
   }
 
 
@@ -65,6 +123,17 @@ export class VisitService {
   ========================================================= */
 
   private persist(): void {
+
+    /*
+     * Never write to localStorage
+     * during SSR.
+     */
+    if (!this.isBrowser()) {
+
+      return;
+
+    }
+
 
     localStorage.setItem(
       this.storageKey,
@@ -184,7 +253,7 @@ export class VisitService {
 
   /* =========================================================
      MAX VISITORS
-     
+
      Morning = 2
      Day     = 2
      Evening = 3
@@ -257,9 +326,8 @@ export class VisitService {
   ): boolean {
 
     /*
-     * Prevent duplicate slot
+     * Prevent duplicate slot.
      */
-
     const exists =
       this.getSlotVisit(
         visit.patientId,
@@ -267,6 +335,7 @@ export class VisitService {
         visit.slot,
         visit.visitDate
       );
+
 
     if (exists) {
 
@@ -276,9 +345,8 @@ export class VisitService {
 
 
     /*
-     * Get maximum allowed visitors
+     * Get maximum allowed visitors.
      */
-
     const maxSlots =
       this.getMaxSlots(
         visit.session
@@ -286,9 +354,8 @@ export class VisitService {
 
 
     /*
-     * Prevent invalid slot
+     * Prevent invalid slot.
      */
-
     if (
       visit.slot > maxSlots
     ) {
@@ -299,9 +366,8 @@ export class VisitService {
 
 
     /*
-     * Count current visitors
+     * Count current visitors.
      */
-
     const currentCount =
       this.countPatientSessionVisits(
         visit.patientId,
@@ -311,9 +377,8 @@ export class VisitService {
 
 
     /*
-     * Prevent exceeding session limit
+     * Prevent exceeding session limit.
      */
-
     if (
       currentCount >= maxSlots
     ) {
@@ -324,9 +389,8 @@ export class VisitService {
 
 
     /*
-     * Save visitor
+     * Save visitor.
      */
-
     this.visits = [
       ...this.visits,
       visit
@@ -355,6 +419,7 @@ export class VisitService {
           item.id === visitId
       );
 
+
     if (!visit) {
 
       return false;
@@ -366,6 +431,7 @@ export class VisitService {
       new Date(
         visit.checkIn
       );
+
 
     const checkOut =
       new Date(
@@ -388,8 +454,10 @@ export class VisitService {
     visit.checkOut =
       checkoutTime;
 
+
     visit.durationMinutes =
       duration;
+
 
     visit.status =
       'Completed';
@@ -416,6 +484,7 @@ export class VisitService {
           visit.id !== id
       );
 
+
     this.persist();
 
   }
@@ -435,10 +504,12 @@ export class VisitService {
 
     }
 
+
     return (
       Math.max(
         ...this.visits.map(
-          visit => visit.id
+          visit =>
+            visit.id
         )
       ) + 1
     );

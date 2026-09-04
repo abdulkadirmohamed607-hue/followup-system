@@ -1,4 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+
 import { Patient } from '../models/patient';
 
 @Injectable({
@@ -8,18 +10,46 @@ export class PatientService {
 
   private readonly storageKey = 'followup_patients';
 
+  private readonly platformId = inject(PLATFORM_ID);
+
   private patients: Patient[] = [];
 
 
   constructor() {
 
-    this.loadPatients();
+    /*
+     * IMPORTANT:
+     * localStorage only exists in the browser.
+     *
+     * During Angular SSR, this service also runs
+     * inside Node.js where localStorage does not exist.
+     */
+    if (isPlatformBrowser(this.platformId)) {
 
-    if (this.patients.length === 0) {
+      this.loadPatients();
 
-      this.seedPatients();
+      /*
+       * Seed demo patients only when the browser
+       * has no patients stored.
+       */
+      if (this.patients.length === 0) {
+
+        this.seedPatients();
+
+      }
 
     }
+
+  }
+
+
+  // =====================================================
+  // CHECK BROWSER
+  // =====================================================
+
+  private isBrowser(): boolean {
+
+    return isPlatformBrowser(this.platformId);
 
   }
 
@@ -30,8 +60,21 @@ export class PatientService {
 
   private loadPatients(): void {
 
+    /*
+     * Never access localStorage during SSR.
+     */
+    if (!this.isBrowser()) {
+
+      this.patients = [];
+
+      return;
+
+    }
+
+
     const stored =
       localStorage.getItem(this.storageKey);
+
 
     if (!stored) {
 
@@ -46,6 +89,7 @@ export class PatientService {
 
       const parsed =
         JSON.parse(stored);
+
 
       this.patients =
         Array.isArray(parsed)
@@ -67,6 +111,16 @@ export class PatientService {
   // =====================================================
 
   private persist(): void {
+
+    /*
+     * localStorage is available only in browser.
+     */
+    if (!this.isBrowser()) {
+
+      return;
+
+    }
+
 
     localStorage.setItem(
       this.storageKey,
@@ -193,11 +247,13 @@ export class PatientService {
         .trim()
         .toLowerCase();
 
+
     if (!number) {
 
       return undefined;
 
     }
+
 
     return this.patients.find(
       patient =>
