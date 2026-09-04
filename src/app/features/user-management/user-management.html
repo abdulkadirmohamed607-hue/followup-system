@@ -210,7 +210,9 @@
 
   <div class="table-card">
 
-    <!-- LOADING -->
+    <!-- ===================================================
+         LOADING
+         =================================================== -->
 
     @if (loading()) {
 
@@ -288,14 +290,18 @@
 
               <tr>
 
-                <!-- NUMBER -->
+                <!-- =======================================
+                     NUMBER
+                     ======================================= -->
 
                 <td>
                   {{ i + 1 }}
                 </td>
 
 
-                <!-- USERNAME -->
+                <!-- =======================================
+                     USERNAME
+                     ======================================= -->
 
                 <td>
 
@@ -306,7 +312,9 @@
                 </td>
 
 
-                <!-- FULL NAME -->
+                <!-- =======================================
+                     FULL NAME
+                     ======================================= -->
 
                 <td>
 
@@ -319,7 +327,9 @@
                 </td>
 
 
-                <!-- EMAIL -->
+                <!-- =======================================
+                     EMAIL
+                     ======================================= -->
 
                 <td>
 
@@ -340,7 +350,9 @@
                 </td>
 
 
-                <!-- PHONE -->
+                <!-- =======================================
+                     PHONE
+                     ======================================= -->
 
                 <td>
 
@@ -361,7 +373,9 @@
                 </td>
 
 
-                <!-- ROLE -->
+                <!-- =======================================
+                     ROLE
+                     ======================================= -->
 
                 <td>
 
@@ -392,7 +406,9 @@
                 </td>
 
 
-                <!-- STATUS -->
+                <!-- =======================================
+                     STATUS
+                     ======================================= -->
 
                 <td>
 
@@ -423,7 +439,9 @@
                 </td>
 
 
-                <!-- PASSWORD STATUS -->
+                <!-- =======================================
+                     PASSWORD STATUS
+                     ======================================= -->
 
                 <td>
 
@@ -454,9 +472,13 @@
                 </td>
 
 
-                <!-- ACTIONS -->
+                <!-- =======================================
+                     ACTIONS
+                     ======================================= -->
 
                 <td class="action-cell">
+
+                  <!-- EDIT USER -->
 
                   <button
                     type="button"
@@ -470,6 +492,8 @@
                   </button>
 
 
+                  <!-- RESET PASSWORD -->
+
                   <button
                     type="button"
                     class="action-button reset"
@@ -481,6 +505,55 @@
 
                   </button>
 
+
+                  <!-- =====================================
+                       ACTIVATE / DEACTIVATE
+                       ===================================== -->
+
+                  <button
+                    type="button"
+                    class="action-button status"
+                    [class.activate]="!user.is_active"
+                    [class.deactivate]="user.is_active"
+                    [title]="
+                      user.is_active
+                        ? 'Deactivate user'
+                        : 'Activate user'
+                    "
+                    [disabled]="
+                      updatingStatusUserId() === user.id
+                    "
+                    (click)="toggleUserStatus(user)"
+                  >
+
+                    @if (
+                      updatingStatusUserId() === user.id
+                    ) {
+
+                      <span class="button-spinner"></span>
+
+                    }
+
+                    @else {
+
+                      @if (user.is_active) {
+
+                        <i class="bi bi-person-x"></i>
+
+                      }
+
+                      @else {
+
+                        <i class="bi bi-person-check"></i>
+
+                      }
+
+                    }
+
+                  </button>
+
+
+                  <!-- DELETE USER -->
 
                   <button
                     type="button"
@@ -500,7 +573,9 @@
             }
 
 
-            <!-- EMPTY -->
+            <!-- =========================================
+                 EMPTY STATE
+                 ========================================= -->
 
             @if (
               filteredUsers().length === 0
@@ -553,6 +628,10 @@
 
     <div class="user-modal">
 
+      <!-- ===============================================
+           MODAL HEADER
+           =============================================== -->
+
       <div class="modal-header">
 
         <div>
@@ -560,13 +639,19 @@
           <h2>
 
             @if (editingUserId() === null) {
+
               Add User
+
             }
+
             @else {
+
               Edit User
+
             }
 
           </h2>
+
 
           <p>
             Manage system account information.
@@ -580,11 +665,17 @@
           class="close-button"
           (click)="closeUserModal()"
         >
+
           ×
+
         </button>
 
       </div>
 
+
+      <!-- ===============================================
+           MODAL BODY
+           =============================================== -->
 
       <div class="modal-body">
 
@@ -617,6 +708,7 @@
             [disabled]="editingUserId() !== null"
             placeholder="Enter username"
           />
+
 
           @if (editingUserId() !== null) {
 
@@ -722,7 +814,10 @@
         </div>
 
 
-        <!-- STATUS - EDIT ONLY -->
+        <!-- =============================================
+             ACCOUNT STATUS
+             EDIT ONLY
+             ============================================= -->
 
         @if (editingUserId() !== null) {
 
@@ -731,6 +826,7 @@
             <label>
               Account Status
             </label>
+
 
             <select
               [(ngModel)]="isActive"
@@ -751,7 +847,10 @@
         }
 
 
-        <!-- PASSWORD - CREATE ONLY -->
+        <!-- =============================================
+             PASSWORD
+             CREATE ONLY
+             ============================================= -->
 
         @if (editingUserId() === null) {
 
@@ -761,11 +860,13 @@
               Default Password
             </label>
 
+
             <input
               type="password"
               [(ngModel)]="password"
               placeholder="Enter default password"
             />
+
 
             <small>
               The user will be required to change this password after login.
@@ -780,6 +881,7 @@
               Confirm Password
             </label>
 
+
             <input
               type="password"
               [(ngModel)]="confirmPassword"
@@ -792,6 +894,10 @@
 
       </div>
 
+
+      <!-- ===============================================
+           MODAL FOOTER
+           =============================================== -->
 
       <div class="modal-footer">
 
@@ -825,10 +931,15 @@
           @else {
 
             @if (editingUserId() === null) {
+
               Create User
+
             }
+
             @else {
+
               Save Changes
+
             }
 
           }
@@ -854,6 +965,10 @@
 
     <div class="user-modal reset-modal">
 
+      <!-- ===============================================
+           MODAL HEADER
+           =============================================== -->
+
       <div class="modal-header">
 
         <div>
@@ -862,9 +977,11 @@
             Reset Password
           </h2>
 
+
           <p>
 
             User:
+
             <strong>
               {{ resetPasswordUser()?.username }}
             </strong>
@@ -879,13 +996,21 @@
           class="close-button"
           (click)="closeResetPassword()"
         >
+
           ×
+
         </button>
 
       </div>
 
 
+      <!-- ===============================================
+           MODAL BODY
+           =============================================== -->
+
       <div class="modal-body">
+
+        <!-- ERROR -->
 
         @if (errorMessage()) {
 
@@ -900,6 +1025,8 @@
         }
 
 
+        <!-- INFO -->
+
         <div class="info-box">
 
           <i class="bi bi-info-circle"></i>
@@ -909,11 +1036,14 @@
         </div>
 
 
+        <!-- NEW PASSWORD -->
+
         <div class="form-group">
 
           <label>
             New Password
           </label>
+
 
           <input
             type="password"
@@ -924,11 +1054,14 @@
         </div>
 
 
+        <!-- CONFIRM PASSWORD -->
+
         <div class="form-group">
 
           <label>
             Confirm New Password
           </label>
+
 
           <input
             type="password"
@@ -940,6 +1073,10 @@
 
       </div>
 
+
+      <!-- ===============================================
+           MODAL FOOTER
+           =============================================== -->
 
       <div class="modal-footer">
 

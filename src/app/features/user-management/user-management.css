@@ -657,6 +657,104 @@ tbody tr:last-child td {
 
 }
 
+/* =========================================================
+   ACTIVATE / DEACTIVATE BUTTON
+   ========================================================= */
+
+.action-button.status {
+  position: relative;
+  z-index: 2;
+
+  width: 34px;
+  height: 34px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  margin: 0 2px;
+
+  border-radius: 6px;
+  border: 1px solid;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease;
+
+  pointer-events: auto;
+}
+
+/* -----------------------------------------
+   DEACTIVATE
+   ----------------------------------------- */
+
+.action-button.status.deactivate {
+  background: #fff0f0;
+  border-color: #e8b7b7;
+  color: #b94a48;
+}
+
+.action-button.status.deactivate:hover {
+  background: #ffe0e0;
+  border-color: #d99a9a;
+  transform: translateY(-1px);
+}
+
+/* -----------------------------------------
+   ACTIVATE
+   ----------------------------------------- */
+
+.action-button.status.activate {
+  background: #edf5fa;
+  border-color: #bdd8e8;
+  color: #2f6d8f;
+}
+
+.action-button.status.activate:hover {
+  background: #dcecf6;
+  border-color: #a9c8dc;
+  transform: translateY(-1px);
+}
+
+/* -----------------------------------------
+   DISABLED
+   ----------------------------------------- */
+
+.action-button.status:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none;
+}
+
+/* -----------------------------------------
+   SPINNER
+   ----------------------------------------- */
+
+.button-spinner {
+  display: inline-block;
+
+  width: 13px;
+  height: 13px;
+
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+
+  border-radius: 50%;
+
+  animation: status-button-spin 0.7s linear infinite;
+}
+
+@keyframes status-button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 
 /* =========================================================
    LOADING

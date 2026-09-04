@@ -38,6 +38,10 @@ export interface UpdateUserRequest {
   is_active: boolean;
 }
 
+export interface UpdateUserStatusRequest {
+  is_active: boolean;
+}
+
 export interface ResetPasswordRequest {
   new_password: string;
   confirm_password: string;
@@ -55,19 +59,15 @@ export class UserManagementService {
     private http: HttpClient
   ) {}
 
-
   // =====================================================
   // GET ALL USERS
   // =====================================================
 
   getUsers(): Observable<SystemUser[]> {
-
     return this.http.get<SystemUser[]>(
       `${this.API_URL}/`
     );
-
   }
-
 
   // =====================================================
   // GET SINGLE USER
@@ -76,13 +76,10 @@ export class UserManagementService {
   getUser(
     id: number
   ): Observable<SystemUser> {
-
     return this.http.get<SystemUser>(
       `${this.API_URL}/${id}/`
     );
-
   }
-
 
   // =====================================================
   // CREATE USER
@@ -91,14 +88,11 @@ export class UserManagementService {
   createUser(
     data: CreateUserRequest
   ): Observable<SystemUser> {
-
     return this.http.post<SystemUser>(
       `${this.API_URL}/`,
       data
     );
-
   }
-
 
   // =====================================================
   // UPDATE USER
@@ -108,14 +102,38 @@ export class UserManagementService {
     id: number,
     data: UpdateUserRequest
   ): Observable<SystemUser> {
+    return this.http.patch<SystemUser>(
+      `${this.API_URL}/${id}/`,
+      data
+    );
+  }
+
+  // =====================================================
+  // UPDATE USER STATUS ONLY
+  // =====================================================
+
+  updateUserStatus(
+    id: number,
+    isActive: boolean
+  ): Observable<SystemUser> {
+
+    const data: UpdateUserStatusRequest = {
+      is_active: isActive
+    };
+
+    console.log(
+      'UPDATE USER STATUS REQUEST:',
+      {
+        id,
+        data
+      }
+    );
 
     return this.http.patch<SystemUser>(
       `${this.API_URL}/${id}/`,
       data
     );
-
   }
-
 
   // =====================================================
   // DELETE USER
@@ -124,13 +142,10 @@ export class UserManagementService {
   deleteUser(
     id: number
   ): Observable<any> {
-
     return this.http.delete(
       `${this.API_URL}/${id}/`
     );
-
   }
-
 
   // =====================================================
   // RESET PASSWORD
@@ -140,12 +155,9 @@ export class UserManagementService {
     id: number,
     data: ResetPasswordRequest
   ): Observable<any> {
-
     return this.http.post(
       `${this.API_URL}/${id}/reset-password/`,
       data
     );
-
   }
-
 }

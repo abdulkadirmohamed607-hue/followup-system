@@ -76,6 +76,13 @@ export class UserManagement implements OnInit {
 
 
   // =====================================================
+  // STATUS UPDATE
+  // =====================================================
+
+  updatingStatusUserId = signal<number | null>(null);
+
+
+  // =====================================================
   // ERROR
   // =====================================================
 
@@ -261,7 +268,6 @@ export class UserManagement implements OnInit {
           .join(' ')
           .toLowerCase();
 
-
       const matchesSearch =
         !search ||
 
@@ -280,11 +286,9 @@ export class UserManagement implements OnInit {
           .toLowerCase()
           .includes(search);
 
-
       const matchesRole =
         role === 'All' ||
         user.role === role;
-
 
       return (
         matchesSearch &&
@@ -385,6 +389,232 @@ export class UserManagement implements OnInit {
 
 
   // =====================================================
+  // TOGGLE USER STATUS
+  // =====================================================
+
+  toggleUserStatus(
+    user: SystemUser
+  ): void {
+
+    console.log(
+      'TOGGLE STATUS CLICKED:',
+      user
+    );
+
+    if (
+      this.updatingStatusUserId() !== null
+    ) {
+
+      console.log(
+        'STATUS UPDATE ALREADY IN PROGRESS'
+      );
+
+      return;
+
+    }
+
+    const newStatus =
+      !user.is_active;
+
+    const action =
+      newStatus
+        ? 'activate'
+        : 'deactivate';
+
+    const confirmation =
+      newStatus
+        ? `Are you sure you want to activate "${user.username}"?`
+        : `Are you sure you want to deactivate "${user.username}"?`;
+
+    const confirmed =
+      window.confirm(
+        confirmation
+      );
+
+    if (!confirmed) {
+
+      console.log(
+        'STATUS CHANGE CANCELLED'
+      );
+
+      return;
+
+    }
+
+    console.log(
+      'STATUS CHANGE CONFIRMED:',
+      {
+        userId: user.id,
+        username: user.username,
+        oldStatus: user.is_active,
+        newStatus
+      }
+    );
+
+    this.updatingStatusUserId.set(
+      user.id
+    );
+
+    this.errorMessage.set('');
+
+    this.successMessage.set('');
+
+
+    // ===================================================
+    // SEND STATUS UPDATE TO DJANGO
+    // ===================================================
+
+    this.userManagementService
+      .updateUserStatus(
+        user.id,
+        newStatus
+      )
+      .subscribe({
+
+        // =================================================
+        // SUCCESS
+        // =================================================
+
+        next: (
+          updatedUser: SystemUser
+        ) => {
+
+          console.log(
+            'STATUS UPDATE SUCCESS:',
+            updatedUser
+          );
+
+          // Update frontend immediately
+          this.users.update(
+            currentUsers =>
+              currentUsers.map(
+                currentUser =>
+                  currentUser.id === user.id
+                    ? {
+                        ...currentUser,
+                        is_active: newStatus
+                      }
+                    : currentUser
+              )
+          );
+
+          this.updatingStatusUserId.set(
+            null
+          );
+
+          this.successMessage.set(
+            newStatus
+              ? `User "${user.username}" activated successfully.`
+              : `User "${user.username}" deactivated successfully.`
+          );
+
+          console.log(
+            `User "${user.username}" status changed to:`,
+            newStatus
+          );
+
+        },
+
+
+        // =================================================
+        // ERROR
+        // =================================================
+
+        error: (
+          error: HttpErrorResponse
+        ) => {
+
+          console.error(
+            'STATUS UPDATE ERROR:',
+            error
+          );
+
+          console.error(
+            'STATUS:',
+            error.status
+          );
+
+          console.error(
+            'ERROR BODY:',
+            error.error
+          );
+
+          this.updatingStatusUserId.set(
+            null
+          );
+
+
+          if (error.status === 400) {
+
+            const detail =
+              error.error?.detail;
+
+            this.errorMessage.set(
+              detail ||
+              `Unable to ${action} user "${user.username}".`
+            );
+
+            return;
+
+          }
+
+
+          if (error.status === 401) {
+
+            this.errorMessage.set(
+              'Your session has expired. Please login again.'
+            );
+
+            return;
+
+          }
+
+
+          if (error.status === 403) {
+
+            this.errorMessage.set(
+              'Only administrators can change user account status.'
+            );
+
+            return;
+
+          }
+
+
+          if (error.status === 404) {
+
+            this.errorMessage.set(
+              'User account was not found.'
+            );
+
+            return;
+
+          }
+
+
+          if (error.status === 0) {
+
+            this.errorMessage.set(
+              'Unable to connect to Django server.'
+            );
+
+            return;
+
+          }
+
+
+          this.errorMessage.set(
+            `Unable to ${action} user. Please try again.`
+          );
+
+        }
+
+      });
+
+  }
+
+
+  // =====================================================
   // OPEN ADD USER
   // =====================================================
 
@@ -407,21 +637,35 @@ export class UserManagement implements OnInit {
     user: SystemUser
   ): void {
 
-    this.editingUserId.set(user.id);
+    console.log(
+      'OPEN EDIT USER:',
+      user
+    );
 
-    this.username = user.username;
+    this.editingUserId.set(
+      user.id
+    );
 
-    this.firstName = user.first_name;
+    this.username =
+      user.username;
 
-    this.lastName = user.last_name;
+    this.firstName =
+      user.first_name;
 
-    this.email = user.email;
+    this.lastName =
+      user.last_name;
 
-    this.phone = user.phone;
+    this.email =
+      user.email;
 
-    this.role = user.role;
+    this.phone =
+      user.phone;
 
-    this.isActive = user.is_active;
+    this.role =
+      user.role;
+
+    this.isActive =
+      user.is_active;
 
     this.password = '';
 
@@ -466,9 +710,9 @@ export class UserManagement implements OnInit {
     this.successMessage.set('');
 
 
-    // -----------------------------------------------
+    // ===================================================
     // REQUIRED FIELDS
-    // -----------------------------------------------
+    // ===================================================
 
     if (!this.username.trim()) {
 
@@ -503,9 +747,9 @@ export class UserManagement implements OnInit {
     }
 
 
-    // -----------------------------------------------
+    // ===================================================
     // CREATE USER
-    // -----------------------------------------------
+    // ===================================================
 
     if (
       this.editingUserId() === null
@@ -568,6 +812,11 @@ export class UserManagement implements OnInit {
 
           next: user => {
 
+            console.log(
+              'CREATE USER SUCCESS:',
+              user
+            );
+
             this.users.update(
               current => [
                 user,
@@ -581,11 +830,14 @@ export class UserManagement implements OnInit {
               'User created successfully.'
             );
 
-            this.showUserModal.set(false);
+            this.showUserModal.set(
+              false
+            );
 
             this.resetUserForm();
 
           },
+
 
           error: (
             error: HttpErrorResponse
@@ -593,7 +845,9 @@ export class UserManagement implements OnInit {
 
             this.saving.set(false);
 
-            this.handleSaveError(error);
+            this.handleSaveError(
+              error
+            );
 
           }
 
@@ -604,12 +858,13 @@ export class UserManagement implements OnInit {
     }
 
 
-    // -----------------------------------------------
+    // ===================================================
     // UPDATE USER
-    // -----------------------------------------------
+    // ===================================================
 
     const userId =
       this.editingUserId();
+
 
     if (userId === null) {
 
@@ -619,6 +874,33 @@ export class UserManagement implements OnInit {
 
 
     this.saving.set(true);
+
+
+    console.log(
+      'UPDATE USER REQUEST:',
+      {
+        userId,
+        data: {
+          first_name:
+            this.firstName.trim(),
+
+          last_name:
+            this.lastName.trim(),
+
+          email:
+            this.email.trim(),
+
+          phone:
+            this.phone.trim(),
+
+          role:
+            this.role,
+
+          is_active:
+            this.isActive
+        }
+      }
+    );
 
 
     this.userManagementService
@@ -651,28 +933,133 @@ export class UserManagement implements OnInit {
       )
       .subscribe({
 
-        next: updatedUser => {
+        // =================================================
+        // UPDATE SUCCESS
+        // =================================================
+
+        next: (
+          updatedUser: SystemUser
+        ) => {
+
+          console.log(
+            'UPDATE USER SUCCESS:',
+            updatedUser
+          );
+
+
+          // =================================================
+          // IMPORTANT:
+          // Update the existing frontend object using
+          // the ID we sent to Django.
+          // =================================================
 
           this.users.update(
-            current =>
-              current.map(user =>
-                user.id === updatedUser.id
-                  ? updatedUser
-                  : user
+            currentUsers =>
+              currentUsers.map(
+                currentUser => {
+
+                  if (
+                    currentUser.id !== userId
+                  ) {
+
+                    return currentUser;
+
+                  }
+
+
+                  return {
+                    ...currentUser,
+
+                    // Keep username from existing object
+                    username:
+                      currentUser.username,
+
+                    // Update edited fields
+                    first_name:
+                      this.firstName.trim(),
+
+                    last_name:
+                      this.lastName.trim(),
+
+                    email:
+                      this.email.trim(),
+
+                    phone:
+                      this.phone.trim(),
+
+                    role:
+                      this.role,
+
+                    is_active:
+                      this.isActive,
+
+                    // Preserve backend/system fields
+                    must_change_password:
+                      updatedUser.must_change_password ??
+                      currentUser.must_change_password,
+
+                    date_joined:
+                      updatedUser.date_joined ??
+                      currentUser.date_joined,
+
+                    created_at:
+                      updatedUser.created_at ??
+                      currentUser.created_at,
+
+                    updated_at:
+                      updatedUser.updated_at ??
+                      currentUser.updated_at
+
+                  };
+
+                }
               )
           );
 
+
+          // =================================================
+          // STOP SAVING
+          // =================================================
+
           this.saving.set(false);
 
-          this.successMessage.set(
-            'User updated successfully.'
+
+          // =================================================
+          // CLOSE MODAL
+          // =================================================
+
+          this.showUserModal.set(
+            false
           );
 
-          this.showUserModal.set(false);
+
+          // =================================================
+          // RESET FORM
+          // =================================================
 
           this.resetUserForm();
 
+
+          // =================================================
+          // SUCCESS MESSAGE
+          // =================================================
+
+          this.successMessage.set(
+            `User "${updatedUser.username ?? this.username}" updated successfully.`
+          );
+
+
+          console.log(
+            'FRONTEND USER LIST UPDATED:',
+            this.users()
+          );
+
         },
+
+
+        // =================================================
+        // UPDATE ERROR
+        // =================================================
 
         error: (
           error: HttpErrorResponse
@@ -680,7 +1067,14 @@ export class UserManagement implements OnInit {
 
           this.saving.set(false);
 
-          this.handleSaveError(error);
+          console.error(
+            'UPDATE USER ERROR:',
+            error
+          );
+
+          this.handleSaveError(
+            error
+          );
 
         }
 
@@ -815,11 +1209,13 @@ export class UserManagement implements OnInit {
 
     }
 
+
     if (typeof value === 'string') {
 
       return value;
 
     }
+
 
     return fallback;
 
@@ -859,11 +1255,13 @@ export class UserManagement implements OnInit {
               )
           );
 
+
           this.successMessage.set(
             'User deleted successfully.'
           );
 
         },
+
 
         error: (
           error: HttpErrorResponse
@@ -897,6 +1295,17 @@ export class UserManagement implements OnInit {
           }
 
 
+          if (error.status === 401) {
+
+            this.errorMessage.set(
+              'Your session has expired. Please login again.'
+            );
+
+            return;
+
+          }
+
+
           this.errorMessage.set(
             'Unable to delete user.'
           );
@@ -916,7 +1325,9 @@ export class UserManagement implements OnInit {
     user: SystemUser
   ): void {
 
-    this.resetPasswordUser.set(user);
+    this.resetPasswordUser.set(
+      user
+    );
 
     this.resetPassword = '';
 
@@ -926,7 +1337,9 @@ export class UserManagement implements OnInit {
 
     this.successMessage.set('');
 
-    this.showResetPasswordModal.set(true);
+    this.showResetPasswordModal.set(
+      true
+    );
 
   }
 
@@ -943,9 +1356,14 @@ export class UserManagement implements OnInit {
 
     }
 
-    this.showResetPasswordModal.set(false);
 
-    this.resetPasswordUser.set(null);
+    this.showResetPasswordModal.set(
+      false
+    );
+
+    this.resetPasswordUser.set(
+      null
+    );
 
     this.resetPassword = '';
 
@@ -1023,19 +1441,25 @@ export class UserManagement implements OnInit {
 
           this.saving.set(false);
 
-          this.showResetPasswordModal.set(false);
+          this.showResetPasswordModal.set(
+            false
+          );
 
-          this.resetPasswordUser.set(null);
+          this.resetPasswordUser.set(
+            null
+          );
 
           this.resetPassword = '';
 
           this.resetConfirmPassword = '';
+
 
           this.successMessage.set(
             'Password reset successfully. The user must change the password after login.'
           );
 
         },
+
 
         error: (
           error: HttpErrorResponse
@@ -1103,6 +1527,17 @@ export class UserManagement implements OnInit {
           }
 
 
+          if (error.status === 401) {
+
+            this.errorMessage.set(
+              'Your session has expired. Please login again.'
+            );
+
+            return;
+
+          }
+
+
           this.errorMessage.set(
             'Unable to reset password.'
           );
@@ -1138,7 +1573,9 @@ export class UserManagement implements OnInit {
 
     this.isActive = true;
 
-    this.editingUserId.set(null);
+    this.editingUserId.set(
+      null
+    );
 
   }
 
