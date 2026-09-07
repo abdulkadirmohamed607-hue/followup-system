@@ -1,8 +1,17 @@
 import {
   Component,
   computed,
-  signal
+  signal,
+  PLATFORM_ID,
+  ChangeDetectorRef,
+  afterNextRender,
+  inject
 } from '@angular/core';
+
+import {
+  CommonModule,
+  isPlatformBrowser
+} from '@angular/common';
 
 import {
   FormsModule
@@ -28,6 +37,7 @@ import {
   standalone: true,
 
   imports: [
+    CommonModule,
     FormsModule
   ],
 
@@ -37,6 +47,17 @@ import {
 
 })
 export class UserList {
+
+  // =====================================================
+  // PLATFORM / CHANGE DETECTION
+  // =====================================================
+
+  private readonly platformId =
+    inject(PLATFORM_ID);
+
+  private readonly cdr =
+    inject(ChangeDetectorRef);
+
 
   // =====================================================
   // SEARCH
@@ -70,6 +91,17 @@ export class UserList {
 
 
   // =====================================================
+  // LOADING / ERROR
+  // =====================================================
+
+  loading =
+    signal(false);
+
+  errorMessage =
+    signal('');
+
+
+  // =====================================================
   // CONSTRUCTOR
   // =====================================================
 
@@ -81,7 +113,148 @@ export class UserList {
     private router:
       Router
 
-  ) {}
+  ) {
+
+    /*
+     * Important for Angular SSR / hydration.
+     *
+     * We wait until the browser has rendered,
+     * then load patients from the API.
+     */
+    afterNextRender(() => {
+
+      this.loadPatients();
+
+    });
+
+  }
+
+
+  // =====================================================
+  // LOAD PATIENTS
+  // =====================================================
+
+  loadPatients(): void {
+
+    /*
+     * Never call localStorage / browser API
+     * during SSR.
+     */
+    if (
+      !isPlatformBrowser(
+        this.platformId
+      )
+    ) {
+
+      return;
+
+    }
+
+
+    this.loading.set(true);
+
+    this.errorMessage.set('');
+
+
+    console.log(
+      'UserList: loading patients...'
+    );
+
+
+    this.patientService
+      .ensurePatientsLoaded()
+      .subscribe({
+
+        // -----------------------------------------------
+        // SUCCESS
+        // -----------------------------------------------
+
+        next: (patients: Patient[]) => {
+
+          console.log(
+            'UserList patients loaded:',
+            patients
+          );
+
+
+          /*
+           * PatientService already updates its
+           * signal.
+           *
+           * We don't need another local copy.
+           *
+           * Just reset pagination in case the
+           * loaded data changed.
+           */
+
+          this.currentPage.set(1);
+
+          this.loading.set(false);
+
+
+          /*
+           * Force Angular to update the UI after
+           * the asynchronous API response.
+           */
+          this.cdr.markForCheck();
+
+          this.cdr.detectChanges();
+
+        },
+
+
+        // -----------------------------------------------
+        // ERROR
+        // -----------------------------------------------
+
+        error: error => {
+
+          console.error(
+            'UserList patient loading failed:',
+            error
+          );
+
+
+          this.loading.set(false);
+
+          this.errorMessage.set(
+            'Failed to load patients.'
+          );
+
+
+          this.cdr.markForCheck();
+
+          this.cdr.detectChanges();
+
+        }
+
+      });
+
+  }
+
+
+  // =====================================================
+  // MANUAL REFRESH
+  // =====================================================
+
+  refreshPatients(): void {
+
+    /*
+     * Clear the current signal first so
+     * ensurePatientsLoaded() will call API.
+     *
+     * NOTE:
+     * This requires PatientService to expose a
+     * refresh method if you want a true forced
+     * refresh from backend.
+     *
+     * For normal page refresh/navigation,
+     * loadPatients() is enough.
+     */
+
+    this.loadPatients();
+
+  }
 
 
   // =====================================================
@@ -92,8 +265,9 @@ export class UserList {
    * Read directly from the reactive signal
    * inside PatientService.
    *
-   * Whenever the service updates patients,
-   * this component updates automatically.
+   * Once ensurePatientsLoaded() receives data
+   * from the API, this getter automatically
+   * returns the updated patients.
    */
 
   get patients(): Patient[] {
@@ -707,7 +881,7 @@ export class UserList {
            * the patient from its signal.
            *
            * filteredPatients(), pagination and
-           * summary counts will update automatically.
+           * summary counts update automatically.
            */
 
           const total =
@@ -737,6 +911,11 @@ export class UserList {
             );
 
           }
+
+
+          this.cdr.markForCheck();
+
+          this.cdr.detectChanges();
 
         },
 

@@ -2,6 +2,8 @@ import {
   Component,
   OnInit,
   PLATFORM_ID,
+  ChangeDetectorRef,
+  afterNextRender,
   inject
 } from '@angular/core';
 
@@ -53,8 +55,16 @@ export class VisitorCheck implements OnInit {
 
   Math = Math;
 
+
+  // =========================================================
+  // PLATFORM / CHANGE DETECTION
+  // =========================================================
+
   private readonly platformId =
     inject(PLATFORM_ID);
+
+  private readonly cdr =
+    inject(ChangeDetectorRef);
 
 
   // =========================================================
@@ -84,6 +94,8 @@ export class VisitorCheck implements OnInit {
   message = '';
 
   errorMessage = '';
+
+  loading = false;
 
 
   // =========================================================
@@ -141,7 +153,23 @@ export class VisitorCheck implements OnInit {
   constructor(
     private patientService: PatientService,
     private visitService: VisitService
-  ) {}
+  ) {
+
+    /*
+     * IMPORTANT:
+     *
+     * Do not load API data during SSR.
+     *
+     * afterNextRender() waits until the browser
+     * has completed rendering/hydration.
+     */
+    afterNextRender(() => {
+
+      this.initializePage();
+
+    });
+
+  }
 
 
   // =========================================================
@@ -150,6 +178,33 @@ export class VisitorCheck implements OnInit {
 
   ngOnInit(): void {
 
+    /*
+     * Intentionally empty.
+     *
+     * API loading is handled inside
+     * afterNextRender().
+     */
+
+  }
+
+
+  // =========================================================
+  // INITIALIZE PAGE
+  // =========================================================
+
+  private initializePage(): void {
+
+    if (
+      !isPlatformBrowser(
+        this.platformId
+      )
+    ) {
+
+      return;
+
+    }
+
+
     this.today =
       this.getToday();
 
@@ -157,60 +212,43 @@ export class VisitorCheck implements OnInit {
       this.getCurrentTime();
 
 
-    // -------------------------------------------------------
-    // LOAD PATIENTS
-    // -------------------------------------------------------
-
-    this.loadPatients();
-
-
-    // -------------------------------------------------------
-    // LOAD VISITS FROM DJANGO
-    // -------------------------------------------------------
-
-    if (
-      isPlatformBrowser(
-        this.platformId
-      )
-    ) {
-
-      this.visitService
-        .loadVisits()
-        .subscribe({
-
-          next: visits => {
-
-            console.log(
-              'Visits loaded successfully:',
-              visits
-            );
-
-          },
-
-          error: error => {
-
-            console.error(
-              'Failed to load visits:',
-              error
-            );
-
-            this.errorMessage =
-              'Failed to load visitors. Please try again.';
-
-          }
-
-        });
-
-    }
+    this.loadPageData();
 
   }
 
 
   // =========================================================
-  // LOAD PATIENTS
+  // LOAD PAGE DATA
   // =========================================================
 
-  loadPatients(): void {
+  loadPageData(): void {
+
+    if (
+      !isPlatformBrowser(
+        this.platformId
+      )
+    ) {
+
+      return;
+
+    }
+
+
+    this.loading = true;
+
+    this.message = '';
+
+    this.errorMessage = '';
+
+
+    console.log(
+      'Visitor Check: loading page data...'
+    );
+
+
+    // =====================================================
+    // LOAD PATIENTS
+    // =====================================================
 
     this.patientService
       .ensurePatientsLoaded()
@@ -227,7 +265,17 @@ export class VisitorCheck implements OnInit {
 
           this.currentPage = 1;
 
+
+          console.log(
+            'Visitor Check patients loaded:',
+            this.patients
+          );
+
+
+          this.cdr.markForCheck();
+
         },
+
 
         error: error => {
 
@@ -242,6 +290,141 @@ export class VisitorCheck implements OnInit {
 
           this.errorMessage =
             'Failed to load patients. Please try again.';
+
+
+          this.loading = false;
+
+
+          this.cdr.markForCheck();
+
+          this.cdr.detectChanges();
+
+        }
+
+      });
+
+
+    // =====================================================
+    // LOAD VISITS
+    // =====================================================
+
+    this.visitService
+      .loadVisits()
+      .subscribe({
+
+        next: visits => {
+
+          console.log(
+            'Visitor Check visits loaded:',
+            visits
+          );
+
+
+          this.loading = false;
+
+
+          this.cdr.markForCheck();
+
+          this.cdr.detectChanges();
+
+        },
+
+
+        error: error => {
+
+          console.error(
+            'Failed to load visits:',
+            error
+          );
+
+
+          this.errorMessage =
+            'Failed to load visitors. Please try again.';
+
+
+          this.loading = false;
+
+
+          this.cdr.markForCheck();
+
+          this.cdr.detectChanges();
+
+        }
+
+      });
+
+  }
+
+
+  // =========================================================
+  // MANUAL REFRESH
+  // =========================================================
+
+  refreshData(): void {
+
+    this.loadPageData();
+
+  }
+
+
+  // =========================================================
+  // LOAD PATIENTS ONLY
+  // =========================================================
+
+  loadPatients(): void {
+
+    if (
+      !isPlatformBrowser(
+        this.platformId
+      )
+    ) {
+
+      return;
+
+    }
+
+
+    this.patientService
+      .ensurePatientsLoaded()
+      .subscribe({
+
+        next: patients => {
+
+          this.patients =
+            patients.filter(
+              patient =>
+                patient.status === 'Admitted'
+            );
+
+
+          this.currentPage = 1;
+
+
+          this.cdr.markForCheck();
+
+          this.cdr.detectChanges();
+
+        },
+
+
+        error: error => {
+
+          console.error(
+            'Failed to load patients for Visitor Check:',
+            error
+          );
+
+
+          this.patients = [];
+
+
+          this.errorMessage =
+            'Failed to load patients. Please try again.';
+
+
+          this.cdr.markForCheck();
+
+          this.cdr.detectChanges();
 
         }
 
@@ -281,11 +464,15 @@ export class VisitorCheck implements OnInit {
 
           fullName.includes(search) ||
 
-          patient.patientNumber
+          String(
+            patient.patientNumber ?? ''
+          )
             .toLowerCase()
             .includes(search) ||
 
-          patient.ward
+          String(
+            patient.ward ?? ''
+          )
             .toLowerCase()
             .includes(search)
 
@@ -548,6 +735,13 @@ export class VisitorCheck implements OnInit {
 
     this.closeForm();
 
+
+    /*
+     * Re-render slots immediately after
+     * changing session.
+     */
+    this.cdr.markForCheck();
+
   }
 
 
@@ -557,17 +751,23 @@ export class VisitorCheck implements OnInit {
 
   getMaxVisitors(): number {
 
-    if (
-      this.selectedSession ===
-      'Evening'
+    switch (
+      this.selectedSession
     ) {
 
-      return 3;
+      case 'Morning':
+        return 2;
+
+      case 'Day':
+        return 2;
+
+      case 'Evening':
+        return 3;
+
+      default:
+        return 0;
 
     }
-
-
-    return 2;
 
   }
 
@@ -739,6 +939,9 @@ export class VisitorCheck implements OnInit {
 
     this.showVisitorForm =
       true;
+
+
+    this.cdr.markForCheck();
 
   }
 
@@ -921,9 +1124,19 @@ export class VisitorCheck implements OnInit {
     };
 
 
+    console.log(
+      'Visitor Check: saving visitor:',
+      visit
+    );
+
+
     this.visitService
       .addVisit(visit)
       .subscribe({
+
+        // -----------------------------------------------
+        // SUCCESS
+        // -----------------------------------------------
 
         next: savedVisit => {
 
@@ -941,10 +1154,10 @@ export class VisitorCheck implements OnInit {
 
 
           /*
-           * addVisit() already updates the signal.
+           * addVisit() already updates the local signal.
            *
-           * We reload from Django as an extra
-           * synchronization with PostgreSQL.
+           * We additionally reload from Django so
+           * PostgreSQL and frontend remain synchronized.
            */
 
           if (
@@ -957,13 +1170,20 @@ export class VisitorCheck implements OnInit {
               .loadVisits()
               .subscribe({
 
-                next: () => {
+                next: visits => {
 
                   console.log(
-                    'Visits refreshed successfully.'
+                    'Visits refreshed successfully:',
+                    visits
                   );
 
+
+                  this.cdr.markForCheck();
+
+                  this.cdr.detectChanges();
+
                 },
+
 
                 error: error => {
 
@@ -978,8 +1198,17 @@ export class VisitorCheck implements OnInit {
 
           }
 
+
+          this.cdr.markForCheck();
+
+          this.cdr.detectChanges();
+
         },
 
+
+        // -----------------------------------------------
+        // ERROR
+        // -----------------------------------------------
 
         error: error => {
 
@@ -993,6 +1222,11 @@ export class VisitorCheck implements OnInit {
             this.getBackendErrorMessage(
               error
             );
+
+
+          this.cdr.markForCheck();
+
+          this.cdr.detectChanges();
 
         }
 
@@ -1036,11 +1270,7 @@ export class VisitorCheck implements OnInit {
 
 
     /*
-     * IMPORTANT:
-     *
-     * checkoutVisit() now returns Observable<Visit>.
-     *
-     * It sends PATCH request to Django.
+     * checkoutVisit() sends PATCH to Django.
      */
 
     this.visitService
@@ -1063,7 +1293,7 @@ export class VisitorCheck implements OnInit {
 
 
           /*
-           * Refresh visitors in the modal
+           * Refresh visitors in the modal.
            */
 
           if (
@@ -1075,6 +1305,11 @@ export class VisitorCheck implements OnInit {
             );
 
           }
+
+
+          this.cdr.markForCheck();
+
+          this.cdr.detectChanges();
 
         },
 
@@ -1091,6 +1326,11 @@ export class VisitorCheck implements OnInit {
             this.getBackendErrorMessage(
               error
             );
+
+
+          this.cdr.markForCheck();
+
+          this.cdr.detectChanges();
 
         }
 
@@ -1124,6 +1364,9 @@ export class VisitorCheck implements OnInit {
     this.showVisitorsModal =
       true;
 
+
+    this.cdr.markForCheck();
+
   }
 
 
@@ -1144,6 +1387,9 @@ export class VisitorCheck implements OnInit {
           this.getToday()
 
         );
+
+
+    this.cdr.markForCheck();
 
   }
 
@@ -1190,7 +1436,6 @@ export class VisitorCheck implements OnInit {
 
   // =========================================================
   // CLOSE VISITOR FORM
-  // Alias
   // =========================================================
 
   closeVisitorForm(): void {

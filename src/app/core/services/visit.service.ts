@@ -25,31 +25,17 @@ import {
   VisitorRelation
 } from '../models/visit';
 
-
 @Injectable({
   providedIn: 'root'
 })
 export class VisitService {
 
-  /* =========================================================
-     DJANGO API
-     ========================================================= */
-
   private readonly apiUrl =
     'http://127.0.0.1:8000/api/visits/';
-
-
-  /* =========================================================
-     VISITS SIGNAL
-     ========================================================= */
 
   readonly visits =
     signal<Visit[]>([]);
 
-
-  /* =========================================================
-     CONSTRUCTOR
-     ========================================================= */
 
   constructor(
     private http: HttpClient
@@ -57,7 +43,7 @@ export class VisitService {
 
 
   /* =========================================================
-     LOAD ALL VISITS
+     LOAD VISITS
      ========================================================= */
 
   loadVisits(): Observable<Visit[]> {
@@ -69,29 +55,35 @@ export class VisitService {
         map(response => {
 
           /*
-           * DRF can return:
+           * Django REST Framework can return:
            *
-           * [...]
+           * [
+           *   {...},
+           *   {...}
+           * ]
            *
-           * OR
+           * OR:
            *
            * {
-           *   count: number,
+           *   count: 10,
            *   results: [...]
            * }
            */
 
-          if (
-            Array.isArray(response)
-          ) {
-
+          if (Array.isArray(response)) {
             return response;
-
           }
 
-          return response?.results ?? [];
+          if (
+            response &&
+            Array.isArray(response.results)
+          ) {
+            return response.results;
+          }
 
+          return [];
         }),
+
 
         map(
           (results: any[]) =>
@@ -101,15 +93,21 @@ export class VisitService {
             )
         ),
 
+
         tap(
           visits => {
+
+            console.log(
+              'Visits loaded from API:',
+              visits
+            );
 
             this.visits.set(
               visits
             );
-
           }
         ),
+
 
         catchError(
           (error: HttpErrorResponse) => {
@@ -124,7 +122,6 @@ export class VisitService {
             return throwError(
               () => error
             );
-
           }
         )
       );
@@ -132,7 +129,7 @@ export class VisitService {
 
 
   /* =========================================================
-     GET ALL VISITS
+     GET ALL VISITS FROM SIGNAL
      ========================================================= */
 
   getVisits(): Visit[] {
@@ -140,12 +137,11 @@ export class VisitService {
     return [
       ...this.visits()
     ];
-
   }
 
 
   /* =========================================================
-     GET VISITS FOR PATIENT
+     GET PATIENT VISITS
      ========================================================= */
 
   getPatientVisits(
@@ -157,7 +153,6 @@ export class VisitService {
         visit =>
           visit.patientId === patientId
       );
-
   }
 
 
@@ -176,12 +171,11 @@ export class VisitService {
           visit.patientId === patientId &&
           visit.visitDate === date
       );
-
   }
 
 
   /* =========================================================
-     GET VISITS FOR PATIENT + SESSION
+     GET SESSION VISITS
      ========================================================= */
 
   getSessionVisits(
@@ -195,7 +189,6 @@ export class VisitService {
           visit.patientId === patientId &&
           visit.session === session
       );
-
   }
 
 
@@ -211,8 +204,8 @@ export class VisitService {
   ): boolean {
 
     const visitDate =
-      date ?? this.getToday();
-
+      date ??
+      this.getToday();
 
     return this.visits()
       .some(
@@ -222,12 +215,16 @@ export class VisitService {
           visit.visitorNumber === visitorNumber &&
           visit.visitDate === visitDate
       );
-
   }
 
 
   /* =========================================================
-     GET MAXIMUM SLOTS
+     MAX VISITOR SLOTS
+     
+     IMPORTANT:
+     Morning = 2
+     Day     = 2
+     Evening = 3
      ========================================================= */
 
   getMaxSlots(
@@ -247,14 +244,12 @@ export class VisitService {
 
       default:
         return 0;
-
     }
-
   }
 
 
   /* =========================================================
-     GET VISIT FROM SLOT
+     GET SPECIFIC SLOT VISIT
      ========================================================= */
 
   getSlotVisit(
@@ -265,8 +260,8 @@ export class VisitService {
   ): Visit | undefined {
 
     const visitDate =
-      date ?? this.getToday();
-
+      date ??
+      this.getToday();
 
     return this.visits()
       .find(
@@ -276,7 +271,6 @@ export class VisitService {
           visit.visitorNumber === slot &&
           visit.visitDate === visitDate
       );
-
   }
 
 
@@ -287,12 +281,11 @@ export class VisitService {
   generateId(): number {
 
     return Date.now();
-
   }
 
 
   /* =========================================================
-     ADD VISITOR
+     ADD VISIT
      ========================================================= */
 
   addVisit(
@@ -366,6 +359,12 @@ export class VisitService {
     };
 
 
+    console.log(
+      'Adding visitor:',
+      payload
+    );
+
+
     return this.http
       .post<any>(
         this.apiUrl,
@@ -381,21 +380,19 @@ export class VisitService {
             )
         ),
 
+
         tap(
           savedVisit => {
 
             this.visits.update(
               currentVisits => [
-
                 savedVisit,
-
                 ...currentVisits
-
               ]
             );
-
           }
         ),
+
 
         catchError(
           (error: HttpErrorResponse) => {
@@ -408,7 +405,6 @@ export class VisitService {
             return throwError(
               () => error
             );
-
           }
         )
       );
@@ -416,7 +412,7 @@ export class VisitService {
 
 
   /* =========================================================
-     CHECKOUT VISITOR
+     CHECKOUT VISIT
      ========================================================= */
 
   checkoutVisit(
@@ -428,16 +424,6 @@ export class VisitService {
       checkoutTime ??
       this.getDateTimeLocal();
 
-
-    /*
-     * IMPORTANT:
-     *
-     * Checkout is now sent to Django.
-     *
-     * Previously this method only changed
-     * the Angular signal, so PostgreSQL
-     * remained "Checked In".
-     */
 
     return this.http
       .patch<any>(
@@ -455,24 +441,22 @@ export class VisitService {
             )
         ),
 
+
         tap(
           updatedVisit => {
 
             this.visits.update(
               currentVisits =>
-
                 currentVisits.map(
                   visit =>
-
                     visit.id === visitId
                       ? updatedVisit
                       : visit
                 )
-
             );
-
           }
         ),
+
 
         catchError(
           (error: HttpErrorResponse) => {
@@ -485,7 +469,6 @@ export class VisitService {
             return throwError(
               () => error
             );
-
           }
         )
       );
@@ -511,16 +494,14 @@ export class VisitService {
 
             this.visits.update(
               currentVisits =>
-
                 currentVisits.filter(
                   visit =>
                     visit.id !== id
                 )
-
             );
-
           }
         ),
+
 
         catchError(
           (error: HttpErrorResponse) => {
@@ -533,7 +514,6 @@ export class VisitService {
             return throwError(
               () => error
             );
-
           }
         )
       );
@@ -541,7 +521,7 @@ export class VisitService {
 
 
   /* =========================================================
-     MAP DJANGO RESPONSE
+     MAP API VISIT → ANGULAR VISIT MODEL
      ========================================================= */
 
   private mapVisit(
@@ -549,143 +529,225 @@ export class VisitService {
     fallback?: Partial<Visit>
   ): Visit {
 
+
+    /* ---------------------------------------------------------
+       VISITOR NAME
+       --------------------------------------------------------- */
+
     const firstName =
-      data.first_name ??
-      fallback?.firstName ??
-      fallback?.visitorFirstName ??
-      '';
+      this.cleanString(
+        data?.first_name ??
+        fallback?.firstName ??
+        fallback?.visitorFirstName
+      );
 
 
     const secondName =
-      data.second_name ??
-      fallback?.secondName ??
-      fallback?.visitorSecondName ??
-      '';
+      this.cleanString(
+        data?.second_name ??
+        fallback?.secondName ??
+        fallback?.visitorSecondName
+      );
 
 
     const lastName =
-      data.last_name ??
-      fallback?.lastName ??
-      fallback?.visitorLastName ??
-      '';
+      this.cleanString(
+        data?.last_name ??
+        fallback?.lastName ??
+        fallback?.visitorLastName
+      );
 
+
+    /* ---------------------------------------------------------
+       PHONE
+       --------------------------------------------------------- */
 
     const phone =
-      data.phone ??
-      fallback?.phone ??
-      fallback?.visitorPhone ??
-      '';
+      this.cleanString(
+        data?.phone ??
+        fallback?.phone ??
+        fallback?.visitorPhone
+      );
 
+
+    /* ---------------------------------------------------------
+       CARD NUMBER
+       --------------------------------------------------------- */
 
     const cardNumber =
-      data.card_number ??
-      fallback?.cardNumber ??
-      fallback?.visitorCardNumber ??
-      '';
+      this.cleanString(
+        data?.card_number ??
+        fallback?.cardNumber ??
+        fallback?.visitorCardNumber
+      );
 
+
+    /* ---------------------------------------------------------
+       PATIENT ID
+       --------------------------------------------------------- */
 
     const patientId =
       Number(
-        data.patient ??
+        data?.patient ??
+        data?.patient_id ??
         fallback?.patient ??
         fallback?.patientId ??
         0
       );
 
 
+    /* ---------------------------------------------------------
+       VISITOR NUMBER
+       --------------------------------------------------------- */
+
     const visitorNumber =
       Number(
-        data.visitor_number ??
+        data?.visitor_number ??
         fallback?.visitorNumber ??
         fallback?.slot ??
         1
       );
 
 
+    /* ---------------------------------------------------------
+       SESSION
+       
+       KEEP EXACT STRUCTURE:
+       
+       Morning
+       Day
+       Evening
+       --------------------------------------------------------- */
+
     const session =
-      (
-        data.session ??
+      this.normalizeSession(
+        data?.session ??
         fallback?.session ??
         'Day'
-      ) as VisitSession;
+      );
 
+
+    /* ---------------------------------------------------------
+       GENDER
+       --------------------------------------------------------- */
 
     const gender =
       (
-        data.gender ??
+        data?.gender ??
         fallback?.gender ??
         fallback?.visitorGender ??
         'Male'
       ) as VisitorGender;
 
 
+    /* ---------------------------------------------------------
+       RELATION
+       --------------------------------------------------------- */
+
     const relation =
       (
-        data.relation ??
+        data?.relation ??
         fallback?.relation ??
         fallback?.visitorRelation ??
         'Other'
       ) as VisitorRelation;
 
 
-    const visitDate =
-      data.visit_date ??
-      fallback?.visitDate ??
-      this.getToday();
+    /* ---------------------------------------------------------
+       DATE
+       --------------------------------------------------------- */
 
+    const visitDate =
+      this.normalizeDate(
+        data?.visit_date ??
+        fallback?.visitDate ??
+        this.getToday()
+      );
+
+
+    /* ---------------------------------------------------------
+       TIME
+       --------------------------------------------------------- */
 
     const visitTime =
-      data.visit_time ??
-      fallback?.visitTime ??
-      this.getCurrentTime();
+      this.normalizeTime(
+        data?.visit_time ??
+        fallback?.visitTime ??
+        this.getCurrentTime()
+      );
 
+
+    /* ---------------------------------------------------------
+       CREATED AT
+       --------------------------------------------------------- */
 
     const createdAt =
-      data.created_at ??
+      data?.created_at ??
       fallback?.createdAt ??
       new Date().toISOString();
 
 
-    /*
-     * Backend currently does not have
-     * a separate check_in field.
-     *
-     * Therefore use visit date + time.
-     */
+    /* ---------------------------------------------------------
+       CHECK IN
+       
+       Backend response does not contain check_in.
+       
+       Therefore construct it using:
+       
+       visit_date + visit_time
+       --------------------------------------------------------- */
 
     const checkIn =
-      data.check_in ??
+      data?.check_in ??
       fallback?.checkIn ??
       `${visitDate}T${visitTime}`;
 
 
-    /*
-     * Backend checkout field.
-     */
+    /* ---------------------------------------------------------
+       CHECK OUT
+       --------------------------------------------------------- */
 
     const checkOut =
-      data.check_out ??
+      data?.check_out ??
       fallback?.checkOut ??
       null;
 
 
-    /*
-     * Backend duration.
-     */
+    /* ---------------------------------------------------------
+       DURATION
+       --------------------------------------------------------- */
 
-    const durationMinutes =
-      data.duration_minutes ??
+    let durationMinutes =
+      data?.duration_minutes ??
       fallback?.durationMinutes ??
       null;
 
 
     /*
-     * Backend status.
+     * If backend did not provide duration,
+     * calculate it from check-in and check-out.
      */
+
+    if (
+      durationMinutes === null &&
+      checkOut
+    ) {
+
+      durationMinutes =
+        this.calculateDuration(
+          checkIn,
+          checkOut
+        );
+    }
+
+
+    /* ---------------------------------------------------------
+       STATUS
+       --------------------------------------------------------- */
 
     const status =
       (
-        data.status ??
+        data?.status ??
         fallback?.status ??
         (
           checkOut
@@ -695,19 +757,21 @@ export class VisitService {
       ) as VisitStatus;
 
 
+    /* ---------------------------------------------------------
+       FINAL ANGULAR MODEL
+       --------------------------------------------------------- */
+
     return {
 
       id:
         Number(
-          data.id ??
+          data?.id ??
           fallback?.id ??
           this.generateId()
         ),
 
 
-      /* =====================================================
-         PATIENT
-         ===================================================== */
+      /* PATIENT */
 
       patient:
         patientId,
@@ -716,24 +780,25 @@ export class VisitService {
         patientId,
 
       patientName:
-        data.patient_name ??
-        fallback?.patientName ??
-        '',
+        this.cleanString(
+          data?.patient_name ??
+          fallback?.patientName
+        ),
 
       patientNumber:
-        data.patient_number ??
-        fallback?.patientNumber ??
-        '',
+        this.cleanString(
+          data?.patient_number ??
+          fallback?.patientNumber
+        ),
 
       ward:
-        data.ward ??
-        fallback?.ward ??
-        '',
+        this.cleanString(
+          data?.ward ??
+          fallback?.ward
+        ),
 
 
-      /* =====================================================
-         VISITOR
-         ===================================================== */
+      /* VISITOR NAMES */
 
       firstName:
         firstName,
@@ -754,15 +819,16 @@ export class VisitService {
         lastName,
 
 
-      /* =====================================================
-         CONTACT
-         ===================================================== */
+      /* PHONE */
 
       phone:
         phone,
 
       visitorPhone:
         phone,
+
+
+      /* CARD */
 
       cardNumber:
         cardNumber,
@@ -771,9 +837,7 @@ export class VisitService {
         cardNumber,
 
 
-      /* =====================================================
-         DETAILS
-         ===================================================== */
+      /* DETAILS */
 
       gender:
         gender,
@@ -788,9 +852,7 @@ export class VisitService {
         relation,
 
 
-      /* =====================================================
-         SESSION
-         ===================================================== */
+      /* SESSION */
 
       session:
         session,
@@ -802,9 +864,7 @@ export class VisitService {
         visitorNumber,
 
 
-      /* =====================================================
-         TIME
-         ===================================================== */
+      /* TIME */
 
       visitDate:
         visitDate,
@@ -825,15 +885,153 @@ export class VisitService {
         durationMinutes,
 
 
-      /* =====================================================
-         STATUS
-         ===================================================== */
+      /* STATUS */
 
       status:
         status
-
     };
+  }
 
+
+  /* =========================================================
+     NORMALIZE SESSION
+     
+     IMPORTANT:
+     Only these three sessions are supported:
+     
+     Morning
+     Day
+     Evening
+     ========================================================= */
+
+  private normalizeSession(
+    value: any
+  ): VisitSession {
+
+    const session =
+      String(
+        value ?? ''
+      )
+        .trim()
+        .toLowerCase();
+
+
+    switch (session) {
+
+      case 'morning':
+        return 'Morning';
+
+      case 'day':
+        return 'Day';
+
+      case 'evening':
+        return 'Evening';
+
+      default:
+        return 'Day';
+    }
+  }
+
+
+  /* =========================================================
+     NORMALIZE DATE
+     ========================================================= */
+
+  private normalizeDate(
+    value: any
+  ): string {
+
+    if (!value) {
+      return this.getToday();
+    }
+
+
+    const stringValue =
+      String(value).trim();
+
+
+    /*
+     * Already YYYY-MM-DD
+     */
+
+    if (
+      /^\d{4}-\d{2}-\d{2}$/
+        .test(stringValue)
+    ) {
+
+      return stringValue;
+    }
+
+
+    /*
+     * ISO datetime
+     */
+
+    if (
+      stringValue.includes('T')
+    ) {
+
+      return stringValue
+        .split('T')[0];
+    }
+
+
+    return stringValue;
+  }
+
+
+  /* =========================================================
+     NORMALIZE TIME
+     ========================================================= */
+
+  private normalizeTime(
+    value: any
+  ): string {
+
+    if (!value) {
+      return this.getCurrentTime();
+    }
+
+
+    const time =
+      String(value)
+        .trim();
+
+
+    /*
+     * Django may return:
+     *
+     * 16:31:44.591936
+     *
+     * Angular only needs:
+     *
+     * 16:31:44
+     */
+
+    return time
+      .split('.')[0];
+  }
+
+
+  /* =========================================================
+     CLEAN STRING
+     ========================================================= */
+
+  private cleanString(
+    value: any
+  ): string {
+
+    if (
+      value === null ||
+      value === undefined
+    ) {
+
+      return '';
+    }
+
+
+    return String(value)
+      .trim();
   }
 
 
@@ -865,7 +1063,6 @@ export class VisitService {
     ) {
 
       return 0;
-
     }
 
 
@@ -875,7 +1072,6 @@ export class VisitService {
       ) /
       60000
     );
-
   }
 
 
@@ -908,7 +1104,6 @@ export class VisitService {
       )
 
     ].join('-');
-
   }
 
 
@@ -946,7 +1141,6 @@ export class VisitService {
       )
 
     ].join(':');
-
   }
 
 
@@ -1001,7 +1195,6 @@ export class VisitService {
 
 
     return `${year}-${month}-${day}T${hours}:${minutes}`;
-
   }
 
 }
