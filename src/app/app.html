@@ -1,13 +1,21 @@
 @if (isAuthPage()) {
 
-  <!-- AUTH PAGES ONLY -->
+  <!-- =====================================================
+       AUTH / CHANGE PASSWORD PAGES
+       NO NAVBAR
+       NO SIDEBAR
+       NO MODULES
+       ===================================================== -->
+
   <router-outlet></router-outlet>
 
 }
 
 @else {
 
-  <!-- MAIN APPLICATION -->
+  <!-- =====================================================
+       MAIN APPLICATION
+       ===================================================== -->
 
   <app-navbar></app-navbar>
 

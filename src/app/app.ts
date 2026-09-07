@@ -1,9 +1,17 @@
 import { Component } from '@angular/core';
-import { Router, NavigationEnd, RouterOutlet } from '@angular/router';
+
+import {
+  Router,
+  NavigationEnd,
+  RouterOutlet
+} from '@angular/router';
+
 import { filter } from 'rxjs/operators';
 
 import { Navbar } from './shared/navbar/navbar';
+
 import { Sidebar } from './shared/sidebar/sidebar';
+
 
 @Component({
   selector: 'app-root',
@@ -24,12 +32,14 @@ export class App {
 
   currentUrl = '';
 
+
   constructor(
     private router: Router
   ) {
 
     this.currentUrl =
       this.router.url;
+
 
     this.router.events
       .pipe(
@@ -50,12 +60,18 @@ export class App {
   }
 
 
+  // =========================================================
+  // AUTH / PASSWORD PAGE CHECK
+  // =========================================================
+
   isAuthPage(): boolean {
 
     return (
       this.currentUrl === '/login'
       ||
       this.currentUrl === '/register'
+      ||
+      this.currentUrl === '/change-password'
     );
 
   }

@@ -1,4 +1,3 @@
-
 import {
   Component
 } from '@angular/core';
@@ -67,6 +66,10 @@ export class ChangePassword {
   successMessage = '';
 
 
+  // ==========================================
+  // PASSWORD VISIBILITY
+  // ==========================================
+
   showOldPassword = false;
 
   showNewPassword = false;
@@ -93,7 +96,9 @@ export class ChangePassword {
 
   changePassword(): void {
 
-    // Clear previous messages
+    // ========================================
+    // CLEAR PREVIOUS MESSAGES
+    // ========================================
 
     this.errorMessage = '';
 
@@ -101,10 +106,21 @@ export class ChangePassword {
 
 
     // ========================================
-    // VALIDATION
+    // PREVENT DOUBLE SUBMISSION
     // ========================================
 
-    if (!this.oldPassword) {
+    if (this.loading) {
+
+      return;
+
+    }
+
+
+    // ========================================
+    // CURRENT PASSWORD VALIDATION
+    // ========================================
+
+    if (!this.oldPassword.trim()) {
 
       this.errorMessage =
         'Please enter your current password.';
@@ -114,7 +130,11 @@ export class ChangePassword {
     }
 
 
-    if (!this.newPassword) {
+    // ========================================
+    // NEW PASSWORD VALIDATION
+    // ========================================
+
+    if (!this.newPassword.trim()) {
 
       this.errorMessage =
         'Please enter your new password.';
@@ -124,7 +144,11 @@ export class ChangePassword {
     }
 
 
-    if (!this.confirmPassword) {
+    // ========================================
+    // CONFIRM PASSWORD VALIDATION
+    // ========================================
+
+    if (!this.confirmPassword.trim()) {
 
       this.errorMessage =
         'Please confirm your new password.';
@@ -135,7 +159,7 @@ export class ChangePassword {
 
 
     // ========================================
-    // CONFIRM PASSWORD VALIDATION
+    // PASSWORD MATCH VALIDATION
     // ========================================
 
     if (
@@ -177,13 +201,6 @@ export class ChangePassword {
 
     // ========================================
     // SEND REQUEST TO DJANGO
-    //
-    // AuthService expects 2 arguments:
-    // 1. old password
-    // 2. new password
-    //
-    // confirmPassword is validated above
-    // on the frontend.
     // ========================================
 
     this.authService.changePassword(
@@ -201,6 +218,27 @@ export class ChangePassword {
       next: () => {
 
         this.loading = false;
+
+
+        // ====================================
+        // IMPORTANT
+        //
+        // AuthService.changePassword() tayari
+        // ime-update:
+        //
+        // must_change_password
+        //
+        // kwa kutumia response kutoka Django.
+        //
+        // Kwa hiyo HATUITAJI:
+        //
+        // markPasswordAsChanged()
+        // ====================================
+
+
+        // ====================================
+        // SUCCESS MESSAGE
+        // ====================================
 
         this.successMessage =
           'Password changed successfully. Redirecting...';
@@ -250,7 +288,7 @@ export class ChangePassword {
 
 
         // ====================================
-        // BAD REQUEST
+        // BAD REQUEST - 400
         // ====================================
 
         if (
@@ -259,7 +297,7 @@ export class ChangePassword {
 
 
           // ----------------------------------
-          // CURRENT PASSWORD
+          // CURRENT PASSWORD ERROR
           // ----------------------------------
 
           if (
@@ -291,7 +329,7 @@ export class ChangePassword {
 
 
           // ----------------------------------
-          // CONFIRM PASSWORD
+          // CONFIRM PASSWORD ERROR
           // ----------------------------------
 
           if (
@@ -323,7 +361,7 @@ export class ChangePassword {
 
 
           // ----------------------------------
-          // NEW PASSWORD
+          // NEW PASSWORD ERROR
           // ----------------------------------
 
           if (
@@ -344,7 +382,8 @@ export class ChangePassword {
             } else {
 
               this.errorMessage =
-                message;
+                message ||
+                'The new password is not valid.';
 
             }
 
@@ -370,6 +409,22 @@ export class ChangePassword {
 
 
           // ----------------------------------
+          // NON-FIELD ERROR
+          // ----------------------------------
+
+          if (
+            typeof error.error === 'string'
+          ) {
+
+            this.errorMessage =
+              error.error;
+
+            return;
+
+          }
+
+
+          // ----------------------------------
           // DEFAULT 400 ERROR
           // ----------------------------------
 
@@ -382,7 +437,7 @@ export class ChangePassword {
 
 
         // ====================================
-        // UNAUTHORIZED
+        // UNAUTHORIZED - 401
         // ====================================
 
         if (
@@ -393,8 +448,16 @@ export class ChangePassword {
             'Your session has expired. Please login again.';
 
 
+          // ----------------------------------
+          // CLEAR AUTHENTICATION
+          // ----------------------------------
+
           this.authService.clearAuthentication();
 
+
+          // ----------------------------------
+          // REDIRECT TO LOGIN
+          // ----------------------------------
 
           setTimeout(() => {
 
@@ -410,7 +473,7 @@ export class ChangePassword {
 
 
         // ====================================
-        // FORBIDDEN
+        // FORBIDDEN - 403
         // ====================================
 
         if (
@@ -426,7 +489,23 @@ export class ChangePassword {
 
 
         // ====================================
-        // SERVER ERROR
+        // NOT FOUND - 404
+        // ====================================
+
+        if (
+          error.status === 404
+        ) {
+
+          this.errorMessage =
+            'Password change service was not found. Please contact the administrator.';
+
+          return;
+
+        }
+
+
+        // ====================================
+        // SERVER ERROR - 500+
         // ====================================
 
         if (
@@ -472,7 +551,7 @@ export class ChangePassword {
 
 
   // ==========================================
-  // PASSWORD TOGGLES
+  // TOGGLE CURRENT PASSWORD
   // ==========================================
 
   toggleOldPassword(): void {
@@ -483,6 +562,10 @@ export class ChangePassword {
   }
 
 
+  // ==========================================
+  // TOGGLE NEW PASSWORD
+  // ==========================================
+
   toggleNewPassword(): void {
 
     this.showNewPassword =
@@ -490,6 +573,10 @@ export class ChangePassword {
 
   }
 
+
+  // ==========================================
+  // TOGGLE CONFIRM PASSWORD
+  // ==========================================
 
   toggleConfirmPassword(): void {
 

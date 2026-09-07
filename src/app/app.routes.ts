@@ -18,6 +18,8 @@ import { Login } from './features/auth/login/login';
 
 import { ChangePassword } from './features/auth/change-password/change-password';
 
+import { passwordChangeGuard } from './core/guards/password-change.guard';
+
 import { authGuard } from './core/guards/auth.guard';
 
 import { adminGuard } from './core/guards/admin.guard';
@@ -37,27 +39,36 @@ export const routes: Routes = [
 
   // ==========================================
   // CHANGE PASSWORD
-  // AUTHENTICATED USERS
+  //
+  // IMPORTANT:
+  // Do NOT add passwordChangeGuard here.
+  // A user who must change password needs
+  // to be able to access this page.
   // ==========================================
 
   {
     path: 'change-password',
+
     canActivate: [
       authGuard
     ],
+
     component: ChangePassword
   },
 
 
   // ==========================================
   // PROTECTED APPLICATION
+  //
+  // Both guards run here.
   // ==========================================
 
   {
     path: '',
 
     canActivate: [
-      authGuard
+      authGuard,
+      passwordChangeGuard
     ],
 
     children: [
@@ -85,46 +96,45 @@ export const routes: Routes = [
 
       // ======================================
       // PATIENTS
-      //
-      // IMPORTANT:
-      // This route remains /users because
-      // your existing Patients module uses
-      // UserList component.
       // ======================================
 
       {
         path: 'users',
+
         canActivate: [
           adminGuard
         ],
+
         component: UserList
       },
 
 
       // ======================================
       // ADD PATIENT
-      // Existing route
       // ======================================
 
       {
         path: 'users/add',
+
         canActivate: [
           adminGuard
         ],
+
         component: AddUser
       },
 
 
       // ======================================
       // UPLOAD PATIENTS
-      // Existing route
       // ======================================
 
       {
         path: 'upload',
+
         canActivate: [
           adminGuard
         ],
+
         component: UserUpload
       },
 
@@ -132,22 +142,21 @@ export const routes: Routes = [
       // ======================================
       // USER MANAGEMENT
       // ADMIN ONLY
-      //
-      // This is separate from Patients.
       // ======================================
 
       {
         path: 'user-management',
+
         canActivate: [
           adminGuard
         ],
+
         component: UserManagement
       },
 
 
       // ======================================
       // VISITOR CHECK
-      // ADMIN + USER
       // ======================================
 
       {
@@ -163,9 +172,11 @@ export const routes: Routes = [
 
       {
         path: 'reports',
+
         canActivate: [
           adminGuard
         ],
+
         component: Reports
       }
 
