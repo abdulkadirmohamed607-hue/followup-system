@@ -319,59 +319,60 @@ export class AuthService {
   }
 
 
-  // =========================================================
-  // CHANGE PASSWORD
-  // =========================================================
+ // =========================================================
+// CHANGE PASSWORD
+// =========================================================
 
-  changePassword(
-    oldPassword: string,
-    newPassword: string
-  ):
-    Observable<ChangePasswordResponse> {
+changePassword(
+  oldPassword: string,
+  newPassword: string,
+  confirmPassword: string
+):
+  Observable<ChangePasswordResponse> {
 
-    return this.http
-      .post<ChangePasswordResponse>(
-        `${this.apiUrl}/change-password/`,
-        {
-          old_password: oldPassword,
-          new_password: newPassword
+  return this.http
+    .post<ChangePasswordResponse>(
+      `${this.apiUrl}/change-password/`,
+      {
+        old_password: oldPassword,
+        new_password: newPassword,
+        confirm_password: confirmPassword
+      }
+    )
+    .pipe(
+
+      tap(response => {
+
+        if (!this.isBrowser()) {
+          return;
         }
-      )
-      .pipe(
 
-        tap(response => {
+        const user =
+          this.getCurrentUser();
 
-          if (!this.isBrowser()) {
-            return;
-          }
+        if (!user) {
+          return;
+        }
 
-          const user =
-            this.getCurrentUser();
+        const updatedUser: AuthUser = {
 
-          if (!user) {
-            return;
-          }
+          ...user,
 
-          const updatedUser: AuthUser = {
+          must_change_password:
+            response.must_change_password
 
-            ...user,
+        };
 
-            must_change_password:
-              response.must_change_password
+        localStorage.setItem(
+          this.authUserKey,
+          JSON.stringify(updatedUser)
+        );
 
-          };
+      })
 
-          localStorage.setItem(
-            this.authUserKey,
-            JSON.stringify(updatedUser)
-          );
+    );
 
-        })
-
-      );
-
-  }
-
+}
 
   // =========================================================
   // LOAD CURRENT USER

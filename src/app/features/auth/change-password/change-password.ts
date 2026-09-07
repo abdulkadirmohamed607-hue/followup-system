@@ -204,12 +204,12 @@ export class ChangePassword {
     // ========================================
 
     this.authService.changePassword(
-
       this.oldPassword,
+      this.newPassword,
+      this.confirmPassword
+    )
 
-      this.newPassword
-
-    ).subscribe({
+    .subscribe({
 
       // ======================================
       // SUCCESS
@@ -218,22 +218,6 @@ export class ChangePassword {
       next: () => {
 
         this.loading = false;
-
-
-        // ====================================
-        // IMPORTANT
-        //
-        // AuthService.changePassword() tayari
-        // ime-update:
-        //
-        // must_change_password
-        //
-        // kwa kutumia response kutoka Django.
-        //
-        // Kwa hiyo HATUITAJI:
-        //
-        // markPasswordAsChanged()
-        // ====================================
 
 
         // ====================================
