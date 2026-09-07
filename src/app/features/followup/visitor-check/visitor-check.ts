@@ -157,28 +157,52 @@ export class VisitorCheck implements OnInit {
       this.getCurrentTime();
 
 
-    /*
-     * Important:
-     * Wait for patients from API before displaying them.
-     *
-     * This fixes the problem where Visitor Check
-     * was empty after direct browser reload.
-     */
+    // -------------------------------------------------------
+    // LOAD PATIENTS
+    // -------------------------------------------------------
+
     this.loadPatients();
 
 
-    /*
-     * Do not call visits API during SSR.
-     */
+    // -------------------------------------------------------
+    // LOAD VISITS FROM DJANGO
+    // -------------------------------------------------------
+
     if (
       isPlatformBrowser(
         this.platformId
       )
     ) {
 
-      this.visitService.loadVisits();
+      this.visitService
+        .loadVisits()
+        .subscribe({
+
+          next: visits => {
+
+            console.log(
+              'Visits loaded successfully:',
+              visits
+            );
+
+          },
+
+          error: error => {
+
+            console.error(
+              'Failed to load visits:',
+              error
+            );
+
+            this.errorMessage =
+              'Failed to load visitors. Please try again.';
+
+          }
+
+        });
 
     }
+
   }
 
 
@@ -194,9 +218,6 @@ export class VisitorCheck implements OnInit {
 
         next: patients => {
 
-          /*
-           * Visitor Check only shows admitted patients.
-           */
           this.patients =
             patients.filter(
               patient =>
@@ -218,12 +239,14 @@ export class VisitorCheck implements OnInit {
 
           this.patients = [];
 
+
           this.errorMessage =
             'Failed to load patients. Please try again.';
 
         }
 
       });
+
   }
 
 
@@ -255,6 +278,7 @@ export class VisitorCheck implements OnInit {
 
 
         return (
+
           fullName.includes(search) ||
 
           patient.patientNumber
@@ -264,10 +288,12 @@ export class VisitorCheck implements OnInit {
           patient.ward
             .toLowerCase()
             .includes(search)
+
         );
 
       }
     );
+
   }
 
 
@@ -278,12 +304,16 @@ export class VisitorCheck implements OnInit {
   get totalPages(): number {
 
     return Math.max(
+
       1,
+
       Math.ceil(
         this.filteredPatients.length /
         this.pageSize
       )
+
     );
+
   }
 
 
@@ -298,6 +328,7 @@ export class VisitorCheck implements OnInit {
       start,
       start + this.pageSize
     );
+
   }
 
 
@@ -307,12 +338,6 @@ export class VisitorCheck implements OnInit {
       this.totalPages;
 
 
-    /*
-     * Simple pagination for normal number
-     * of pages.
-     *
-     * Adds -1 for dots when there are many pages.
-     */
     if (total <= 7) {
 
       return Array.from(
@@ -332,7 +357,9 @@ export class VisitorCheck implements OnInit {
     pages.push(1);
 
 
-    if (this.currentPage > 4) {
+    if (
+      this.currentPage > 4
+    ) {
 
       pages.push(-1);
 
@@ -344,6 +371,7 @@ export class VisitorCheck implements OnInit {
         2,
         this.currentPage - 1
       );
+
 
     const end =
       Math.min(
@@ -383,6 +411,7 @@ export class VisitorCheck implements OnInit {
 
 
     return pages;
+
   }
 
 
@@ -421,6 +450,7 @@ export class VisitorCheck implements OnInit {
       this.currentPage--;
 
     }
+
   }
 
 
@@ -438,6 +468,7 @@ export class VisitorCheck implements OnInit {
       this.currentPage++;
 
     }
+
   }
 
 
@@ -470,6 +501,7 @@ export class VisitorCheck implements OnInit {
 
     this.currentPage =
       page;
+
   }
 
 
@@ -482,12 +514,18 @@ export class VisitorCheck implements OnInit {
   ): string {
 
     return (
+
       `${patient.firstName} ` +
       `${patient.secondName} ` +
       `${patient.lastName}`
+
     )
-      .replace(/\s+/g, ' ')
+      .replace(
+        /\s+/g,
+        ' '
+      )
       .trim();
+
   }
 
 
@@ -508,9 +546,6 @@ export class VisitorCheck implements OnInit {
     this.errorMessage = '';
 
 
-    /*
-     * Close form when changing session.
-     */
     this.closeForm();
 
   }
@@ -533,6 +568,7 @@ export class VisitorCheck implements OnInit {
 
 
     return 2;
+
   }
 
 
@@ -553,6 +589,7 @@ export class VisitorCheck implements OnInit {
 
 
     return !!visit;
+
   }
 
 
@@ -567,11 +604,17 @@ export class VisitorCheck implements OnInit {
 
     return this.visitService
       .getSlotVisit(
+
         patient.id,
+
         this.selectedSession,
+
         slot,
+
         this.getToday()
+
       );
+
   }
 
 
@@ -602,6 +645,7 @@ export class VisitorCheck implements OnInit {
       visit.status ===
       'Checked In'
     );
+
   }
 
 
@@ -619,10 +663,6 @@ export class VisitorCheck implements OnInit {
     this.errorMessage = '';
 
 
-    // -------------------------------------------------------
-    // PATIENT STATUS
-    // -------------------------------------------------------
-
     if (
       patient.status !==
       'Admitted'
@@ -632,12 +672,9 @@ export class VisitorCheck implements OnInit {
         'Only admitted patients can receive visitors.';
 
       return;
+
     }
 
-
-    // -------------------------------------------------------
-    // SLOT LIMIT
-    // -------------------------------------------------------
 
     const maximum =
       this.getMaxVisitors();
@@ -652,12 +689,9 @@ export class VisitorCheck implements OnInit {
         `${this.selectedSession} session allows only ${maximum} visitors.`;
 
       return;
+
     }
 
-
-    // -------------------------------------------------------
-    // CHECK DUPLICATE
-    // -------------------------------------------------------
 
     if (
       this.isSlotUsed(
@@ -670,12 +704,9 @@ export class VisitorCheck implements OnInit {
         `Visitor ${slot} has already been registered for this patient during the ${this.selectedSession} session.`;
 
       return;
+
     }
 
-
-    // -------------------------------------------------------
-    // SET SELECTED PATIENT
-    // -------------------------------------------------------
 
     this.selectedPatient =
       patient;
@@ -684,10 +715,6 @@ export class VisitorCheck implements OnInit {
     this.selectedSlot =
       slot;
 
-
-    // -------------------------------------------------------
-    // RESET FORM
-    // -------------------------------------------------------
 
     this.visitorFirstName = '';
 
@@ -710,12 +737,9 @@ export class VisitorCheck implements OnInit {
       this.getDateTimeLocal();
 
 
-    // -------------------------------------------------------
-    // SHOW MODAL
-    // -------------------------------------------------------
-
     this.showVisitorForm =
       true;
+
   }
 
 
@@ -732,26 +756,20 @@ export class VisitorCheck implements OnInit {
     this.errorMessage = '';
 
 
-    // -------------------------------------------------------
-    // FORM VALIDATION
-    // -------------------------------------------------------
-
     if (
       visitorForm.invalid
     ) {
 
       visitorForm.control.markAllAsTouched();
 
+
       this.errorMessage =
         'Please fill in all required visitor information.';
 
       return;
+
     }
 
-
-    // -------------------------------------------------------
-    // PATIENT
-    // -------------------------------------------------------
 
     if (
       !this.selectedPatient
@@ -761,12 +779,9 @@ export class VisitorCheck implements OnInit {
         'Please select a patient.';
 
       return;
+
     }
 
-
-    // -------------------------------------------------------
-    // SLOT
-    // -------------------------------------------------------
 
     if (
       this.selectedSlot === null
@@ -776,12 +791,9 @@ export class VisitorCheck implements OnInit {
         'Visitor slot is missing.';
 
       return;
+
     }
 
-
-    // -------------------------------------------------------
-    // CHECK DUPLICATE AGAIN
-    // -------------------------------------------------------
 
     if (
       this.isSlotUsed(
@@ -794,12 +806,9 @@ export class VisitorCheck implements OnInit {
         `Visitor ${this.selectedSlot} has already been registered for this patient during the ${this.selectedSession} session.`;
 
       return;
+
     }
 
-
-    // -------------------------------------------------------
-    // CREATE VISIT
-    // -------------------------------------------------------
 
     const visit: Partial<Visit> = {
 
@@ -908,12 +917,9 @@ export class VisitorCheck implements OnInit {
 
       status:
         'Checked In'
+
     };
 
-
-    // -------------------------------------------------------
-    // SEND TO BACKEND
-    // -------------------------------------------------------
 
     this.visitService
       .addVisit(visit)
@@ -931,17 +937,15 @@ export class VisitorCheck implements OnInit {
             `Visitor ${this.selectedSlot} has been successfully checked in.`;
 
 
-
-          // -------------------------------------------------
-          // CLOSE FORM
-          // -------------------------------------------------
-
           this.closeForm();
 
 
-          // -------------------------------------------------
-          // REFRESH VISITS
-          // -------------------------------------------------
+          /*
+           * addVisit() already updates the signal.
+           *
+           * We reload from Django as an extra
+           * synchronization with PostgreSQL.
+           */
 
           if (
             isPlatformBrowser(
@@ -950,7 +954,27 @@ export class VisitorCheck implements OnInit {
           ) {
 
             this.visitService
-              .loadVisits();
+              .loadVisits()
+              .subscribe({
+
+                next: () => {
+
+                  console.log(
+                    'Visits refreshed successfully.'
+                  );
+
+                },
+
+                error: error => {
+
+                  console.error(
+                    'Failed to refresh visits:',
+                    error
+                  );
+
+                }
+
+              });
 
           }
 
@@ -973,6 +997,7 @@ export class VisitorCheck implements OnInit {
         }
 
       });
+
   }
 
 
@@ -1001,37 +1026,76 @@ export class VisitorCheck implements OnInit {
     }
 
 
+    this.message = '';
+
+    this.errorMessage = '';
+
+
     const checkoutTime =
       this.getDateTimeLocal();
 
 
-    const success =
-      this.visitService.checkoutVisit(
+    /*
+     * IMPORTANT:
+     *
+     * checkoutVisit() now returns Observable<Visit>.
+     *
+     * It sends PATCH request to Django.
+     */
+
+    this.visitService
+      .checkoutVisit(
         visit.id,
         checkoutTime
-      );
+      )
+      .subscribe({
+
+        next: updatedVisit => {
+
+          console.log(
+            'Visitor checked out successfully:',
+            updatedVisit
+          );
 
 
-    if (success) {
-
-      this.message =
-        `${this.getVisitorFullName(visit)} has been checked out successfully.`;
+          this.message =
+            `${this.getVisitorFullName(updatedVisit)} has been checked out successfully.`;
 
 
-      /*
-       * Refresh visitors in the modal.
-       */
-      if (
-        this.viewedPatient
-      ) {
+          /*
+           * Refresh visitors in the modal
+           */
 
-        this.loadPatientVisitors(
-          this.viewedPatient.id
-        );
+          if (
+            this.viewedPatient
+          ) {
 
-      }
+            this.loadPatientVisitors(
+              this.viewedPatient.id
+            );
 
-    }
+          }
+
+        },
+
+
+        error: error => {
+
+          console.error(
+            'Checkout failed:',
+            error
+          );
+
+
+          this.errorMessage =
+            this.getBackendErrorMessage(
+              error
+            );
+
+        }
+
+      });
+
   }
 
 
@@ -1059,6 +1123,7 @@ export class VisitorCheck implements OnInit {
 
     this.showVisitorsModal =
       true;
+
   }
 
 
@@ -1073,9 +1138,13 @@ export class VisitorCheck implements OnInit {
     this.patientVisitors =
       this.visitService
         .getPatientVisitsByDate(
+
           patientId,
+
           this.getToday()
+
         );
+
   }
 
 
@@ -1147,6 +1216,7 @@ export class VisitorCheck implements OnInit {
 
     this.patientVisitors =
       [];
+
   }
 
 
@@ -1179,8 +1249,12 @@ export class VisitorCheck implements OnInit {
     return (
       `${first} ${second} ${last}`
     )
-      .replace(/\s+/g, ' ')
+      .replace(
+        /\s+/g,
+        ' '
+      )
       .trim();
+
   }
 
 
@@ -1199,10 +1273,6 @@ export class VisitorCheck implements OnInit {
     }
 
 
-    /*
-     * Handle datetime-local:
-     * 2026-09-04T12:30
-     */
     if (
       time.includes('T')
     ) {
@@ -1230,10 +1300,6 @@ export class VisitorCheck implements OnInit {
     }
 
 
-    /*
-     * Handle normal time:
-     * 12:30:00
-     */
     const parts =
       time.split(':');
 
@@ -1244,6 +1310,7 @@ export class VisitorCheck implements OnInit {
 
       let hour =
         Number(parts[0]);
+
 
       const minute =
         parts[1];
@@ -1273,6 +1340,7 @@ export class VisitorCheck implements OnInit {
 
 
     return time;
+
   }
 
 
@@ -1309,6 +1377,7 @@ export class VisitorCheck implements OnInit {
     return parsed.toLocaleDateString(
       'en-GB'
     );
+
   }
 
 
@@ -1349,6 +1418,7 @@ export class VisitorCheck implements OnInit {
     return (
       `${year}-${month}-${day}`
     );
+
   }
 
 
@@ -1395,6 +1465,7 @@ export class VisitorCheck implements OnInit {
     return (
       `${hours}:${minutes}:${seconds}`
     );
+
   }
 
 
@@ -1455,6 +1526,7 @@ export class VisitorCheck implements OnInit {
     return (
       `${year}-${month}-${day}T${hours}:${minutes}`
     );
+
   }
 
 
@@ -1474,10 +1546,6 @@ export class VisitorCheck implements OnInit {
         error.error;
 
 
-      // -----------------------------------------------
-      // detail
-      // -----------------------------------------------
-
       if (
         typeof backendError.detail ===
         'string'
@@ -1487,10 +1555,6 @@ export class VisitorCheck implements OnInit {
 
       }
 
-
-      // -----------------------------------------------
-      // DRF FIELD ERRORS
-      // -----------------------------------------------
 
       if (
         typeof backendError ===
@@ -1562,6 +1626,7 @@ export class VisitorCheck implements OnInit {
     return (
       'Failed to save visitor. Please try again.'
     );
+
   }
 
 }

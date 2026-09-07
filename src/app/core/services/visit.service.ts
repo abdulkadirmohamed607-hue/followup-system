@@ -1,4 +1,3 @@
-
 import {
   Injectable,
   signal
@@ -61,16 +60,16 @@ export class VisitService {
      LOAD ALL VISITS
      ========================================================= */
 
-  loadVisits(): void {
+  loadVisits(): Observable<Visit[]> {
 
-    this.http
+    return this.http
       .get<any>(this.apiUrl)
       .pipe(
 
         map(response => {
 
           /*
-           * DRF can return either:
+           * DRF can return:
            *
            * [...]
            *
@@ -82,12 +81,16 @@ export class VisitService {
            * }
            */
 
-          if (Array.isArray(response)) {
+          if (
+            Array.isArray(response)
+          ) {
 
             return response;
+
           }
 
           return response?.results ?? [];
+
         }),
 
         map(
@@ -98,6 +101,16 @@ export class VisitService {
             )
         ),
 
+        tap(
+          visits => {
+
+            this.visits.set(
+              visits
+            );
+
+          }
+        ),
+
         catchError(
           (error: HttpErrorResponse) => {
 
@@ -106,31 +119,15 @@ export class VisitService {
               error
             );
 
+            this.visits.set([]);
+
             return throwError(
               () => error
             );
+
           }
         )
-      )
-      .subscribe({
-
-        next: visits => {
-
-          this.visits.set(
-            visits
-          );
-        },
-
-        error: error => {
-
-          console.error(
-            'Visit loading error:',
-            error
-          );
-
-          this.visits.set([]);
-        }
-      });
+      );
   }
 
 
@@ -143,6 +140,7 @@ export class VisitService {
     return [
       ...this.visits()
     ];
+
   }
 
 
@@ -159,6 +157,7 @@ export class VisitService {
         visit =>
           visit.patientId === patientId
       );
+
   }
 
 
@@ -177,6 +176,7 @@ export class VisitService {
           visit.patientId === patientId &&
           visit.visitDate === date
       );
+
   }
 
 
@@ -195,6 +195,7 @@ export class VisitService {
           visit.patientId === patientId &&
           visit.session === session
       );
+
   }
 
 
@@ -221,6 +222,7 @@ export class VisitService {
           visit.visitorNumber === visitorNumber &&
           visit.visitDate === visitDate
       );
+
   }
 
 
@@ -245,7 +247,9 @@ export class VisitService {
 
       default:
         return 0;
+
     }
+
   }
 
 
@@ -272,6 +276,7 @@ export class VisitService {
           visit.visitorNumber === slot &&
           visit.visitDate === visitDate
       );
+
   }
 
 
@@ -282,6 +287,7 @@ export class VisitService {
   generateId(): number {
 
     return Date.now();
+
   }
 
 
@@ -380,10 +386,14 @@ export class VisitService {
 
             this.visits.update(
               currentVisits => [
+
                 savedVisit,
+
                 ...currentVisits
+
               ]
             );
+
           }
         ),
 
@@ -398,6 +408,7 @@ export class VisitService {
             return throwError(
               () => error
             );
+
           }
         )
       );
@@ -411,58 +422,73 @@ export class VisitService {
   checkoutVisit(
     visitId: number,
     checkoutTime?: string
-  ): boolean {
-
-    const currentVisit =
-      this.visits()
-        .find(
-          visit =>
-            visit.id === visitId
-        );
-
-
-    if (!currentVisit) {
-
-      return false;
-    }
-
+  ): Observable<Visit> {
 
     const checkOut =
       checkoutTime ??
       this.getDateTimeLocal();
 
 
-    const durationMinutes =
-      this.calculateDuration(
-        currentVisit.checkIn,
-        checkOut
-      );
+    /*
+     * IMPORTANT:
+     *
+     * Checkout is now sent to Django.
+     *
+     * Previously this method only changed
+     * the Angular signal, so PostgreSQL
+     * remained "Checked In".
+     */
 
+    return this.http
+      .patch<any>(
+        `${this.apiUrl}${visitId}/`,
+        {
+          check_out: checkOut
+        }
+      )
+      .pipe(
 
-    const updatedVisit: Visit = {
+        map(
+          response =>
+            this.mapVisit(
+              response
+            )
+        ),
 
-      ...currentVisit,
+        tap(
+          updatedVisit => {
 
-      checkOut,
+            this.visits.update(
+              currentVisits =>
 
-      durationMinutes,
+                currentVisits.map(
+                  visit =>
 
-      status: 'Completed'
-    };
+                    visit.id === visitId
+                      ? updatedVisit
+                      : visit
+                )
 
+            );
 
-    this.visits.update(
-      currentVisits =>
-        currentVisits.map(
-          visit =>
-            visit.id === visitId
-              ? updatedVisit
-              : visit
+          }
+        ),
+
+        catchError(
+          (error: HttpErrorResponse) => {
+
+            console.error(
+              'Failed to checkout visitor:',
+              error
+            );
+
+            return throwError(
+              () => error
+            );
+
+          }
         )
-    );
-
-
-    return true;
+      );
   }
 
 
@@ -485,11 +511,14 @@ export class VisitService {
 
             this.visits.update(
               currentVisits =>
+
                 currentVisits.filter(
                   visit =>
                     visit.id !== id
                 )
+
             );
+
           }
         ),
 
@@ -504,6 +533,7 @@ export class VisitService {
             return throwError(
               () => error
             );
+
           }
         )
       );
@@ -616,11 +646,22 @@ export class VisitService {
       new Date().toISOString();
 
 
+    /*
+     * Backend currently does not have
+     * a separate check_in field.
+     *
+     * Therefore use visit date + time.
+     */
+
     const checkIn =
       data.check_in ??
       fallback?.checkIn ??
       `${visitDate}T${visitTime}`;
 
+
+    /*
+     * Backend checkout field.
+     */
 
     const checkOut =
       data.check_out ??
@@ -628,11 +669,19 @@ export class VisitService {
       null;
 
 
+    /*
+     * Backend duration.
+     */
+
     const durationMinutes =
       data.duration_minutes ??
       fallback?.durationMinutes ??
       null;
 
+
+    /*
+     * Backend status.
+     */
 
     const status =
       (
@@ -782,7 +831,9 @@ export class VisitService {
 
       status:
         status
+
     };
+
   }
 
 
@@ -814,6 +865,7 @@ export class VisitService {
     ) {
 
       return 0;
+
     }
 
 
@@ -823,6 +875,7 @@ export class VisitService {
       ) /
       60000
     );
+
   }
 
 
@@ -855,6 +908,7 @@ export class VisitService {
       )
 
     ].join('-');
+
   }
 
 
@@ -892,6 +946,7 @@ export class VisitService {
       )
 
     ].join(':');
+
   }
 
 
@@ -946,5 +1001,7 @@ export class VisitService {
 
 
     return `${year}-${month}-${day}T${hours}:${minutes}`;
+
   }
+
 }
