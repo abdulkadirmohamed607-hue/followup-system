@@ -1,3 +1,4 @@
+
 {
   "name": "followup-system",
   "version": "0.0.0",
@@ -10,6 +11,9 @@
     "serve:ssr:followup-system": "node dist/followup-system/server/server.mjs"
   },
   "private": true,
+  "engines": {
+    "node": ">=24.15.0"
+  },
   "packageManager": "npm@11.16.0",
   "dependencies": {
     "@angular/common": "^22.0.0",
