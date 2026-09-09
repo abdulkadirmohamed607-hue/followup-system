@@ -53,7 +53,7 @@ export interface ResetPasswordRequest {
 export class UserManagementService {
 
   private readonly API_URL =
-    'http://127.0.0.1:8000/api/auth/users';
+    'https://followup-system-backend.onrender.com/api/auth/users'; //'http://127.0.0.1:8000/api/auth/users' 
 
   constructor(
     private http: HttpClient

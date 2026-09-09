@@ -38,7 +38,7 @@ export class PatientService {
   // =====================================================
 
   private readonly apiUrl =
-    'http://127.0.0.1:8000/api/patients';
+    'https://followup-system-backend.onrender.com/api/patients'; //'http://127.0.0.1:8000/api/patients'
 
 
   // =====================================================

@@ -35,7 +35,7 @@ import {
 export class AuthService {
 
   private readonly apiUrl =
-    'http://127.0.0.1:8000/api/auth';
+    'https://followup-system-backend.onrender.com/api/auth';  //'http://127.0.0.1:8000/api/auth'
 
   private readonly accessTokenKey =
     'followup_access_token';

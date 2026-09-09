@@ -31,7 +31,7 @@ import {
 export class VisitService {
 
   private readonly apiUrl =
-    'http://127.0.0.1:8000/api/visits/';
+   'https://followup-system-backend.onrender.com/api/visits/'; // 'http://127.0.0.1:8000/api/visits/' 
 
   readonly visits =
     signal<Visit[]>([]);
