@@ -1,8 +1,9 @@
 export interface Patient {
+
   /**
    * Unique User ID / Patient ID
    *
-   * This value must be unique in the system.
+   * PostgreSQL generates this value.
    */
   id: number;
 
@@ -13,6 +14,14 @@ export interface Patient {
   lastName: string;
 
   patientNumber: string;
+
+  /**
+   * Patient gender.
+   *
+   * Optional so existing parts of the application
+   * that create Patient objects do not break.
+   */
+  gender?: string;
 
   ward: string;
 

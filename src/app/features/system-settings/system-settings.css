@@ -1,0 +1,991 @@
+
+/* =========================================================
+   SYSTEM SETTINGS
+   FollowUp System
+   Grey + Blue Theme
+   ========================================================= */
+
+.system-settings-page {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   PAGE HEADER
+   ========================================================= */
+
+.system-settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.system-settings-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.system-settings-header-icon {
+  width: 48px;
+  height: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #e8f1fb;
+  color: #145da0;
+
+  border-radius: 10px;
+
+  font-size: 21px;
+
+  flex-shrink: 0;
+}
+
+.system-settings-header-left h1 {
+  margin: 0;
+
+  color: #1f2937;
+
+  font-size: 25px;
+  font-weight: 700;
+
+  line-height: 1.2;
+}
+
+.system-settings-header-left p {
+  margin: 5px 0 0;
+
+  color: #6b7280;
+
+  font-size: 14px;
+}
+
+
+/* =========================================================
+   INFORMATION CARD
+   ========================================================= */
+
+.system-settings-info-card {
+  display: flex;
+  align-items: flex-start;
+
+  gap: 14px;
+
+  padding: 18px 20px;
+
+  margin-bottom: 20px;
+
+  background: #ffffff;
+
+  border: 1px solid #dbe5f3;
+  border-left: 4px solid #145da0;
+
+  border-radius: 10px;
+
+  box-shadow:
+    0 2px 8px rgba(15, 23, 42, 0.04);
+
+  box-sizing: border-box;
+}
+
+.system-settings-info-icon {
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  background: #eaf3ff;
+  color: #145da0;
+
+  border-radius: 8px;
+
+  font-size: 17px;
+}
+
+.system-settings-info-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.system-settings-info-content h3 {
+  margin: 0 0 6px;
+
+  color: #1f2937;
+
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.system-settings-info-content p {
+  margin: 0;
+
+  color: #6b7280;
+
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.system-settings-session-example {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 8px 18px;
+
+  margin-top: 12px;
+
+  color: #475569;
+
+  font-size: 12px;
+}
+
+.system-settings-session-example strong {
+  color: #1f2937;
+}
+
+
+/* =========================================================
+   ALERTS
+   ========================================================= */
+
+.system-settings-alert {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  min-height: 46px;
+
+  padding: 10px 14px;
+
+  margin-bottom: 18px;
+
+  border-radius: 8px;
+
+  box-sizing: border-box;
+
+  font-size: 13px;
+}
+
+.system-settings-alert-success {
+  background: #eef7f1;
+
+  border: 1px solid #cfe7d8;
+
+  color: #21613a;
+}
+
+.system-settings-alert-error {
+  background: #fff3f3;
+
+  border: 1px solid #f0cccc;
+
+  color: #9f2d2d;
+}
+
+.system-settings-alert > i {
+  flex-shrink: 0;
+
+  font-size: 16px;
+}
+
+.system-settings-alert > span {
+  flex: 1;
+}
+
+.system-settings-alert-action {
+  border: 0;
+
+  background: transparent;
+
+  color: inherit;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  text-decoration: underline;
+}
+
+
+/* =========================================================
+   LOADING
+   ========================================================= */
+
+.system-settings-loading {
+  min-height: 240px;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  background: #ffffff;
+
+  border: 1px solid #dbe5f3;
+
+  border-radius: 10px;
+
+  box-sizing: border-box;
+}
+
+.system-settings-loading p {
+  margin: 12px 0 0;
+
+  color: #6b7280;
+
+  font-size: 13px;
+}
+
+.system-settings-loading-spinner {
+  width: 34px;
+  height: 34px;
+
+  border: 3px solid #dbe5f3;
+
+  border-top-color: #145da0;
+
+  border-radius: 50%;
+
+  animation:
+    system-settings-spin
+    0.8s
+    linear
+    infinite;
+}
+
+
+/* =========================================================
+   MAIN SETTINGS CARD
+   ========================================================= */
+
+.system-settings-card {
+  width: 100%;
+
+  background: #ffffff;
+
+  border: 1px solid #dbe5f3;
+
+  border-radius: 10px;
+
+  box-shadow:
+    0 2px 8px rgba(15, 23, 42, 0.04);
+
+  overflow: hidden;
+
+  box-sizing: border-box;
+}
+
+.system-settings-card-header {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding: 18px 20px;
+
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.system-settings-card-header h2 {
+  margin: 0;
+
+  color: #1f2937;
+
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.system-settings-card-header p {
+  margin: 5px 0 0;
+
+  color: #6b7280;
+
+  font-size: 12px;
+}
+
+.system-settings-session-count {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  padding: 7px 11px;
+
+  background: #f4f8fc;
+
+  border: 1px solid #dbe5f3;
+
+  border-radius: 7px;
+
+  color: #145da0;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  white-space: nowrap;
+
+  flex-shrink: 0;
+}
+
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+.system-settings-table-wrapper {
+  width: 100%;
+
+  overflow-x: auto;
+}
+
+.system-settings-table {
+  width: 100%;
+
+  min-width: 760px;
+
+  border-collapse: collapse;
+
+  table-layout: auto;
+}
+
+.system-settings-table thead {
+  background: #f7f9fc;
+}
+
+.system-settings-table thead th {
+  padding: 13px 18px;
+
+  border-bottom: 1px solid #e5e7eb;
+
+  color: #64748b;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  text-align: left;
+
+  letter-spacing: 0.04em;
+
+  white-space: nowrap;
+}
+
+.system-settings-table tbody td {
+  padding: 15px 18px;
+
+  border-bottom: 1px solid #edf0f4;
+
+  color: #334155;
+
+  font-size: 13px;
+
+  vertical-align: middle;
+}
+
+.system-settings-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.system-settings-table tbody tr {
+  transition:
+    background 0.15s ease;
+}
+
+.system-settings-table tbody tr:hover {
+  background: #fafcff;
+}
+
+.system-settings-table tbody tr.system-settings-editing-row {
+  background: #f5f9fd;
+}
+
+
+/* =========================================================
+   SESSION CELL
+   ========================================================= */
+
+.system-settings-session-cell {
+  display: flex;
+
+  align-items: center;
+
+  gap: 11px;
+}
+
+.system-settings-session-icon {
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 8px;
+
+  flex-shrink: 0;
+
+  font-size: 15px;
+}
+
+.system-settings-session-icon.system-settings-morning {
+  background: #fff7e6;
+
+  color: #b7791f;
+}
+
+.system-settings-session-icon.system-settings-day {
+  background: #eaf3ff;
+
+  color: #145da0;
+}
+
+.system-settings-session-icon.system-settings-evening {
+  background: #f0edff;
+
+  color: #5b4bb7;
+}
+
+.system-settings-session-text {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 3px;
+}
+
+.system-settings-session-text strong {
+  color: #1f2937;
+
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.system-settings-session-text small {
+  color: #94a3b8;
+
+  font-size: 10px;
+
+  letter-spacing: 0.05em;
+}
+
+
+/* =========================================================
+   TIME
+   ========================================================= */
+
+.system-settings-time-value {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  color: #334155;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+.system-settings-time-value i {
+  color: #7c8da3;
+
+  font-size: 13px;
+}
+
+.system-settings-time-input-wrapper {
+  display: inline-flex;
+}
+
+.system-settings-time-input-wrapper input {
+  width: 120px;
+  height: 38px;
+
+  padding: 0 10px;
+
+  box-sizing: border-box;
+
+  background: #ffffff;
+
+  border: 1px solid #b9c9da;
+
+  border-radius: 7px;
+
+  color: #1f2937;
+
+  font-family: inherit;
+
+  font-size: 13px;
+
+  outline: none;
+}
+
+.system-settings-time-input-wrapper input:focus {
+  border-color: #145da0;
+
+  box-shadow:
+    0 0 0 3px rgba(20, 93, 160, 0.10);
+}
+
+.system-settings-time-input-wrapper input:disabled {
+  background: #f3f4f6;
+
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   STATUS BADGE
+   ========================================================= */
+
+.system-settings-status-badge {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  padding: 5px 9px;
+
+  border-radius: 20px;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.system-settings-status-active {
+  background: #edf7f1;
+
+  color: #287548;
+}
+
+.system-settings-status-inactive {
+  background: #f1f3f5;
+
+  color: #737b84;
+}
+
+.system-settings-status-dot {
+  width: 6px;
+  height: 6px;
+
+  border-radius: 50%;
+
+  background: currentColor;
+}
+
+
+/* =========================================================
+   STATUS TOGGLE
+   ========================================================= */
+
+.system-settings-status-toggle {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  cursor: pointer;
+
+  user-select: none;
+}
+
+.system-settings-status-toggle input {
+  position: absolute;
+
+  opacity: 0;
+
+  pointer-events: none;
+}
+
+.system-settings-toggle-slider {
+  position: relative;
+
+  width: 38px;
+  height: 21px;
+
+  background: #cbd5e1;
+
+  border-radius: 20px;
+
+  transition:
+    background 0.2s ease;
+}
+
+.system-settings-toggle-slider::after {
+  content: '';
+
+  position: absolute;
+
+  top: 3px;
+  left: 3px;
+
+  width: 15px;
+  height: 15px;
+
+  background: #ffffff;
+
+  border-radius: 50%;
+
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.18);
+
+  transition:
+    transform 0.2s ease;
+}
+
+.system-settings-status-toggle input:checked
+  + .system-settings-toggle-slider {
+  background: #145da0;
+}
+
+.system-settings-status-toggle input:checked
+  + .system-settings-toggle-slider::after {
+  transform: translateX(17px);
+}
+
+.system-settings-toggle-label {
+  color: #475569;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.system-settings-btn {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  min-height: 34px;
+
+  padding: 7px 11px;
+
+  border-radius: 6px;
+
+  border: 1px solid transparent;
+
+  font-family: inherit;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  box-sizing: border-box;
+}
+
+.system-settings-btn:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+}
+
+
+/* EDIT */
+
+.system-settings-btn-edit {
+  background: #f4f8fc;
+
+  border-color: #d5e2ef;
+
+  color: #145da0;
+}
+
+.system-settings-btn-edit:hover {
+  background: #e8f1fb;
+
+  border-color: #bfd3e8;
+}
+
+
+/* SAVE */
+
+.system-settings-btn-save {
+  background: #145da0;
+
+  border-color: #145da0;
+
+  color: #ffffff;
+}
+
+.system-settings-btn-save:hover:not(:disabled) {
+  background: #0f4d87;
+
+  border-color: #0f4d87;
+}
+
+.system-settings-btn-save:focus-visible {
+  outline: none;
+
+  box-shadow:
+    0 0 0 3px rgba(20, 93, 160, 0.18);
+}
+
+
+/* CANCEL */
+
+.system-settings-btn-cancel {
+  background: #ffffff;
+
+  border-color: #d5dbe3;
+
+  color: #59636f;
+}
+
+.system-settings-btn-cancel:hover:not(:disabled) {
+  background: #f5f6f8;
+
+  border-color: #c4cbd4;
+}
+
+
+/* PRIMARY */
+
+.system-settings-btn-primary {
+  background: #145da0;
+
+  border-color: #145da0;
+
+  color: #ffffff;
+}
+
+.system-settings-btn-primary:hover {
+  background: #0f4d87;
+
+  border-color: #0f4d87;
+}
+
+
+/* EDIT ACTIONS */
+
+.system-settings-edit-actions {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+}
+
+
+/* =========================================================
+   BUTTON SPINNER
+   ========================================================= */
+
+.system-settings-button-spinner {
+  width: 12px;
+  height: 12px;
+
+  border: 2px solid rgba(255, 255, 255, 0.45);
+
+  border-top-color: #ffffff;
+
+  border-radius: 50%;
+
+  animation:
+    system-settings-spin
+    0.7s
+    linear
+    infinite;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.system-settings-empty-state {
+  min-height: 280px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 30px;
+
+  text-align: center;
+
+  box-sizing: border-box;
+}
+
+.system-settings-empty-icon {
+  width: 54px;
+  height: 54px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 12px;
+
+  background: #edf3f9;
+
+  color: #6b8aaa;
+
+  border-radius: 50%;
+
+  font-size: 22px;
+}
+
+.system-settings-empty-state h3 {
+  margin: 0;
+
+  color: #334155;
+
+  font-size: 16px;
+}
+
+.system-settings-empty-state p {
+  margin: 7px 0 18px;
+
+  color: #7b8794;
+
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   FOOTER NOTE
+   ========================================================= */
+
+.system-settings-note {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  margin-top: 13px;
+
+  color: #7b8794;
+
+  font-size: 11px;
+}
+
+.system-settings-note i {
+  color: #145da0;
+
+  font-size: 14px;
+}
+
+
+/* =========================================================
+   ANIMATION
+   ========================================================= */
+
+@keyframes system-settings-spin {
+
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+  .system-settings-card-header {
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+  .system-settings-session-count {
+    align-self: flex-start;
+  }
+
+}
+
+
+@media (max-width: 640px) {
+
+  .system-settings-page {
+    padding: 0;
+  }
+
+  .system-settings-header {
+    margin-bottom: 15px;
+  }
+
+  .system-settings-header-left h1 {
+    font-size: 21px;
+  }
+
+  .system-settings-header-left p {
+    font-size: 12px;
+  }
+
+  .system-settings-info-card {
+    padding: 15px;
+  }
+
+  .system-settings-session-example {
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    gap: 5px;
+  }
+
+  .system-settings-card-header {
+    padding: 15px;
+  }
+
+  .system-settings-table thead th,
+  .system-settings-table tbody td {
+    padding-left: 13px;
+    padding-right: 13px;
+  }
+
+  .system-settings-note {
+    align-items: flex-start;
+
+    line-height: 1.5;
+  }
+
+}

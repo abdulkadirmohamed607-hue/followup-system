@@ -36,9 +36,10 @@
 
     <nav class="sidebar-nav">
 
+
       <!-- =================================================
            DASHBOARD
-           Available to all authenticated users
+           AVAILABLE TO ALL AUTHENTICATED USERS
            ================================================= -->
 
       <a
@@ -47,102 +48,250 @@
         [routerLinkActiveOptions]="{ exact: true }"
         class="nav-item"
       >
-        <span>
+
+        <span class="nav-label">
           Dashboard
         </span>
+
       </a>
 
 
       <!-- =================================================
-           ADMIN MODULES
+           PATIENTS
+           PERMISSION: PATIENTS
            ================================================= -->
 
-      @if (isAdmin) {
-
-        <!-- =================================================
-             PATIENTS
-             ADMIN ONLY
-             ================================================= -->
+      @if (hasPermission('PATIENTS')) {
 
         <a
           routerLink="/users"
           routerLinkActive="active"
           class="nav-item"
         >
-          <span>
+
+          <span class="nav-label">
             Patients
           </span>
+
         </a>
 
+      } @else {
 
-        <!-- =================================================
-             UPLOAD PATIENTS
-             ADMIN ONLY
-             ================================================= -->
+        <div
+          class="nav-item nav-item-disabled"
+          title="You do not have permission to access Patients"
+        >
+
+          <span class="nav-label">
+            Patients
+          </span>
+
+          <span class="lock-icon">
+            🔒
+          </span>
+
+        </div>
+
+      }
+
+
+      <!-- =================================================
+           USER UPLOAD
+           PERMISSION: USER_UPLOAD
+           ================================================= -->
+
+      @if (hasPermission('USER_UPLOAD')) {
 
         <a
           routerLink="/upload"
           routerLinkActive="active"
           class="nav-item"
         >
-          <span>
+
+          <span class="nav-label">
             Upload Patients
           </span>
+
         </a>
 
+      } @else {
 
-        <!-- =================================================
-             USER MANAGEMENT
-             ADMIN ONLY
-             ================================================= -->
-
-        <a
-          routerLink="/user-management"
-          routerLinkActive="active"
-          class="nav-item"
+        <div
+          class="nav-item nav-item-disabled"
+          title="You do not have permission to upload patients"
         >
-          <span>
-            User Management
+
+          <span class="nav-label">
+            Upload Patients
           </span>
-        </a>
+
+          <span class="lock-icon">
+            🔒
+          </span>
+
+        </div>
 
       }
 
 
       <!-- =================================================
            VISITOR CHECK
-           AVAILABLE TO ALL AUTHENTICATED USERS
+           PERMISSION: VISITOR_CHECK
            ================================================= -->
 
-      <a
-        routerLink="/visitor-check"
-        routerLinkActive="active"
-        class="nav-item"
-      >
-        <span>
-          Visitor Check
-        </span>
-      </a>
+      @if (hasPermission('VISITOR_CHECK')) {
+
+        <a
+          routerLink="/visitor-check"
+          routerLinkActive="active"
+          class="nav-item"
+        >
+
+          <span class="nav-label">
+            Visitor Check
+          </span>
+
+        </a>
+
+      } @else {
+
+        <div
+          class="nav-item nav-item-disabled"
+          title="You do not have permission to access Visitor Check"
+        >
+
+          <span class="nav-label">
+            Visitor Check
+          </span>
+
+          <span class="lock-icon">
+            🔒
+          </span>
+
+        </div>
+
+      }
+
+
+      <!-- =================================================
+           USER MANAGEMENT
+           PERMISSION: USER_MANAGEMENT
+           ================================================= -->
+
+      @if (hasPermission('USER_MANAGEMENT')) {
+
+        <a
+          routerLink="/user-management"
+          routerLinkActive="active"
+          class="nav-item"
+        >
+
+          <span class="nav-label">
+            User Management
+          </span>
+
+        </a>
+
+      } @else {
+
+        <div
+          class="nav-item nav-item-disabled"
+          title="You do not have permission to access User Management"
+        >
+
+          <span class="nav-label">
+            User Management
+          </span>
+
+          <span class="lock-icon">
+            🔒
+          </span>
+
+        </div>
+
+      }
+
+
+      <!-- =================================================
+           SYSTEM SETTINGS
+           PERMISSION: SYSTEM_SETTINGS
+
+           Route will be connected when the
+           System Settings component is created.
+           ================================================= -->
+
+      @if (hasPermission('SYSTEM_SETTINGS')) {
+
+        <a
+          routerLink="/system-settings"
+          routerLinkActive="active"
+          class="nav-item"
+        >
+
+          <span class="nav-label">
+            System Settings
+          </span>
+
+        </a>
+
+      } @else {
+
+        <div
+          class="nav-item nav-item-disabled"
+          title="You do not have permission to access System Settings"
+        >
+
+          <span class="nav-label">
+            System Settings
+          </span>
+
+          <span class="lock-icon">
+            🔒
+          </span>
+
+        </div>
+
+      }
 
 
       <!-- =================================================
            REPORTS
-           ADMIN ONLY
+           PERMISSION: REPORTS
            ================================================= -->
 
-      @if (isAdmin) {
+      @if (hasPermission('REPORTS')) {
 
         <a
           routerLink="/reports"
           routerLinkActive="active"
           class="nav-item"
         >
-          <span>
+
+          <span class="nav-label">
             Reports
           </span>
+
         </a>
 
+      } @else {
+
+        <div
+          class="nav-item nav-item-disabled"
+          title="You do not have permission to access Reports"
+        >
+
+          <span class="nav-label">
+            Reports
+          </span>
+
+          <span class="lock-icon">
+            🔒
+          </span>
+
+        </div>
+
       }
+
 
     </nav>
 

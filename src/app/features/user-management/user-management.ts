@@ -1,3 +1,4 @@
+
 import {
   Component,
   OnInit,
@@ -23,7 +24,9 @@ import {
 import {
   UserManagementService,
   SystemUser,
-  SystemUserRole
+  SystemUserRole,
+  ModulePermission,
+  ModulePermissionItem
 } from '../../core/services/user-management.service';
 
 
@@ -113,9 +116,13 @@ export class UserManagement implements OnInit {
   // MODALS
   // =====================================================
 
-  showUserModal = signal(false);
+  showUserModal =
+    signal(false);
 
   showResetPasswordModal =
+    signal(false);
+
+  showPermissionsModal =
     signal(false);
 
 
@@ -133,6 +140,38 @@ export class UserManagement implements OnInit {
 
   resetPasswordUser =
     signal<SystemUser | null>(null);
+
+
+  // =====================================================
+  // PERMISSIONS
+  // =====================================================
+
+  availableModules =
+    signal<ModulePermissionItem[]>([]);
+
+
+  selectedPermissionUser =
+    signal<SystemUser | null>(null);
+
+
+  selectedModules =
+    signal<ModulePermission[]>([]);
+
+
+  permissionsLoading =
+    signal(false);
+
+
+  permissionsSaving =
+    signal(false);
+
+
+  permissionsError =
+    signal('');
+
+
+  permissionsSuccess =
+    signal('');
 
 
   // =====================================================
@@ -184,16 +223,8 @@ export class UserManagement implements OnInit {
   ngOnInit(): void {
 
     /*
-     * IMPORTANT:
-     *
-     * User Management must NOT call the API
-     * during Angular SSR.
-     *
-     * During SSR there is no browser localStorage,
-     * therefore there is no JWT access token.
-     *
-     * The actual API request will happen once
-     * the application is running in the browser.
+     * Protected API calls must only happen
+     * in the browser.
      */
 
     if (
@@ -203,6 +234,8 @@ export class UserManagement implements OnInit {
     ) {
 
       this.loadUsers();
+
+      this.loadModules();
 
     }
 
@@ -214,13 +247,6 @@ export class UserManagement implements OnInit {
   // =====================================================
 
   loadUsers(): void {
-
-    /*
-     * Extra protection:
-     *
-     * Never call the protected users endpoint
-     * from the SSR server.
-     */
 
     if (
       !isPlatformBrowser(
@@ -242,28 +268,25 @@ export class UserManagement implements OnInit {
       .getUsers()
       .subscribe({
 
-        // =================================================
-        // SUCCESS
-        // =================================================
-
         next: users => {
 
-          this.users.set(users);
+          this.users.set(
+            users
+          );
 
-          this.loading.set(false);
+          this.loading.set(
+            false
+          );
 
         },
-
-
-        // =================================================
-        // ERROR
-        // =================================================
 
         error: (
           error: HttpErrorResponse
         ) => {
 
-          this.loading.set(false);
+          this.loading.set(
+            false
+          );
 
 
           console.error(
@@ -271,10 +294,6 @@ export class UserManagement implements OnInit {
             error
           );
 
-
-          // ===============================================
-          // 403
-          // ===============================================
 
           if (
             error.status === 403
@@ -289,10 +308,6 @@ export class UserManagement implements OnInit {
           }
 
 
-          // ===============================================
-          // 401
-          // ===============================================
-
           if (
             error.status === 401
           ) {
@@ -305,10 +320,6 @@ export class UserManagement implements OnInit {
 
           }
 
-
-          // ===============================================
-          // 0
-          // ===============================================
 
           if (
             error.status === 0
@@ -323,12 +334,102 @@ export class UserManagement implements OnInit {
           }
 
 
-          // ===============================================
-          // OTHER
-          // ===============================================
-
           this.errorMessage.set(
             'Unable to load system users.'
+          );
+
+        }
+
+      });
+
+  }
+
+
+  // =====================================================
+  // LOAD AVAILABLE MODULES
+  // =====================================================
+
+  loadModules(): void {
+
+    if (
+      !isPlatformBrowser(
+        this.platformId
+      )
+    ) {
+
+      return;
+
+    }
+
+
+    this.userManagementService
+      .getModules()
+      .subscribe({
+
+        next: modules => {
+
+          this.availableModules.set(
+            modules
+          );
+
+          console.log(
+            'AVAILABLE MODULES:',
+            modules
+          );
+
+        },
+
+        error: (
+          error: HttpErrorResponse
+        ) => {
+
+          console.error(
+            'LOAD MODULES ERROR:',
+            error
+          );
+
+
+          if (
+            error.status === 401
+          ) {
+
+            this.permissionsError.set(
+              'Your session has expired. Please login again.'
+            );
+
+            return;
+
+          }
+
+
+          if (
+            error.status === 403
+          ) {
+
+            this.permissionsError.set(
+              'Only administrators can manage system modules.'
+            );
+
+            return;
+
+          }
+
+
+          if (
+            error.status === 0
+          ) {
+
+            this.permissionsError.set(
+              'Unable to connect to Django server.'
+            );
+
+            return;
+
+          }
+
+
+          this.permissionsError.set(
+            'Unable to load system modules.'
           );
 
         }
@@ -421,7 +522,8 @@ export class UserManagement implements OnInit {
 
     return this.users()
       .filter(
-        user => user.is_active
+        user =>
+          user.is_active
       )
       .length;
 
@@ -460,7 +562,9 @@ export class UserManagement implements OnInit {
     value: string
   ): void {
 
-    this.searchTerm.set(value);
+    this.searchTerm.set(
+      value
+    );
 
   }
 
@@ -485,6 +589,7 @@ export class UserManagement implements OnInit {
       return;
 
     }
+
 
     this.selectedRole.set(
       'All'
@@ -516,19 +621,9 @@ export class UserManagement implements OnInit {
     user: SystemUser
   ): void {
 
-    console.log(
-      'TOGGLE STATUS CLICKED:',
-      user
-    );
-
-
     if (
       this.updatingStatusUserId() !== null
     ) {
-
-      console.log(
-        'STATUS UPDATE ALREADY IN PROGRESS'
-      );
 
       return;
 
@@ -551,32 +646,15 @@ export class UserManagement implements OnInit {
         : `Are you sure you want to deactivate "${user.username}"?`;
 
 
-    const confirmed =
-      window.confirm(
+    if (
+      !window.confirm(
         confirmation
-      );
-
-
-    if (!confirmed) {
-
-      console.log(
-        'STATUS CHANGE CANCELLED'
-      );
+      )
+    ) {
 
       return;
 
     }
-
-
-    console.log(
-      'STATUS CHANGE CONFIRMED:',
-      {
-        userId: user.id,
-        username: user.username,
-        oldStatus: user.is_active,
-        newStatus
-      }
-    );
 
 
     this.updatingStatusUserId.set(
@@ -588,10 +666,6 @@ export class UserManagement implements OnInit {
     this.successMessage.set('');
 
 
-    // ===================================================
-    // SEND STATUS UPDATE TO DJANGO
-    // ===================================================
-
     this.userManagementService
       .updateUserStatus(
         user.id,
@@ -599,19 +673,9 @@ export class UserManagement implements OnInit {
       )
       .subscribe({
 
-        // =================================================
-        // SUCCESS
-        // =================================================
-
         next: (
           updatedUser: SystemUser
         ) => {
-
-          console.log(
-            'STATUS UPDATE SUCCESS:',
-            updatedUser
-          );
-
 
           this.users.update(
             currentUsers =>
@@ -621,6 +685,7 @@ export class UserManagement implements OnInit {
                     ? {
                         ...currentUser,
                         is_active:
+                          updatedUser.is_active ??
                           newStatus
                       }
                     : currentUser
@@ -641,11 +706,6 @@ export class UserManagement implements OnInit {
 
         },
 
-
-        // =================================================
-        // ERROR
-        // =================================================
-
         error: (
           error: HttpErrorResponse
         ) => {
@@ -653,18 +713,6 @@ export class UserManagement implements OnInit {
           console.error(
             'STATUS UPDATE ERROR:',
             error
-          );
-
-
-          console.error(
-            'STATUS:',
-            error.status
-          );
-
-
-          console.error(
-            'ERROR BODY:',
-            error.error
           );
 
 
@@ -766,6 +814,11 @@ export class UserManagement implements OnInit {
       null
     );
 
+    this.errorMessage.set('');
+
+    this.successMessage.set('');
+
+
     this.showUserModal.set(
       true
     );
@@ -781,12 +834,6 @@ export class UserManagement implements OnInit {
     user: SystemUser
   ): void {
 
-    console.log(
-      'OPEN EDIT USER:',
-      user
-    );
-
-
     this.editingUserId.set(
       user.id
     );
@@ -795,30 +842,23 @@ export class UserManagement implements OnInit {
     this.username =
       user.username;
 
-
     this.firstName =
       user.first_name;
-
 
     this.lastName =
       user.last_name;
 
-
     this.email =
       user.email;
-
 
     this.phone =
       user.phone;
 
-
     this.role =
       user.role;
 
-
     this.isActive =
       user.is_active;
-
 
     this.password = '';
 
@@ -983,12 +1023,6 @@ export class UserManagement implements OnInit {
 
           next: user => {
 
-            console.log(
-              'CREATE USER SUCCESS:',
-              user
-            );
-
-
             this.users.update(
               current => [
                 user,
@@ -997,7 +1031,9 @@ export class UserManagement implements OnInit {
             );
 
 
-            this.saving.set(false);
+            this.saving.set(
+              false
+            );
 
 
             this.successMessage.set(
@@ -1014,12 +1050,14 @@ export class UserManagement implements OnInit {
 
           },
 
-
           error: (
             error: HttpErrorResponse
           ) => {
 
-            this.saving.set(false);
+            this.saving.set(
+              false
+            );
+
 
             this.handleSaveError(
               error
@@ -1052,33 +1090,8 @@ export class UserManagement implements OnInit {
     }
 
 
-    this.saving.set(true);
-
-
-    console.log(
-      'UPDATE USER REQUEST:',
-      {
-        userId,
-        data: {
-          first_name:
-            this.firstName.trim(),
-
-          last_name:
-            this.lastName.trim(),
-
-          email:
-            this.email.trim(),
-
-          phone:
-            this.phone.trim(),
-
-          role:
-            this.role,
-
-          is_active:
-            this.isActive
-        }
-      }
+    this.saving.set(
+      true
     );
 
 
@@ -1112,19 +1125,9 @@ export class UserManagement implements OnInit {
       )
       .subscribe({
 
-        // =================================================
-        // UPDATE SUCCESS
-        // =================================================
-
         next: (
           updatedUser: SystemUser
         ) => {
-
-          console.log(
-            'UPDATE USER SUCCESS:',
-            updatedUser
-          );
-
 
           this.users.update(
             currentUsers =>
@@ -1179,7 +1182,11 @@ export class UserManagement implements OnInit {
 
                     updated_at:
                       updatedUser.updated_at ??
-                      currentUser.updated_at
+                      currentUser.updated_at,
+
+                    permissions:
+                      updatedUser.permissions ??
+                      currentUser.permissions
 
                   };
 
@@ -1188,7 +1195,9 @@ export class UserManagement implements OnInit {
           );
 
 
-          this.saving.set(false);
+          this.saving.set(
+            false
+          );
 
 
           this.showUserModal.set(
@@ -1203,24 +1212,15 @@ export class UserManagement implements OnInit {
             `User "${updatedUser.username ?? this.username}" updated successfully.`
           );
 
-
-          console.log(
-            'FRONTEND USER LIST UPDATED:',
-            this.users()
-          );
-
         },
-
-
-        // =================================================
-        // UPDATE ERROR
-        // =================================================
 
         error: (
           error: HttpErrorResponse
         ) => {
 
-          this.saving.set(false);
+          this.saving.set(
+            false
+          );
 
 
           console.error(
@@ -1408,7 +1408,7 @@ export class UserManagement implements OnInit {
   ): void {
 
     if (
-      !confirm(
+      !window.confirm(
         `Are you sure you want to delete user "${user.username}"?`
       )
     ) {
@@ -1440,7 +1440,6 @@ export class UserManagement implements OnInit {
           );
 
         },
-
 
         error: (
           error: HttpErrorResponse
@@ -1484,6 +1483,19 @@ export class UserManagement implements OnInit {
 
             this.errorMessage.set(
               'Your session has expired. Please login again.'
+            );
+
+            return;
+
+          }
+
+
+          if (
+            error.status === 0
+          ) {
+
+            this.errorMessage.set(
+              'Unable to connect to Django server.'
             );
 
             return;
@@ -1613,7 +1625,9 @@ export class UserManagement implements OnInit {
     }
 
 
-    this.saving.set(true);
+    this.saving.set(
+      true
+    );
 
 
     this.userManagementService
@@ -1636,7 +1650,9 @@ export class UserManagement implements OnInit {
 
         next: () => {
 
-          this.saving.set(false);
+          this.saving.set(
+            false
+          );
 
 
           this.showResetPasswordModal.set(
@@ -1660,12 +1676,13 @@ export class UserManagement implements OnInit {
 
         },
 
-
         error: (
           error: HttpErrorResponse
         ) => {
 
-          this.saving.set(false);
+          this.saving.set(
+            false
+          );
 
 
           console.error(
@@ -1749,6 +1766,19 @@ export class UserManagement implements OnInit {
           }
 
 
+          if (
+            error.status === 0
+          ) {
+
+            this.errorMessage.set(
+              'Unable to connect to Django server.'
+            );
+
+            return;
+
+          }
+
+
           this.errorMessage.set(
             'Unable to reset password.'
           );
@@ -1756,6 +1786,677 @@ export class UserManagement implements OnInit {
         }
 
       });
+
+  }
+
+
+  // =====================================================
+  // OPEN MANAGE PERMISSIONS
+  // =====================================================
+
+  openPermissions(
+    user: SystemUser
+  ): void {
+
+    console.log(
+      'OPEN PERMISSIONS:',
+      user
+    );
+
+
+    this.selectedPermissionUser.set(
+      user
+    );
+
+
+    this.selectedModules.set([]);
+
+    this.permissionsError.set('');
+
+    this.permissionsSuccess.set('');
+
+
+    this.showPermissionsModal.set(
+      true
+    );
+
+
+    // ===================================================
+    // ADMINISTRATOR
+    // ===================================================
+
+    if (
+      user.role === 'ADMIN'
+    ) {
+
+      this.selectedModules.set(
+        this.availableModules()
+          .map(
+            module =>
+              module.module
+          )
+      );
+
+      return;
+
+    }
+
+
+    // ===================================================
+    // NORMAL USER
+    // ===================================================
+
+    this.loadUserPermissions(
+      user.id
+    );
+
+  }
+
+
+  // =====================================================
+  // LOAD USER PERMISSIONS
+  // =====================================================
+
+  loadUserPermissions(
+    userId: number
+  ): void {
+
+    this.permissionsLoading.set(
+      true
+    );
+
+
+    this.permissionsError.set('');
+
+    this.permissionsSuccess.set('');
+
+
+    this.userManagementService
+      .getUserPermissions(
+        userId
+      )
+      .subscribe({
+
+        next: response => {
+
+          console.log(
+            'USER PERMISSIONS:',
+            response
+          );
+
+
+          const permissions =
+            response.permissions ?? [];
+
+
+          this.selectedModules.set(
+            permissions
+          );
+
+
+          this.users.update(
+            currentUsers =>
+              currentUsers.map(
+                user =>
+                  user.id === userId
+                    ? {
+                        ...user,
+                        permissions
+                      }
+                    : user
+              )
+          );
+
+
+          this.permissionsLoading.set(
+            false
+          );
+
+        },
+
+        error: (
+          error: HttpErrorResponse
+        ) => {
+
+          this.permissionsLoading.set(
+            false
+          );
+
+
+          console.error(
+            'LOAD USER PERMISSIONS ERROR:',
+            error
+          );
+
+
+          if (
+            error.status === 401
+          ) {
+
+            this.permissionsError.set(
+              'Your session has expired. Please login again.'
+            );
+
+            return;
+
+          }
+
+
+          if (
+            error.status === 403
+          ) {
+
+            this.permissionsError.set(
+              'Only administrators can manage user permissions.'
+            );
+
+            return;
+
+          }
+
+
+          if (
+            error.status === 404
+          ) {
+
+            this.permissionsError.set(
+              'User account was not found.'
+            );
+
+            return;
+
+          }
+
+
+          if (
+            error.status === 0
+          ) {
+
+            this.permissionsError.set(
+              'Unable to connect to Django server.'
+            );
+
+            return;
+
+          }
+
+
+          this.permissionsError.set(
+            'Unable to load user permissions.'
+          );
+
+        }
+
+      });
+
+  }
+
+
+  // =====================================================
+  // CHECK MODULE SELECTION
+  // =====================================================
+
+  isModuleSelected(
+    module: ModulePermission
+  ): boolean {
+
+    return this.selectedModules()
+      .includes(
+        module
+      );
+
+  }
+
+
+  // =====================================================
+  // TOGGLE MODULE PERMISSION
+  // =====================================================
+
+  toggleModulePermission(
+    module: ModulePermission
+  ): void {
+
+    const user =
+      this.selectedPermissionUser();
+
+
+    if (!user) {
+
+      return;
+
+    }
+
+
+    /*
+     * Administrator permissions are automatic.
+     * They cannot be manually changed.
+     */
+
+    if (
+      user.role === 'ADMIN'
+    ) {
+
+      return;
+
+    }
+
+
+    const current =
+      this.selectedModules();
+
+
+    if (
+      current.includes(
+        module
+      )
+    ) {
+
+      this.selectedModules.set(
+        current.filter(
+          item =>
+            item !== module
+        )
+      );
+
+      return;
+
+    }
+
+
+    this.selectedModules.set([
+      ...current,
+      module
+    ]);
+
+  }
+
+
+  // =====================================================
+  // SELECT ALL MODULES
+  // =====================================================
+
+  selectAllModules(): void {
+
+    const user =
+      this.selectedPermissionUser();
+
+
+    if (
+      !user ||
+      user.role === 'ADMIN'
+    ) {
+
+      return;
+
+    }
+
+
+    this.selectedModules.set(
+      this.availableModules()
+        .map(
+          module =>
+            module.module
+        )
+    );
+
+  }
+
+
+  // =====================================================
+  // CLEAR ALL MODULES
+  // =====================================================
+
+  clearAllModules(): void {
+
+    const user =
+      this.selectedPermissionUser();
+
+
+    if (
+      !user ||
+      user.role === 'ADMIN'
+    ) {
+
+      return;
+
+    }
+
+
+    this.selectedModules.set([]);
+
+  }
+
+
+  // =====================================================
+  // SAVE USER PERMISSIONS
+  // =====================================================
+
+  savePermissions(): void {
+
+    const user =
+      this.selectedPermissionUser();
+
+
+    if (!user) {
+
+      return;
+
+    }
+
+
+    /*
+     * Administrator permissions are automatic.
+     */
+
+    if (
+      user.role === 'ADMIN'
+    ) {
+
+      this.permissionsSuccess.set(
+        'Administrator already has access to all modules.'
+      );
+
+      return;
+
+    }
+
+
+    this.permissionsSaving.set(
+      true
+    );
+
+
+    this.permissionsError.set('');
+
+    this.permissionsSuccess.set('');
+
+
+    const modules =
+      this.selectedModules();
+
+
+    console.log(
+      'SAVE PERMISSIONS REQUEST:',
+      {
+        userId: user.id,
+        username: user.username,
+        modules
+      }
+    );
+
+
+    this.userManagementService
+      .updateUserPermissions(
+        user.id,
+        modules
+      )
+      .subscribe({
+
+        next: response => {
+
+          console.log(
+            'SAVE PERMISSIONS SUCCESS:',
+            response
+          );
+
+
+          const savedPermissions =
+            response.permissions ?? [];
+
+
+          this.selectedModules.set(
+            savedPermissions
+          );
+
+
+          this.users.update(
+            currentUsers =>
+              currentUsers.map(
+                currentUser =>
+                  currentUser.id === user.id
+                    ? {
+                        ...currentUser,
+                        permissions:
+                          savedPermissions
+                      }
+                    : currentUser
+              )
+          );
+
+
+          this.permissionsSaving.set(
+            false
+          );
+
+
+          this.permissionsSuccess.set(
+            'User permissions saved successfully.'
+          );
+
+        },
+
+        error: (
+          error: HttpErrorResponse
+        ) => {
+
+          this.permissionsSaving.set(
+            false
+          );
+
+
+          console.error(
+            'SAVE PERMISSIONS ERROR:',
+            error
+          );
+
+
+          if (
+            error.status === 400
+          ) {
+
+            const data =
+              error.error;
+
+
+            if (
+              data?.modules
+            ) {
+
+              this.permissionsError.set(
+                this.extractErrorMessage(
+                  data.modules,
+                  'Invalid module permissions.'
+                )
+              );
+
+              return;
+
+            }
+
+
+            this.permissionsError.set(
+              'Invalid module permissions.'
+            );
+
+            return;
+
+          }
+
+
+          if (
+            error.status === 401
+          ) {
+
+            this.permissionsError.set(
+              'Your session has expired. Please login again.'
+            );
+
+            return;
+
+          }
+
+
+          if (
+            error.status === 403
+          ) {
+
+            this.permissionsError.set(
+              'Only administrators can change user permissions.'
+            );
+
+            return;
+
+          }
+
+
+          if (
+            error.status === 404
+          ) {
+
+            this.permissionsError.set(
+              'User account was not found.'
+            );
+
+            return;
+
+          }
+
+
+          if (
+            error.status === 0
+          ) {
+
+            this.permissionsError.set(
+              'Unable to connect to Django server.'
+            );
+
+            return;
+
+          }
+
+
+          this.permissionsError.set(
+            'Unable to save user permissions. Please try again.'
+          );
+
+        }
+
+      });
+
+  }
+
+
+  // =====================================================
+  // CLOSE PERMISSIONS MODAL
+  // =====================================================
+
+  closePermissions(): void {
+
+    if (
+      this.permissionsSaving()
+    ) {
+
+      return;
+
+    }
+
+
+    this.showPermissionsModal.set(
+      false
+    );
+
+
+    this.selectedPermissionUser.set(
+      null
+    );
+
+
+    this.selectedModules.set([]);
+
+    this.permissionsError.set('');
+
+    this.permissionsSuccess.set('');
+
+  }
+
+
+  // =====================================================
+  // GET MODULE LABEL
+  // =====================================================
+
+  getModuleLabel(
+    module: ModulePermission
+  ): string {
+
+    const found =
+      this.availableModules()
+        .find(
+          item =>
+            item.module === module
+        );
+
+
+    return found?.name ??
+      this.formatModuleName(
+        module
+      );
+
+  }
+
+
+  // =====================================================
+  // GET MODULE DESCRIPTION
+  // =====================================================
+
+  getModuleDescription(
+    module: ModulePermission
+  ): string {
+
+    const found =
+      this.availableModules()
+        .find(
+          item =>
+            item.module === module
+        );
+
+
+    return found?.description ?? '';
+
+  }
+
+
+  // =====================================================
+  // FORMAT MODULE NAME
+  // =====================================================
+
+  private formatModuleName(
+    module: ModulePermission
+  ): string {
+
+    switch (module) {
+
+      case 'PATIENTS':
+        return 'Patients';
+
+      case 'VISITOR_CHECK':
+        return 'Visitor Check';
+
+      case 'REPORTS':
+        return 'Reports';
+
+      case 'USER_UPLOAD':
+        return 'User Upload';
+
+      case 'USER_MANAGEMENT':
+        return 'User Management';
+
+      case 'SYSTEM_SETTINGS':
+        return 'System Settings';
+
+      default:
+        return module;
+
+    }
 
   }
 

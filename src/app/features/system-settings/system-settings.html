@@ -1,0 +1,548 @@
+
+<div class="system-settings-page">
+
+  <!-- =====================================================
+       PAGE HEADER
+       ===================================================== -->
+
+  <div class="system-settings-header">
+
+    <div class="system-settings-header-left">
+
+      <div class="system-settings-header-icon">
+        <i class="bi bi-gear-fill"></i>
+      </div>
+
+      <div>
+        <h1>System Settings</h1>
+
+        <p>
+          Configure visitor check session times
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       INFORMATION CARD
+       ===================================================== -->
+
+  <div class="system-settings-info-card">
+
+    <div class="system-settings-info-icon">
+      <i class="bi bi-info-circle-fill"></i>
+    </div>
+
+    <div class="system-settings-info-content">
+
+      <h3>
+        Visitor Session Configuration
+      </h3>
+
+      <p>
+        These settings control the visitor sessions used by
+        the Visitor Check module. The system automatically
+        determines the current session based on the configured
+        time range.
+      </p>
+
+      <div class="system-settings-session-example">
+
+        <span>
+          <strong>Example:</strong>
+        </span>
+
+        <span>
+          Morning: 05:00 – 11:59
+        </span>
+
+        <span>
+          Day: 12:00 – 17:59
+        </span>
+
+        <span>
+          Evening: 18:00 – 04:59
+        </span>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       SUCCESS MESSAGE
+       ===================================================== -->
+
+  <div
+    class="system-settings-alert system-settings-alert-success"
+    *ngIf="successMessage"
+  >
+
+    <i class="bi bi-check-circle-fill"></i>
+
+    <span>
+      {{ successMessage }}
+    </span>
+
+  </div>
+
+
+  <!-- =====================================================
+       ERROR MESSAGE
+       ===================================================== -->
+
+  <div
+    class="system-settings-alert system-settings-alert-error"
+    *ngIf="errorMessage"
+  >
+
+    <i class="bi bi-exclamation-triangle-fill"></i>
+
+    <span>
+      {{ errorMessage }}
+    </span>
+
+    <button
+      type="button"
+      class="system-settings-alert-action"
+      (click)="retry()"
+    >
+      Retry
+    </button>
+
+  </div>
+
+
+  <!-- =====================================================
+       LOADING
+       ===================================================== -->
+
+  <div
+    class="system-settings-loading"
+    *ngIf="loading"
+  >
+
+    <div class="system-settings-loading-spinner"></div>
+
+    <p>
+      Loading system settings...
+    </p>
+
+  </div>
+
+
+  <!-- =====================================================
+       MAIN SETTINGS CARD
+       ===================================================== -->
+
+  <div
+    class="system-settings-card"
+    *ngIf="!loading"
+  >
+
+    <!-- CARD HEADER -->
+
+    <div class="system-settings-card-header">
+
+      <div>
+
+        <h2>
+          Session Settings
+        </h2>
+
+        <p>
+          Manage the start and end time for each visitor session.
+        </p>
+
+      </div>
+
+
+      <div class="system-settings-session-count">
+
+        <i class="bi bi-clock-fill"></i>
+
+        <span>
+          {{ sessionSettings.length }}
+          {{ sessionSettings.length === 1 ? 'Session' : 'Sessions' }}
+        </span>
+
+      </div>
+
+    </div>
+
+
+    <!-- ===================================================
+         TABLE
+         =================================================== -->
+
+    <div
+      class="system-settings-table-wrapper"
+      *ngIf="sessionSettings.length > 0"
+    >
+
+      <table class="system-settings-table">
+
+        <thead>
+
+          <tr>
+
+            <th>
+              SESSION
+            </th>
+
+            <th>
+              START TIME
+            </th>
+
+            <th>
+              END TIME
+            </th>
+
+            <th>
+              STATUS
+            </th>
+
+            <th>
+              ACTION
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          <tr
+            *ngFor="let setting of sessionSettings"
+            [class.system-settings-editing-row]="isEditing(setting)"
+          >
+
+            <!-- =========================================
+                 SESSION
+                 ========================================= -->
+
+            <td>
+
+              <div class="system-settings-session-cell">
+
+                <div
+                  class="system-settings-session-icon"
+                  [ngClass]="{
+                    'system-settings-morning':
+                      setting.session === 'MORNING',
+
+                    'system-settings-day':
+                      setting.session === 'DAY',
+
+                    'system-settings-evening':
+                      setting.session === 'EVENING'
+                  }"
+                >
+
+                  <i
+                    class="bi"
+                    [ngClass]="{
+                      'bi-sunrise-fill':
+                        setting.session === 'MORNING',
+
+                      'bi-sun-fill':
+                        setting.session === 'DAY',
+
+                      'bi-moon-stars-fill':
+                        setting.session === 'EVENING'
+                    }"
+                  ></i>
+
+                </div>
+
+
+                <div class="system-settings-session-text">
+
+                  <strong>
+                    {{ getSessionName(setting) }}
+                  </strong>
+
+                  <small>
+                    {{ setting.session }}
+                  </small>
+
+                </div>
+
+              </div>
+
+            </td>
+
+
+            <!-- =========================================
+                 START TIME
+                 ========================================= -->
+
+            <td>
+
+              <span
+                class="system-settings-time-value"
+                *ngIf="!isEditing(setting)"
+              >
+
+                <i class="bi bi-clock"></i>
+
+                {{ formatTime(setting.start_time) }}
+
+              </span>
+
+
+              <div
+                class="system-settings-time-input-wrapper"
+                *ngIf="isEditing(setting)"
+              >
+
+                <input
+                  type="time"
+                  [(ngModel)]="editStartTime"
+                  [disabled]="saving"
+                  aria-label="Start time"
+                />
+
+              </div>
+
+            </td>
+
+
+            <!-- =========================================
+                 END TIME
+                 ========================================= -->
+
+            <td>
+
+              <span
+                class="system-settings-time-value"
+                *ngIf="!isEditing(setting)"
+              >
+
+                <i class="bi bi-clock-history"></i>
+
+                {{ formatTime(setting.end_time) }}
+
+              </span>
+
+
+              <div
+                class="system-settings-time-input-wrapper"
+                *ngIf="isEditing(setting)"
+              >
+
+                <input
+                  type="time"
+                  [(ngModel)]="editEndTime"
+                  [disabled]="saving"
+                  aria-label="End time"
+                />
+
+              </div>
+
+            </td>
+
+
+            <!-- =========================================
+                 STATUS
+                 ========================================= -->
+
+            <td>
+
+              <!-- VIEW MODE -->
+
+              <span
+                class="system-settings-status-badge"
+                [class.system-settings-status-active]="setting.is_active"
+                [class.system-settings-status-inactive]="!setting.is_active"
+                *ngIf="!isEditing(setting)"
+              >
+
+                <span class="system-settings-status-dot"></span>
+
+                {{
+                  setting.is_active
+                    ? 'Active'
+                    : 'Inactive'
+                }}
+
+              </span>
+
+
+              <!-- EDIT MODE -->
+
+              <label
+                class="system-settings-status-toggle"
+                *ngIf="isEditing(setting)"
+              >
+
+                <input
+                  type="checkbox"
+                  [(ngModel)]="editIsActive"
+                  [disabled]="saving"
+                />
+
+                <span class="system-settings-toggle-slider"></span>
+
+                <span class="system-settings-toggle-label">
+
+                  {{
+                    editIsActive
+                      ? 'Active'
+                      : 'Inactive'
+                  }}
+
+                </span>
+
+              </label>
+
+            </td>
+
+
+            <!-- =========================================
+                 ACTION
+                 ========================================= -->
+
+            <td>
+
+              <!-- EDIT -->
+
+              <button
+                type="button"
+                class="system-settings-btn system-settings-btn-edit"
+                *ngIf="!isEditing(setting)"
+                (click)="startEdit(setting)"
+              >
+
+                <i class="bi bi-pencil-square"></i>
+
+                <span>
+                  Edit
+                </span>
+
+              </button>
+
+
+              <!-- SAVE / CANCEL -->
+
+              <div
+                class="system-settings-edit-actions"
+                *ngIf="isEditing(setting)"
+              >
+
+                <button
+                  type="button"
+                  class="system-settings-btn system-settings-btn-save"
+                  [disabled]="saving"
+                  (click)="saveEdit(setting)"
+                >
+
+                  <span
+                    class="system-settings-button-spinner"
+                    *ngIf="saving"
+                  ></span>
+
+                  <i
+                    class="bi bi-check-lg"
+                    *ngIf="!saving"
+                  ></i>
+
+                  <span>
+                    {{ saving ? 'Saving...' : 'Save' }}
+                  </span>
+
+                </button>
+
+
+                <button
+                  type="button"
+                  class="system-settings-btn system-settings-btn-cancel"
+                  [disabled]="saving"
+                  (click)="cancelEdit()"
+                >
+
+                  <i class="bi bi-x-lg"></i>
+
+                  <span>
+                    Cancel
+                  </span>
+
+                </button>
+
+              </div>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+
+    <!-- ===================================================
+         EMPTY STATE
+         =================================================== -->
+
+    <div
+      class="system-settings-empty-state"
+      *ngIf="sessionSettings.length === 0"
+    >
+
+      <div class="system-settings-empty-icon">
+
+        <i class="bi bi-clock-history"></i>
+
+      </div>
+
+      <h3>
+        No Session Settings Found
+      </h3>
+
+      <p>
+        No visitor session settings are currently available.
+      </p>
+
+      <button
+        type="button"
+        class="system-settings-btn system-settings-btn-primary"
+        (click)="retry()"
+      >
+
+        <i class="bi bi-arrow-clockwise"></i>
+
+        <span>
+          Reload Settings
+        </span>
+
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       FOOTER NOTE
+       ===================================================== -->
+
+  <div class="system-settings-note">
+
+    <i class="bi bi-shield-check"></i>
+
+    <span>
+      Only administrators with System Settings permission
+      can modify these settings.
+    </span>
+
+  </div>
+
+</div>

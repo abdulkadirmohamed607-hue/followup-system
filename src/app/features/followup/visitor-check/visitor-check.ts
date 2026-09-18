@@ -1,6 +1,7 @@
 import {
   Component,
   OnInit,
+  OnDestroy,
   PLATFORM_ID,
   ChangeDetectorRef,
   afterNextRender,
@@ -37,6 +38,12 @@ import {
   VisitService
 } from '../../../core/services/visit.service';
 
+import {
+  SystemSettingsService,
+  SessionSetting,
+  SessionCode
+} from '../../../core/services/system-settings.service';
+
 
 @Component({
   selector: 'app-visitor-check',
@@ -51,7 +58,7 @@ import {
 
   styleUrl: './visitor-check.css'
 })
-export class VisitorCheck implements OnInit {
+export class VisitorCheck implements OnInit, OnDestroy {
 
   Math = Math;
 
@@ -84,7 +91,34 @@ export class VisitorCheck implements OnInit {
   // SESSION
   // =========================================================
 
-  selectedSession: VisitSession = 'Day';
+  /*
+   * Session selected from SYSTEM SETTINGS.
+   *
+   * The user can no longer manually switch
+   * between Morning / Day / Evening.
+   */
+  selectedSession: VisitSession | null = null;
+
+  /*
+   * Session currently allowed by System Settings.
+   */
+  currentSystemSession: VisitSession | null = null;
+
+  /*
+   * Session settings loaded from backend.
+   */
+  sessionSettings: SessionSetting[] = [];
+
+  /*
+   * Loading state for session settings.
+   */
+  sessionSettingsLoading = true;
+
+  /*
+   * Timer checks the current session every minute.
+   */
+  private sessionTimer:
+    ReturnType<typeof setInterval> | null = null;
 
 
   // =========================================================
@@ -152,7 +186,8 @@ export class VisitorCheck implements OnInit {
 
   constructor(
     private patientService: PatientService,
-    private visitService: VisitService
+    private visitService: VisitService,
+    private systemSettingsService: SystemSettingsService
   ) {
 
     /*
@@ -163,6 +198,7 @@ export class VisitorCheck implements OnInit {
      * afterNextRender() waits until the browser
      * has completed rendering/hydration.
      */
+
     afterNextRender(() => {
 
       this.initializePage();
@@ -184,6 +220,28 @@ export class VisitorCheck implements OnInit {
      * API loading is handled inside
      * afterNextRender().
      */
+
+  }
+
+
+  // =========================================================
+  // DESTROY
+  // =========================================================
+
+  ngOnDestroy(): void {
+
+    /*
+     * Stop the session checker when
+     * leaving the page.
+     */
+
+    if (this.sessionTimer !== null) {
+
+      clearInterval(this.sessionTimer);
+
+      this.sessionTimer = null;
+
+    }
 
   }
 
@@ -213,6 +271,26 @@ export class VisitorCheck implements OnInit {
 
 
     this.loadPageData();
+
+
+    /*
+     * Load session times from
+     * System Settings.
+     */
+
+    this.loadSessionSettings();
+
+
+    /*
+     * Re-check the current session every minute.
+     */
+
+    this.sessionTimer =
+      setInterval(() => {
+
+        this.updateCurrentSession();
+
+      }, 60_000);
 
   }
 
@@ -357,12 +435,361 @@ export class VisitorCheck implements OnInit {
 
 
   // =========================================================
+  // LOAD SESSION SETTINGS
+  // =========================================================
+
+  loadSessionSettings(): void {
+
+    if (
+      !isPlatformBrowser(
+        this.platformId
+      )
+    ) {
+
+      return;
+
+    }
+
+
+    this.sessionSettingsLoading = true;
+
+
+    console.log(
+      'Visitor Check: loading session settings...'
+    );
+
+
+    this.systemSettingsService
+      .getSessionSettings()
+      .subscribe({
+
+        next: settings => {
+
+          /*
+           * Keep the same order as configured
+           * in System Settings.
+           */
+
+          this.sessionSettings =
+            [...settings].sort(
+              (a, b) =>
+                a.id - b.id
+            );
+
+
+          console.log(
+            'Visitor Check session settings:',
+            this.sessionSettings
+          );
+
+
+          this.updateCurrentSession();
+
+
+          this.sessionSettingsLoading = false;
+
+
+          this.cdr.markForCheck();
+
+          this.cdr.detectChanges();
+
+        },
+
+
+        error: error => {
+
+          console.error(
+            'Failed to load session settings:',
+            error
+          );
+
+
+          this.sessionSettings = [];
+
+          this.currentSystemSession = null;
+
+          this.selectedSession = null;
+
+          this.sessionSettingsLoading = false;
+
+
+          this.errorMessage =
+            'Failed to load session settings. Please try again.';
+
+
+          /*
+           * Close visitor form if session
+           * settings cannot be loaded.
+           */
+
+          this.closeForm();
+
+
+          this.cdr.markForCheck();
+
+          this.cdr.detectChanges();
+
+        }
+
+      });
+
+  }
+
+
+  // =========================================================
+  // UPDATE CURRENT SESSION
+  // =========================================================
+
+  updateCurrentSession(): void {
+
+    if (
+      !isPlatformBrowser(
+        this.platformId
+      )
+    ) {
+
+      return;
+
+    }
+
+
+    if (
+      this.sessionSettings.length === 0
+    ) {
+
+      this.currentSystemSession = null;
+
+      this.selectedSession = null;
+
+      this.closeForm();
+
+      this.cdr.markForCheck();
+
+      return;
+
+    }
+
+
+    /*
+     * Ask SystemSettingsService which session
+     * is currently active according to the
+     * times configured by Admin.
+     */
+
+    const code:
+      SessionCode | null =
+        this.systemSettingsService.getCurrentSession(
+          this.sessionSettings,
+          new Date()
+        );
+
+
+    /*
+     * Convert backend session code into
+     * the VisitSession used by Visitor Check.
+     */
+
+    const mapped:
+      VisitSession | null =
+
+      code === 'MORNING'
+        ? 'Morning'
+
+        : code === 'DAY'
+          ? 'Day'
+
+          : code === 'EVENING'
+            ? 'Evening'
+
+            : null;
+
+
+    /*
+     * Only do the UI update when the
+     * session actually changes.
+     */
+
+    if (
+      mapped !==
+      this.currentSystemSession
+    ) {
+
+      console.log(
+        'Visitor Check current session changed:',
+        this.currentSystemSession,
+        '=>',
+        mapped
+      );
+
+
+      this.currentSystemSession =
+        mapped;
+
+
+      /*
+       * Automatically select the current
+       * system session.
+       */
+
+      this.selectedSession =
+        mapped;
+
+
+      /*
+       * Close an already-open visitor form
+       * if the session changes.
+       */
+
+      this.showVisitorForm =
+        false;
+
+
+      this.selectedPatient =
+        null;
+
+
+      this.selectedSlot =
+        null;
+
+
+      /*
+       * Clear messages related to
+       * the previous session.
+       */
+
+      this.message = '';
+
+      this.errorMessage = '';
+
+
+      this.cdr.markForCheck();
+
+      this.cdr.detectChanges();
+
+    }
+
+  }
+
+
+  // =========================================================
+  // CHECK CURRENT SESSION
+  // =========================================================
+
+  isCurrentSession(
+    session: VisitSession
+  ): boolean {
+
+    return (
+      this.currentSystemSession ===
+      session
+    );
+
+  }
+
+
+  // =========================================================
+  // CHECK SESSION DISABLED
+  // =========================================================
+
+  isSessionDisabled(
+    session: VisitSession
+  ): boolean {
+
+    /*
+     * If there is no active session,
+     * disable every session button.
+     */
+
+    if (
+      this.currentSystemSession === null
+    ) {
+
+      return true;
+
+    }
+
+
+    /*
+     * Only the session currently defined
+     * by System Settings is enabled.
+     */
+
+    return (
+      this.currentSystemSession !==
+      session
+    );
+
+  }
+
+
+  // =========================================================
+  // SELECT SESSION
+  // =========================================================
+
+  selectSession(
+    session: VisitSession
+  ): void {
+
+    /*
+     * IMPORTANT:
+     *
+     * Manual selection is not allowed.
+     *
+     * A user can only click the session
+     * that System Settings currently says
+     * is active.
+     */
+
+    if (
+      session !==
+      this.currentSystemSession
+    ) {
+
+      console.log(
+        `Session "${session}" is not currently active.`
+      );
+
+      return;
+
+    }
+
+
+    this.selectedSession =
+      session;
+
+
+    this.message = '';
+
+    this.errorMessage = '';
+
+
+    this.closeForm();
+
+
+    /*
+     * Re-render slots immediately after
+     * changing session.
+     */
+
+    this.cdr.markForCheck();
+
+  }
+
+
+  // =========================================================
   // MANUAL REFRESH
   // =========================================================
 
   refreshData(): void {
 
     this.loadPageData();
+
+    /*
+     * Also refresh System Settings because
+     * Admin may have changed session times.
+     */
+
+    this.loadSessionSettings();
 
   }
 
@@ -717,39 +1144,24 @@ export class VisitorCheck implements OnInit {
 
 
   // =========================================================
-  // SELECT SESSION
-  // =========================================================
-
-  selectSession(
-    session: VisitSession
-  ): void {
-
-    this.selectedSession =
-      session;
-
-
-    this.message = '';
-
-    this.errorMessage = '';
-
-
-    this.closeForm();
-
-
-    /*
-     * Re-render slots immediately after
-     * changing session.
-     */
-    this.cdr.markForCheck();
-
-  }
-
-
-  // =========================================================
   // MAX VISITORS
   // =========================================================
 
   getMaxVisitors(): number {
+
+    /*
+     * No active system session means
+     * no visitor slots are available.
+     */
+
+    if (
+      !this.selectedSession
+    ) {
+
+      return 0;
+
+    }
+
 
     switch (
       this.selectedSession
@@ -801,6 +1213,20 @@ export class VisitorCheck implements OnInit {
     patient: Patient,
     slot: number
   ): Visit | undefined {
+
+    /*
+     * If no system session is active,
+     * there can be no valid slot.
+     */
+
+    if (
+      !this.selectedSession
+    ) {
+
+      return undefined;
+
+    }
+
 
     return this.visitService
       .getSlotVisit(
@@ -861,6 +1287,31 @@ export class VisitorCheck implements OnInit {
     this.message = '';
 
     this.errorMessage = '';
+
+
+    /*
+     * Never allow visitor registration
+     * when System Settings has no active session.
+     */
+
+    if (
+      !this.currentSystemSession
+    ) {
+
+      this.errorMessage =
+        'There is currently no active visiting session according to System Settings.';
+
+      return;
+
+    }
+
+
+    /*
+     * Always use the current system session.
+     */
+
+    this.selectedSession =
+      this.currentSystemSession;
 
 
     if (
@@ -998,6 +1449,60 @@ export class VisitorCheck implements OnInit {
     }
 
 
+    /*
+     * Important:
+     *
+     * Re-check the system session immediately
+     * before saving.
+     *
+     * This prevents saving a visitor under
+     * an old session if the time changed while
+     * the form was open.
+     */
+
+    this.updateCurrentSession();
+
+
+    if (
+      !this.currentSystemSession
+    ) {
+
+      this.errorMessage =
+        'There is currently no active visiting session according to System Settings.';
+
+      this.closeForm();
+
+      return;
+
+    }
+
+
+    /*
+     * Force the session to the current
+     * System Settings session.
+     */
+
+    this.selectedSession =
+      this.currentSystemSession;
+
+
+    const maximum =
+      this.getMaxVisitors();
+
+
+    if (
+      this.selectedSlot < 1 ||
+      this.selectedSlot > maximum
+    ) {
+
+      this.errorMessage =
+        `${this.selectedSession} session allows only ${maximum} visitors.`;
+
+      return;
+
+    }
+
+
     if (
       this.isSlotUsed(
         this.selectedPatient,
@@ -1091,8 +1596,12 @@ export class VisitorCheck implements OnInit {
         this.visitorRelation,
 
 
+      /*
+       * Session comes from System Settings.
+       */
+
       session:
-        this.selectedSession,
+        this.currentSystemSession,
 
 
       visitorNumber:

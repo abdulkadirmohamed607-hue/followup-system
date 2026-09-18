@@ -1,4 +1,3 @@
-
 <div class="container-fluid py-4">
 
   <!-- =====================================================
@@ -51,7 +50,9 @@
       </div>
 
 
-      <!-- READING -->
+      <!-- =================================================
+           READING
+      ================================================== -->
 
       @if (isReading) {
 
@@ -68,7 +69,9 @@
       }
 
 
-      <!-- SUCCESS / INFORMATION -->
+      <!-- =================================================
+           SUCCESS / INFORMATION
+      ================================================== -->
 
       @if (message) {
 
@@ -83,7 +86,9 @@
       }
 
 
-      <!-- ERROR -->
+      <!-- =================================================
+           ERROR
+      ================================================== -->
 
       @if (errorMessage) {
 
@@ -98,7 +103,9 @@
       }
 
 
-      <!-- DUPLICATE INFORMATION -->
+      <!-- =================================================
+           DUPLICATE INFORMATION
+      ================================================== -->
 
       @if (duplicateCount > 0) {
 
@@ -123,7 +130,9 @@
       }
 
 
-      <!-- BUTTONS -->
+      <!-- =================================================
+           BUTTONS
+      ================================================== -->
 
       <div class="d-flex gap-2">
 
@@ -147,6 +156,7 @@
             Uploading...
 
           }
+
           @else {
 
             <i class="bi bi-cloud-upload me-1"></i>
@@ -196,7 +206,8 @@
 
       <p class="text-muted">
 
-        Your Excel file should contain patient information.
+        Your Excel file should contain the following
+        patient information.
 
         <strong>
           Patient Number must be unique.
@@ -207,6 +218,10 @@
 
       </p>
 
+
+      <!-- =================================================
+           REQUIRED EXCEL COLUMNS
+      ================================================== -->
 
       <div class="table-responsive">
 
@@ -219,15 +234,7 @@
             <tr>
 
               <th>
-                First Name
-              </th>
-
-              <th>
-                Second Name
-              </th>
-
-              <th>
-                Last Name
+                Patient Name
               </th>
 
               <th>
@@ -235,11 +242,15 @@
               </th>
 
               <th>
+                Gender
+              </th>
+
+              <th>
                 Ward
               </th>
 
               <th>
-                Admission Date
+                Date Admitted
               </th>
 
             </tr>
@@ -252,29 +263,27 @@
             <tr>
 
               <td>
-                John
+                Mariam Mohamed Salm
               </td>
 
               <td>
-                Peter
-              </td>
 
-              <td>
-                Smith
-              </td>
-
-              <td>
                 <strong>
-                  PT-00125
+                  86926
                 </strong>
+
               </td>
 
               <td>
-                Medical Ward
+                Female
               </td>
 
               <td>
-                2026-08-29
+                ICU WARD
+              </td>
+
+              <td>
+                2026-09-17 00:16:03
               </td>
 
             </tr>
@@ -283,29 +292,56 @@
             <tr>
 
               <td>
-                Ahmed
+                Stanslaus Richard Nchimbi
               </td>
 
               <td>
-                Mohamed
-              </td>
 
-              <td>
-                Ali
-              </td>
-
-              <td>
                 <strong>
-                  PT-00126
+                  63579
                 </strong>
+
               </td>
 
               <td>
-                Surgical Ward
+                Male
               </td>
 
               <td>
-                2026-08-29
+                Wanaume Majeruhi (Ward 8)- FIRM B
+              </td>
+
+              <td>
+                2026-09-17 02:58:20
+              </td>
+
+            </tr>
+
+
+            <tr>
+
+              <td>
+                Yusuph Haruni Msagati
+              </td>
+
+              <td>
+
+                <strong>
+                  86501
+                </strong>
+
+              </td>
+
+              <td>
+                Male
+              </td>
+
+              <td>
+                Mortuary
+              </td>
+
+              <td>
+                2026-09-17 06:28:03
               </td>
 
             </tr>
@@ -316,9 +352,39 @@
 
       </div>
 
+
+      <!-- =================================================
+           IMPORTANT NOTE
+      ================================================== -->
+
+      <!-- <div class="alert alert-info mt-3 mb-0">
+
+        <i class="bi bi-info-circle me-2"></i>
+
+        <strong>Note:</strong>
+
+        The
+
+        <strong>
+          Age
+        </strong>
+
+        column is not required and will be ignored by
+        the system if it exists in the Excel file.
+
+        The system uses
+
+        <strong>
+          Patient Number
+        </strong>
+
+        to prevent duplicate patients.
+
+      </div>
+
     </div>
 
-  </div>
+  </div> -->
 
 
   <!-- =====================================================
@@ -331,9 +397,24 @@
 
       <div class="card-header bg-white">
 
-        <h5 class="mb-0">
-          Patient Preview
-        </h5>
+        <div
+          class="d-flex justify-content-between align-items-center"
+        >
+
+          <h5 class="mb-0">
+            Patient Preview
+          </h5>
+
+
+          <span class="badge bg-primary">
+
+            {{ patients.length }}
+
+            Patient(s)
+
+          </span>
+
+        </div>
 
       </div>
 
@@ -371,11 +452,15 @@
                 </th>
 
                 <th>
+                  Gender
+                </th>
+
+                <th>
                   Ward
                 </th>
 
                 <th>
-                  Admission Date
+                  Date Admitted
                 </th>
 
               </tr>
@@ -387,30 +472,50 @@
 
               @for (
                 patient of patients;
-                track patient.id
+                track patient.patientNumber
               ) {
 
                 <tr>
+
+                  <!-- ====================================
+                       NUMBER
+                  ===================================== -->
 
                   <td>
                     {{ $index + 1 }}
                   </td>
 
 
+                  <!-- ====================================
+                       FIRST NAME
+                  ===================================== -->
+
                   <td>
                     {{ patient.firstName }}
                   </td>
 
+
+                  <!-- ====================================
+                       SECOND NAME
+                  ===================================== -->
 
                   <td>
                     {{ patient.secondName }}
                   </td>
 
 
+                  <!-- ====================================
+                       LAST NAME
+                  ===================================== -->
+
                   <td>
                     {{ patient.lastName }}
                   </td>
 
+
+                  <!-- ====================================
+                       PATIENT NUMBER
+                  ===================================== -->
 
                   <td>
 
@@ -423,10 +528,41 @@
                   </td>
 
 
+                  <!-- ====================================
+                       GENDER
+                  ===================================== -->
+
+                  <td>
+
+                    @if (patient.gender) {
+
+                      {{ patient.gender }}
+
+                    }
+
+                    @else {
+
+                      <span class="text-muted">
+                        -
+                      </span>
+
+                    }
+
+                  </td>
+
+
+                  <!-- ====================================
+                       WARD
+                  ===================================== -->
+
                   <td>
                     {{ patient.ward }}
                   </td>
 
+
+                  <!-- ====================================
+                       DATE ADMITTED
+                  ===================================== -->
 
                   <td>
                     {{ patient.admissionDate }}

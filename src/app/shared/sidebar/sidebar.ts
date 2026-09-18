@@ -1,3 +1,4 @@
+
 import { Component } from '@angular/core';
 
 import { CommonModule } from '@angular/common';
@@ -7,9 +8,9 @@ import {
   RouterLinkActive
 } from '@angular/router';
 
-import {
-  AuthService
-} from '../../core/services/auth.service';
+import { AuthService } from '../../core/services/auth.service';
+
+import { ModulePermission } from '../../core/models/auth-user';
 
 
 @Component({
@@ -74,6 +75,24 @@ export class Sidebar {
   get isUser(): boolean {
 
     return this.authService.isUser();
+
+  }
+
+
+  // =====================================================
+  // CHECK MODULE PERMISSION
+  //
+  // ADMIN = ALWAYS TRUE
+  // USER = CHECK ASSIGNED PERMISSION
+  // =====================================================
+
+  hasPermission(
+    permission: ModulePermission
+  ): boolean {
+
+    return this.authService.hasPermission(
+      permission
+    );
 
   }
 

@@ -124,6 +124,32 @@
   box-shadow: 0 3px 8px rgba(47, 128, 183, 0.22);
 }
 
+/* =========================================================
+   SESSION BUTTON - DISABLED / FAINT
+========================================================= */
+
+.session-buttons button:disabled {
+  opacity: 0.38;
+
+  background: #f3f5f7;
+
+  border-color: #dfe5e9;
+
+  color: #9aa5ad;
+
+  cursor: not-allowed;
+
+  box-shadow: none;
+}
+
+.session-buttons button:disabled:hover {
+  background: #f3f5f7;
+
+  border-color: #dfe5e9;
+
+  color: #9aa5ad;
+}
+
 
 /* =========================================================
    ALERTS

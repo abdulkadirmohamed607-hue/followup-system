@@ -22,7 +22,9 @@ import { passwordChangeGuard } from './core/guards/password-change.guard';
 
 import { authGuard } from './core/guards/auth.guard';
 
-import { adminGuard } from './core/guards/admin.guard';
+import { permissionGuard } from './core/guards/permission.guard';
+
+import { SystemSettings } from './features/system-settings/system-settings';
 
 
 export const routes: Routes = [
@@ -43,7 +45,7 @@ export const routes: Routes = [
   // IMPORTANT:
   // Do NOT add passwordChangeGuard here.
   // A user who must change password needs
-  // to be able to access this page.
+  // to access this page.
   // ==========================================
 
   {
@@ -59,8 +61,6 @@ export const routes: Routes = [
 
   // ==========================================
   // PROTECTED APPLICATION
-  //
-  // Both guards run here.
   // ==========================================
 
   {
@@ -86,6 +86,8 @@ export const routes: Routes = [
 
       // ======================================
       // DASHBOARD
+      //
+      // All authenticated users can access.
       // ======================================
 
       {
@@ -96,13 +98,16 @@ export const routes: Routes = [
 
       // ======================================
       // PATIENTS
+      //
+      // Permission:
+      // PATIENTS
       // ======================================
 
       {
         path: 'users',
 
         canActivate: [
-          adminGuard
+          permissionGuard('PATIENTS')
         ],
 
         component: UserList
@@ -111,13 +116,15 @@ export const routes: Routes = [
 
       // ======================================
       // ADD PATIENT
+      //
+      // Same Patients permission.
       // ======================================
 
       {
         path: 'users/add',
 
         canActivate: [
-          adminGuard
+          permissionGuard('PATIENTS')
         ],
 
         component: AddUser
@@ -126,13 +133,16 @@ export const routes: Routes = [
 
       // ======================================
       // UPLOAD PATIENTS
+      //
+      // Permission:
+      // USER_UPLOAD
       // ======================================
 
       {
         path: 'upload',
 
         canActivate: [
-          adminGuard
+          permissionGuard('USER_UPLOAD')
         ],
 
         component: UserUpload
@@ -141,14 +151,16 @@ export const routes: Routes = [
 
       // ======================================
       // USER MANAGEMENT
-      // ADMIN ONLY
+      //
+      // Permission:
+      // USER_MANAGEMENT
       // ======================================
 
       {
         path: 'user-management',
 
         canActivate: [
-          adminGuard
+          permissionGuard('USER_MANAGEMENT')
         ],
 
         component: UserManagement
@@ -157,27 +169,55 @@ export const routes: Routes = [
 
       // ======================================
       // VISITOR CHECK
+      //
+      // Permission:
+      // VISITOR_CHECK
       // ======================================
 
       {
         path: 'visitor-check',
+
+        canActivate: [
+          permissionGuard('VISITOR_CHECK')
+        ],
+
         component: VisitorCheck
       },
 
 
       // ======================================
       // REPORTS
-      // ADMIN ONLY
+      //
+      // Permission:
+      // REPORTS
       // ======================================
 
       {
         path: 'reports',
 
         canActivate: [
-          adminGuard
+          permissionGuard('REPORTS')
         ],
 
         component: Reports
+      },
+
+
+      // ======================================
+      // SYSTEM SETTINGS
+      //
+      // Permission:
+      // SYSTEM_SETTINGS
+      // ======================================
+
+      {
+        path: 'system-settings',
+
+        canActivate: [
+          permissionGuard('SYSTEM_SETTINGS')
+        ],
+
+        component: SystemSettings
       }
 
     ]

@@ -31,9 +31,9 @@ import {
 })
 export class AddUser {
 
-  // =====================================================
+  // ============================================================
   // FORM FIELDS
-  // =====================================================
+  // ============================================================
 
   firstName = '';
 
@@ -55,37 +55,32 @@ export class AddUser {
     = 'Admitted';
 
 
-  // =====================================================
+  // ============================================================
   // LOADING
-  // =====================================================
+  // ============================================================
 
   isSaving = false;
 
 
-  // =====================================================
+  // ============================================================
   // CONSTRUCTOR
-  // =====================================================
+  // ============================================================
 
   constructor(
-
     private router: Router,
-
     private patientService: PatientService
-
   ) {}
 
 
-  // =====================================================
+  // ============================================================
   // SAVE PATIENT
-  // =====================================================
+  // ============================================================
 
-  savePatient(
-    form: NgForm
-  ): void {
+  savePatient(form: NgForm): void {
 
-    // ---------------------------------------------------
-    // VALIDATE FORM
-    // ---------------------------------------------------
+    // ----------------------------------------------------------
+    // FORM VALIDATION
+    // ----------------------------------------------------------
 
     if (form.invalid) {
 
@@ -97,9 +92,9 @@ export class AddUser {
     }
 
 
-    // ---------------------------------------------------
+    // ----------------------------------------------------------
     // CLEAN PATIENT NUMBER
-    // ---------------------------------------------------
+    // ----------------------------------------------------------
 
     const cleanPatientNumber =
       this.patientNumber
@@ -107,127 +102,245 @@ export class AddUser {
         .toUpperCase();
 
 
-    // ---------------------------------------------------
-    // CHECK DUPLICATE IN CURRENT CACHE
-    // ---------------------------------------------------
+    // ----------------------------------------------------------
+    // VALIDATE PATIENT NUMBER
+    // ----------------------------------------------------------
 
-    if (
-      this.patientService.patientExists(
-        cleanPatientNumber
-      )
-    ) {
+    if (!cleanPatientNumber) {
 
       alert(
-        `Patient Number "${cleanPatientNumber}" already exists. Please use a different Patient Number.`
+        'Please enter a Patient Number.'
       );
 
       return;
     }
 
 
-    // ---------------------------------------------------
-    // CREATE PATIENT
-    // ---------------------------------------------------
+    // ----------------------------------------------------------
+    // PREVENT DOUBLE CLICK
+    // ----------------------------------------------------------
 
-    const patient: Patient = {
+    if (this.isSaving) {
+      return;
+    }
 
-      // PostgreSQL will generate the real ID
-      id: 0,
-
-      firstName:
-        this.firstName.trim(),
-
-      secondName:
-        this.secondName.trim(),
-
-      lastName:
-        this.lastName.trim(),
-
-      patientNumber:
-        cleanPatientNumber,
-
-      ward:
-        this.ward.trim(),
-
-      admissionDate:
-        this.admissionDate,
-
-      status:
-        this.status,
-
-      // PostgreSQL will generate createdAt
-      createdAt: ''
-
-    };
-
-
-    // ---------------------------------------------------
-    // START SAVING
-    // ---------------------------------------------------
 
     this.isSaving = true;
 
 
-    // ---------------------------------------------------
-    // SEND TO DJANGO API
-    // ---------------------------------------------------
+    // ==========================================================
+    // CHECK PATIENT NUMBER AGAINST DATABASE
+    // ==========================================================
 
     this.patientService
-      .addPatient(patient)
+      .patientExists(
+        cleanPatientNumber
+      )
       .subscribe({
 
-        // -----------------------------------------------
-        // SUCCESS
-        // -----------------------------------------------
+        // --------------------------------------------------------
+        // DUPLICATE CHECK RESULT
+        // --------------------------------------------------------
 
-        next: () => {
+        next: exists => {
 
-          this.isSaving = false;
-
-          alert(
-            'Patient added successfully!'
+          console.log(
+            'PATIENT NUMBER:',
+            cleanPatientNumber
           );
 
-          this.router.navigate(
-            ['/users']
+          console.log(
+            'PATIENT EXISTS:',
+            exists
           );
 
+
+          // ------------------------------------------------------
+          // PATIENT ALREADY EXISTS
+          // ------------------------------------------------------
+
+          if (exists) {
+
+            this.isSaving = false;
+
+            alert(
+              `Patient Number "${cleanPatientNumber}" already exists. Please use a different Patient Number.`
+            );
+
+            return;
+          }
+
+
+          // ------------------------------------------------------
+          // PATIENT DOES NOT EXIST
+          // CONTINUE WITH SAVE
+          // ------------------------------------------------------
+
+          const patient:
+            Omit<
+              Patient,
+              'id' | 'createdAt'
+            > = {
+
+            firstName:
+              this.firstName.trim(),
+
+            secondName:
+              this.secondName.trim(),
+
+            lastName:
+              this.lastName.trim(),
+
+            patientNumber:
+              cleanPatientNumber,
+
+            ward:
+              this.ward.trim(),
+
+            admissionDate:
+              this.admissionDate,
+
+            status:
+              this.status
+          };
+
+
+          // ======================================================
+          // ADD PATIENT TO DATABASE
+          // ======================================================
+
+          this.patientService
+            .addPatient(patient)
+            .subscribe({
+
+              // --------------------------------------------------
+              // SUCCESS
+              // --------------------------------------------------
+
+              next: createdPatient => {
+
+                console.log(
+                  'PATIENT SAVED SUCCESSFULLY:',
+                  createdPatient
+                );
+
+                this.isSaving = false;
+
+                alert(
+                  'Patient added successfully!'
+                );
+
+                this.router.navigate(
+                  ['/users']
+                );
+              },
+
+
+              // --------------------------------------------------
+              // SAVE ERROR
+              // --------------------------------------------------
+
+              error: error => {
+
+                console.error(
+                  'Failed to add patient:',
+                  error
+                );
+
+                this.isSaving = false;
+
+
+                // ----------------------------------------------
+                // UNAUTHORIZED
+                // ----------------------------------------------
+
+                if (
+                  error?.status === 401
+                ) {
+
+                  alert(
+                    'Your session has expired. Please login again.'
+                  );
+
+                  this.router.navigate(
+                    ['/login']
+                  );
+
+                  return;
+                }
+
+
+                // ----------------------------------------------
+                // DUPLICATE FROM BACKEND
+                // ----------------------------------------------
+
+                if (
+                  error?.status === 400 ||
+                  error?.status === 409
+                ) {
+
+                  /*
+                   * Backend is the final authority.
+                   * Even if frontend duplicate checking
+                   * says the number is available,
+                   * PostgreSQL/backend may reject it.
+                   */
+
+                  const backendMessage =
+                    error?.error?.patient_number?.[0] ||
+                    error?.error?.detail ||
+                    error?.error?.message;
+
+
+                  if (backendMessage) {
+
+                    alert(
+                      backendMessage
+                    );
+
+                  } else {
+
+                    alert(
+                      'Patient could not be added. Please check the patient information and make sure the Patient Number is unique.'
+                    );
+                  }
+
+                  return;
+                }
+
+
+                // ----------------------------------------------
+                // OTHER ERROR
+                // ----------------------------------------------
+
+                alert(
+                  'Failed to add patient. Please make sure the backend server is running.'
+                );
+              }
+
+            });
         },
 
 
-        // -----------------------------------------------
-        // ERROR
-        // -----------------------------------------------
+        // ========================================================
+        // DUPLICATE CHECK ERROR
+        // ========================================================
 
         error: error => {
 
           console.error(
-            'Failed to add patient:',
+            'Failed to check patient number:',
             error
           );
 
           this.isSaving = false;
 
 
-          // ---------------------------------------------
-          // DUPLICATE / VALIDATION ERROR
-          // ---------------------------------------------
+          // ------------------------------------------------------
+          // UNAUTHORIZED
+          // ------------------------------------------------------
 
           if (
-            error?.status === 400
-          ) {
-
-            alert(
-              'Patient could not be added. Please check the patient information and make sure the Patient Number is unique.'
-            );
-
-          }
-
-          // ---------------------------------------------
-          // UNAUTHORIZED
-          // ---------------------------------------------
-
-          else if (
             error?.status === 401
           ) {
 
@@ -239,37 +352,32 @@ export class AddUser {
               ['/login']
             );
 
+            return;
           }
 
-          // ---------------------------------------------
+
+          // ------------------------------------------------------
           // OTHER ERROR
-          // ---------------------------------------------
+          // ------------------------------------------------------
 
-          else {
-
-            alert(
-              'Failed to add patient. Please make sure the backend server is running.'
-            );
-
-          }
-
+          alert(
+            'Unable to verify the Patient Number. Please make sure the backend server is running.'
+          );
         }
 
       });
-
   }
 
 
-  // =====================================================
+  // ============================================================
   // CANCEL
-  // =====================================================
+  // ============================================================
 
   cancel(): void {
 
     this.router.navigate(
       ['/users']
     );
-
   }
 
 }

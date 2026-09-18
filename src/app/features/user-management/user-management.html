@@ -1,3 +1,4 @@
+
 <div class="user-management-page">
 
   <!-- =====================================================
@@ -209,10 +210,6 @@
        ===================================================== -->
 
   <div class="table-card">
-
-    <!-- ===================================================
-         LOADING
-         =================================================== -->
 
     @if (loading()) {
 
@@ -478,7 +475,7 @@
 
                 <td class="action-cell">
 
-                  <!-- EDIT USER -->
+                  <!-- EDIT -->
 
                   <button
                     type="button"
@@ -506,9 +503,21 @@
                   </button>
 
 
-                  <!-- =====================================
-                       ACTIVATE / DEACTIVATE
-                       ===================================== -->
+                  <!-- MANAGE PERMISSIONS -->
+
+                  <button
+                    type="button"
+                    class="action-button permissions"
+                    title="Manage permissions"
+                    (click)="openPermissions(user)"
+                  >
+
+                    <i class="bi bi-shield-lock"></i>
+
+                  </button>
+
+
+                  <!-- ACTIVATE / DEACTIVATE -->
 
                   <button
                     type="button"
@@ -553,7 +562,7 @@
                   </button>
 
 
-                  <!-- DELETE USER -->
+                  <!-- DELETE -->
 
                   <button
                     type="button"
@@ -573,9 +582,7 @@
             }
 
 
-            <!-- =========================================
-                 EMPTY STATE
-                 ========================================= -->
+            <!-- EMPTY -->
 
             @if (
               filteredUsers().length === 0
@@ -628,9 +635,7 @@
 
     <div class="user-modal">
 
-      <!-- ===============================================
-           MODAL HEADER
-           =============================================== -->
+      <!-- HEADER -->
 
       <div class="modal-header">
 
@@ -673,13 +678,9 @@
       </div>
 
 
-      <!-- ===============================================
-           MODAL BODY
-           =============================================== -->
+      <!-- BODY -->
 
       <div class="modal-body">
-
-        <!-- ERROR -->
 
         @if (errorMessage()) {
 
@@ -814,10 +815,7 @@
         </div>
 
 
-        <!-- =============================================
-             ACCOUNT STATUS
-             EDIT ONLY
-             ============================================= -->
+        <!-- ACCOUNT STATUS -->
 
         @if (editingUserId() !== null) {
 
@@ -826,7 +824,6 @@
             <label>
               Account Status
             </label>
-
 
             <select
               [(ngModel)]="isActive"
@@ -847,10 +844,7 @@
         }
 
 
-        <!-- =============================================
-             PASSWORD
-             CREATE ONLY
-             ============================================= -->
+        <!-- PASSWORD -->
 
         @if (editingUserId() === null) {
 
@@ -860,13 +854,11 @@
               Default Password
             </label>
 
-
             <input
               type="password"
               [(ngModel)]="password"
               placeholder="Enter default password"
             />
-
 
             <small>
               The user will be required to change this password after login.
@@ -881,7 +873,6 @@
               Confirm Password
             </label>
 
-
             <input
               type="password"
               [(ngModel)]="confirmPassword"
@@ -895,9 +886,7 @@
       </div>
 
 
-      <!-- ===============================================
-           MODAL FOOTER
-           =============================================== -->
+      <!-- FOOTER -->
 
       <div class="modal-footer">
 
@@ -965,9 +954,7 @@
 
     <div class="user-modal reset-modal">
 
-      <!-- ===============================================
-           MODAL HEADER
-           =============================================== -->
+      <!-- HEADER -->
 
       <div class="modal-header">
 
@@ -976,7 +963,6 @@
           <h2>
             Reset Password
           </h2>
-
 
           <p>
 
@@ -1004,13 +990,9 @@
       </div>
 
 
-      <!-- ===============================================
-           MODAL BODY
-           =============================================== -->
+      <!-- BODY -->
 
       <div class="modal-body">
-
-        <!-- ERROR -->
 
         @if (errorMessage()) {
 
@@ -1024,8 +1006,6 @@
 
         }
 
-
-        <!-- INFO -->
 
         <div class="info-box">
 
@@ -1044,7 +1024,6 @@
             New Password
           </label>
 
-
           <input
             type="password"
             [(ngModel)]="resetPassword"
@@ -1062,7 +1041,6 @@
             Confirm New Password
           </label>
 
-
           <input
             type="password"
             [(ngModel)]="resetConfirmPassword"
@@ -1074,9 +1052,7 @@
       </div>
 
 
-      <!-- ===============================================
-           MODAL FOOTER
-           =============================================== -->
+      <!-- FOOTER -->
 
       <div class="modal-footer">
 
@@ -1116,6 +1092,511 @@
           }
 
         </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+}
+
+
+<!-- =====================================================
+     MANAGE PERMISSIONS MODAL
+     ===================================================== -->
+
+@if (showPermissionsModal()) {
+
+  <div class="modal-backdrop">
+
+    <div class="user-modal permissions-modal">
+
+      <!-- =================================================
+           PERMISSIONS HEADER
+           ================================================= -->
+
+      <div class="modal-header">
+
+        <div>
+
+          <h2>
+            Manage Permissions
+          </h2>
+
+          <p>
+
+            User:
+
+            <strong>
+              {{ selectedPermissionUser()?.username }}
+            </strong>
+
+          </p>
+
+        </div>
+
+
+        <button
+          type="button"
+          class="close-button"
+          [disabled]="permissionsSaving()"
+          (click)="closePermissions()"
+        >
+
+          ×
+
+        </button>
+
+      </div>
+
+
+      <!-- =================================================
+           PERMISSIONS BODY
+           ================================================= -->
+
+      <div class="modal-body permissions-body">
+
+        <!-- =================================================
+             USER INFORMATION
+             ================================================= -->
+
+        @if (selectedPermissionUser()) {
+
+          <div class="selected-user-card">
+
+            <div class="selected-user-icon">
+
+              @if (
+                selectedPermissionUser()?.role === 'ADMIN'
+              ) {
+
+                <i class="bi bi-shield-check"></i>
+
+              }
+
+              @else {
+
+                <i class="bi bi-person"></i>
+
+              }
+
+            </div>
+
+
+            <div class="selected-user-info">
+
+              <strong>
+                {{ selectedPermissionUser()?.username }}
+              </strong>
+
+              <span>
+
+                @if (
+                  selectedPermissionUser()?.role === 'ADMIN'
+                ) {
+
+                  Administrator
+
+                }
+
+                @else {
+
+                  Normal User
+
+                }
+
+              </span>
+
+            </div>
+
+          </div>
+
+        }
+
+
+        <!-- =================================================
+             ADMIN INFORMATION
+             ================================================= -->
+
+        @if (
+          selectedPermissionUser()?.role === 'ADMIN'
+        ) {
+
+          <div class="admin-permission-info">
+
+            <div class="admin-permission-icon">
+
+              <i class="bi bi-shield-fill-check"></i>
+
+            </div>
+
+
+            <div>
+
+              <strong>
+                Administrator
+              </strong>
+
+              <p>
+                Administrators automatically have access to all system modules.
+              </p>
+
+            </div>
+
+          </div>
+
+        }
+
+
+        <!-- =================================================
+             NORMAL USER PERMISSIONS
+             ================================================= -->
+
+        @else {
+
+          <!-- LOADING -->
+
+          @if (permissionsLoading()) {
+
+            <div class="permissions-loading">
+
+              <div class="spinner"></div>
+
+              <span>
+                Loading permissions...
+              </span>
+
+            </div>
+
+          }
+
+          @else {
+
+            <!-- ERROR -->
+
+            @if (permissionsError()) {
+
+              <div class="permissions-error">
+
+                <i class="bi bi-exclamation-triangle"></i>
+
+                <span>
+                  {{ permissionsError() }}
+                </span>
+
+              </div>
+
+            }
+
+
+            <!-- SUCCESS -->
+
+            @if (permissionsSuccess()) {
+
+              <div class="permissions-success">
+
+                <i class="bi bi-check-circle"></i>
+
+                <span>
+                  {{ permissionsSuccess() }}
+                </span>
+
+              </div>
+
+            }
+
+
+            <!-- MODULE HEADER -->
+
+            <div class="permissions-section-header">
+
+              <div>
+
+                <h3>
+                  Module Permissions
+                </h3>
+
+                <p>
+                  Select the modules this user is allowed to access.
+                </p>
+
+              </div>
+
+
+              <div class="permission-actions">
+
+                <button
+                  type="button"
+                  class="permission-link-button"
+                  [disabled]="permissionsSaving()"
+                  (click)="selectAllModules()"
+                >
+
+                  <i class="bi bi-check-all"></i>
+
+                  Select All
+
+                </button>
+
+
+                <button
+                  type="button"
+                  class="permission-link-button clear"
+                  [disabled]="permissionsSaving()"
+                  (click)="clearAllModules()"
+                >
+
+                  <i class="bi bi-x-circle"></i>
+
+                  Clear All
+
+                </button>
+
+              </div>
+
+            </div>
+
+
+            <!-- MODULE LIST -->
+
+            <div class="module-list">
+
+              @for (
+                module of availableModules();
+                track module.id
+              ) {
+
+                <label
+                  class="module-permission-item"
+                  [class.selected]="
+                    isModuleSelected(module.module)
+                  "
+                >
+
+                  <div class="module-checkbox">
+
+                    <input
+                      type="checkbox"
+                      [checked]="
+                        isModuleSelected(module.module)
+                      "
+                      [disabled]="permissionsSaving()"
+                      (change)="
+                        toggleModulePermission(module.module)
+                      "
+                    />
+
+
+                    <span class="custom-checkbox">
+
+                      @if (
+                        isModuleSelected(module.module)
+                      ) {
+
+                        <i class="bi bi-check"></i>
+
+                      }
+
+                    </span>
+
+                  </div>
+
+
+                  <div class="module-icon">
+
+                    @switch (module.module) {
+
+                      @case ('PATIENTS') {
+
+                        <i class="bi bi-person-vcard"></i>
+
+                      }
+
+                      @case ('VISITOR_CHECK') {
+
+                        <i class="bi bi-person-check"></i>
+
+                      }
+
+                      @case ('REPORTS') {
+
+                        <i class="bi bi-bar-chart"></i>
+
+                      }
+
+                      @case ('USER_UPLOAD') {
+
+                        <i class="bi bi-cloud-upload"></i>
+
+                      }
+
+                      @case ('USER_MANAGEMENT') {
+
+                        <i class="bi bi-people"></i>
+
+                      }
+
+                      @case ('SYSTEM_SETTINGS') {
+
+                        <i class="bi bi-gear"></i>
+
+                      }
+
+                      @default {
+
+                        <i class="bi bi-grid"></i>
+
+                      }
+
+                    }
+
+                  </div>
+
+
+                  <div class="module-information">
+
+                    <strong>
+                      {{ module.name }}
+                    </strong>
+
+                    @if (module.description) {
+
+                      <span>
+                        {{ module.description }}
+                      </span>
+
+                    }
+
+                  </div>
+
+
+                  <div class="module-status">
+
+                    @if (
+                      isModuleSelected(module.module)
+                    ) {
+
+                      <span class="permission-granted">
+                        Allowed
+                      </span>
+
+                    }
+
+                    @else {
+
+                      <span class="permission-denied">
+                        Not Allowed
+                      </span>
+
+                    }
+
+                  </div>
+
+                </label>
+
+              }
+
+
+              <!-- NO MODULES -->
+
+              @if (
+                availableModules().length === 0
+              ) {
+
+                <div class="no-modules">
+
+                  <i class="bi bi-shield-x"></i>
+
+                  <strong>
+                    No modules available
+                  </strong>
+
+                  <span>
+                    System modules could not be loaded.
+                  </span>
+
+                </div>
+
+              }
+
+            </div>
+
+          }
+
+        }
+
+      </div>
+
+
+      <!-- =================================================
+           PERMISSIONS FOOTER
+           ================================================= -->
+
+      <div class="modal-footer">
+
+        <button
+          type="button"
+          class="cancel-button"
+          [disabled]="permissionsSaving()"
+          (click)="closePermissions()"
+        >
+
+          Cancel
+
+        </button>
+
+
+        @if (
+          selectedPermissionUser()?.role === 'ADMIN'
+        ) {
+
+          <button
+            type="button"
+            class="save-button"
+            (click)="closePermissions()"
+          >
+
+            <i class="bi bi-check-circle me-1"></i>
+
+            Done
+
+          </button>
+
+        }
+
+        @else {
+
+          <button
+            type="button"
+            class="save-button"
+            [disabled]="
+              permissionsSaving()
+              || permissionsLoading()
+              || availableModules().length === 0
+            "
+            (click)="savePermissions()"
+          >
+
+            @if (permissionsSaving()) {
+
+              <span class="button-spinner"></span>
+
+              Saving...
+
+            }
+
+            @else {
+
+              <i class="bi bi-shield-check me-1"></i>
+
+              Save Permissions
+
+            }
+
+          </button>
+
+        }
 
       </div>
 

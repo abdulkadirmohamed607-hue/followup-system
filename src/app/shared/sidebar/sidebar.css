@@ -208,3 +208,116 @@
   }
 
 }
+/* =========================================================
+   NAV ITEM CONTENT
+   ========================================================= */
+
+.nav-item {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 10px;
+}
+
+
+/* =========================================================
+   NAV LABEL
+   ========================================================= */
+
+.nav-label {
+  display: inline-block;
+
+  min-width: 0;
+}
+
+
+/* =========================================================
+   DISABLED / LOCKED MODULE
+   ========================================================= */
+
+.nav-item-disabled {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 10px;
+
+  width: 100%;
+
+  padding: 11px 15px;
+
+  margin: 0;
+
+  box-sizing: border-box;
+
+  color: #aeb4bb;
+
+  background: transparent;
+
+  border-radius: 6px;
+
+  font-size: 14px;
+
+  font-weight: 500;
+
+  text-decoration: none;
+
+  cursor: not-allowed;
+
+  opacity: 0.55;
+
+  user-select: none;
+
+  pointer-events: none;
+
+}
+
+
+/* =========================================================
+   LOCK ICON
+   ========================================================= */
+
+.lock-icon {
+
+  flex-shrink: 0;
+
+  font-size: 12px;
+
+  line-height: 1;
+
+  opacity: 0.75;
+}
+
+
+/* =========================================================
+   ENABLED MODULE HOVER
+   ========================================================= */
+
+.nav-item:not(.nav-item-disabled):hover {
+
+  background: #f1f3f5;
+
+  color: #222;
+
+}
+
+
+/* =========================================================
+   ACTIVE MODULE
+   ========================================================= */
+
+.nav-item:not(.nav-item-disabled).active {
+
+  background: #e9ecef;
+
+  color: #212529;
+
+  font-weight: 600;
+
+}

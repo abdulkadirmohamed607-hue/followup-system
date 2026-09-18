@@ -12,6 +12,8 @@ import {
   Observable,
   catchError,
   map,
+  of,
+  shareReplay,
   tap,
   throwError
 } from 'rxjs';
@@ -25,55 +27,91 @@ import {
   VisitorRelation
 } from '../models/visit';
 
+import {
+  environment
+} from '../../../environments/environment';
+
 @Injectable({
   providedIn: 'root'
 })
 export class VisitService {
 
   private readonly apiUrl =
-   'https://followup-system-backend.onrender.com/api/visits/'; // 'http://127.0.0.1:8000/api/visits/' 
+    `${environment.apiUrl}/visits/`;
 
   readonly visits =
     signal<Visit[]>([]);
 
+  /*
+  =========================================================
+  REQUEST CACHE
+  =========================================================
+
+  Prevents multiple components / calls from sending
+  duplicate GET /api/visits/ requests.
+  */
+  private visitsRequest$:
+    Observable<Visit[]> | null = null;
 
   constructor(
     private http: HttpClient
   ) {}
 
-
   /* =========================================================
      LOAD VISITS
      ========================================================= */
 
-  loadVisits(): Observable<Visit[]> {
+  loadVisits(
+    forceRefresh = false
+  ): Observable<Visit[]> {
 
-    return this.http
+    /*
+    If force refresh was requested,
+    clear the previous cached request.
+    */
+    if (forceRefresh) {
+      this.visitsRequest$ = null;
+    }
+
+    /*
+    If a request is already in progress/cached,
+    return the same Observable instead of creating
+    another HTTP request.
+    */
+    if (this.visitsRequest$) {
+      return this.visitsRequest$;
+    }
+
+    /*
+    If visits are already available in memory and
+    no force refresh was requested, use the signal.
+
+    This prevents unnecessary API calls when another
+    component already loaded the visits.
+    */
+    if (!forceRefresh && this.visits().length > 0) {
+      return of(this.visits());
+    }
+
+    /*
+    Create one HTTP request and share its result.
+    */
+    this.visitsRequest$ = this.http
       .get<any>(this.apiUrl)
       .pipe(
 
+        /*
+        Handle normal array response.
+        */
         map(response => {
-
-          /*
-           * Django REST Framework can return:
-           *
-           * [
-           *   {...},
-           *   {...}
-           * ]
-           *
-           * OR:
-           *
-           * {
-           *   count: 10,
-           *   results: [...]
-           * }
-           */
 
           if (Array.isArray(response)) {
             return response;
           }
 
+          /*
+          Handle Django REST Framework pagination.
+          */
           if (
             response &&
             Array.isArray(response.results)
@@ -84,7 +122,9 @@ export class VisitService {
           return [];
         }),
 
-
+        /*
+        Convert API objects to Angular Visit model.
+        */
         map(
           (results: any[]) =>
             results.map(
@@ -93,7 +133,9 @@ export class VisitService {
             )
         ),
 
-
+        /*
+        Store visits in signal.
+        */
         tap(
           visits => {
 
@@ -108,7 +150,18 @@ export class VisitService {
           }
         ),
 
+        /*
+        shareReplay ensures multiple subscribers
+        share one HTTP request/result.
+        */
+        shareReplay({
+          bufferSize: 1,
+          refCount: true
+        }),
 
+        /*
+        Error handling.
+        */
         catchError(
           (error: HttpErrorResponse) => {
 
@@ -116,6 +169,11 @@ export class VisitService {
               'Failed to load visits:',
               error
             );
+
+            /*
+            Allow another request after failure.
+            */
+            this.visitsRequest$ = null;
 
             this.visits.set([]);
 
@@ -125,8 +183,27 @@ export class VisitService {
           }
         )
       );
+
+    return this.visitsRequest$;
   }
 
+  /* =========================================================
+     FORCE REFRESH VISITS
+     ========================================================= */
+
+  refreshVisits(): Observable<Visit[]> {
+
+    return this.loadVisits(true);
+  }
+
+  /* =========================================================
+     CLEAR REQUEST CACHE
+     ========================================================= */
+
+  clearVisitsCache(): void {
+
+    this.visitsRequest$ = null;
+  }
 
   /* =========================================================
      GET ALL VISITS FROM SIGNAL
@@ -138,7 +215,6 @@ export class VisitService {
       ...this.visits()
     ];
   }
-
 
   /* =========================================================
      GET PATIENT VISITS
@@ -154,7 +230,6 @@ export class VisitService {
           visit.patientId === patientId
       );
   }
-
 
   /* =========================================================
      GET PATIENT VISITS BY DATE
@@ -173,7 +248,6 @@ export class VisitService {
       );
   }
 
-
   /* =========================================================
      GET SESSION VISITS
      ========================================================= */
@@ -190,7 +264,6 @@ export class VisitService {
           visit.session === session
       );
   }
-
 
   /* =========================================================
      CHECK SLOT
@@ -217,11 +290,9 @@ export class VisitService {
       );
   }
 
-
   /* =========================================================
      MAX VISITOR SLOTS
-     
-     IMPORTANT:
+
      Morning = 2
      Day     = 2
      Evening = 3
@@ -246,7 +317,6 @@ export class VisitService {
         return 0;
     }
   }
-
 
   /* =========================================================
      GET SPECIFIC SLOT VISIT
@@ -273,7 +343,6 @@ export class VisitService {
       );
   }
 
-
   /* =========================================================
      GENERATE ID
      ========================================================= */
@@ -282,7 +351,6 @@ export class VisitService {
 
     return Date.now();
   }
-
 
   /* =========================================================
      ADD VISIT
@@ -297,11 +365,9 @@ export class VisitService {
       visit.slot ??
       1;
 
-
     const patientId =
       visit.patient ??
       visit.patientId;
-
 
     const payload = {
 
@@ -358,12 +424,10 @@ export class VisitService {
         visitorNumber
     };
 
-
     console.log(
       'Adding visitor:',
       payload
     );
-
 
     return this.http
       .post<any>(
@@ -380,7 +444,15 @@ export class VisitService {
             )
         ),
 
+        /*
+        IMPORTANT:
 
+        The newly created visit is immediately
+        added to the signal.
+
+        Therefore VisitorCheck does NOT need
+        another GET /api/visits/ after saving.
+        */
         tap(
           savedVisit => {
 
@@ -390,9 +462,15 @@ export class VisitService {
                 ...currentVisits
               ]
             );
+
+            /*
+            Existing cached request may now contain
+            an old snapshot. Clear it so a future
+            explicit refresh can request fresh data.
+            */
+            this.visitsRequest$ = null;
           }
         ),
-
 
         catchError(
           (error: HttpErrorResponse) => {
@@ -410,7 +488,6 @@ export class VisitService {
       );
   }
 
-
   /* =========================================================
      CHECKOUT VISIT
      ========================================================= */
@@ -423,7 +500,6 @@ export class VisitService {
     const checkOut =
       checkoutTime ??
       this.getDateTimeLocal();
-
 
     return this.http
       .patch<any>(
@@ -441,7 +517,6 @@ export class VisitService {
             )
         ),
 
-
         tap(
           updatedVisit => {
 
@@ -454,9 +529,14 @@ export class VisitService {
                       : visit
                 )
             );
+
+            /*
+            Signal already contains the updated visit.
+            Clear stale cached request.
+            */
+            this.visitsRequest$ = null;
           }
         ),
-
 
         catchError(
           (error: HttpErrorResponse) => {
@@ -473,7 +553,6 @@ export class VisitService {
         )
       );
   }
-
 
   /* =========================================================
      DELETE VISIT
@@ -499,9 +578,13 @@ export class VisitService {
                     visit.id !== id
                 )
             );
+
+            /*
+            Signal has already been updated.
+            */
+            this.visitsRequest$ = null;
           }
         ),
-
 
         catchError(
           (error: HttpErrorResponse) => {
@@ -519,7 +602,6 @@ export class VisitService {
       );
   }
 
-
   /* =========================================================
      MAP API VISIT → ANGULAR VISIT MODEL
      ========================================================= */
@@ -529,18 +611,12 @@ export class VisitService {
     fallback?: Partial<Visit>
   ): Visit {
 
-
-    /* ---------------------------------------------------------
-       VISITOR NAME
-       --------------------------------------------------------- */
-
     const firstName =
       this.cleanString(
         data?.first_name ??
         fallback?.firstName ??
         fallback?.visitorFirstName
       );
-
 
     const secondName =
       this.cleanString(
@@ -549,18 +625,12 @@ export class VisitService {
         fallback?.visitorSecondName
       );
 
-
     const lastName =
       this.cleanString(
         data?.last_name ??
         fallback?.lastName ??
         fallback?.visitorLastName
       );
-
-
-    /* ---------------------------------------------------------
-       PHONE
-       --------------------------------------------------------- */
 
     const phone =
       this.cleanString(
@@ -569,22 +639,12 @@ export class VisitService {
         fallback?.visitorPhone
       );
 
-
-    /* ---------------------------------------------------------
-       CARD NUMBER
-       --------------------------------------------------------- */
-
     const cardNumber =
       this.cleanString(
         data?.card_number ??
         fallback?.cardNumber ??
         fallback?.visitorCardNumber
       );
-
-
-    /* ---------------------------------------------------------
-       PATIENT ID
-       --------------------------------------------------------- */
 
     const patientId =
       Number(
@@ -595,11 +655,6 @@ export class VisitService {
         0
       );
 
-
-    /* ---------------------------------------------------------
-       VISITOR NUMBER
-       --------------------------------------------------------- */
-
     const visitorNumber =
       Number(
         data?.visitor_number ??
@@ -608,28 +663,12 @@ export class VisitService {
         1
       );
 
-
-    /* ---------------------------------------------------------
-       SESSION
-       
-       KEEP EXACT STRUCTURE:
-       
-       Morning
-       Day
-       Evening
-       --------------------------------------------------------- */
-
     const session =
       this.normalizeSession(
         data?.session ??
         fallback?.session ??
         'Day'
       );
-
-
-    /* ---------------------------------------------------------
-       GENDER
-       --------------------------------------------------------- */
 
     const gender =
       (
@@ -639,11 +678,6 @@ export class VisitService {
         'Male'
       ) as VisitorGender;
 
-
-    /* ---------------------------------------------------------
-       RELATION
-       --------------------------------------------------------- */
-
     const relation =
       (
         data?.relation ??
@@ -652,22 +686,12 @@ export class VisitService {
         'Other'
       ) as VisitorRelation;
 
-
-    /* ---------------------------------------------------------
-       DATE
-       --------------------------------------------------------- */
-
     const visitDate =
       this.normalizeDate(
         data?.visit_date ??
         fallback?.visitDate ??
         this.getToday()
       );
-
-
-    /* ---------------------------------------------------------
-       TIME
-       --------------------------------------------------------- */
 
     const visitTime =
       this.normalizeTime(
@@ -676,57 +700,25 @@ export class VisitService {
         this.getCurrentTime()
       );
 
-
-    /* ---------------------------------------------------------
-       CREATED AT
-       --------------------------------------------------------- */
-
     const createdAt =
       data?.created_at ??
       fallback?.createdAt ??
       new Date().toISOString();
-
-
-    /* ---------------------------------------------------------
-       CHECK IN
-       
-       Backend response does not contain check_in.
-       
-       Therefore construct it using:
-       
-       visit_date + visit_time
-       --------------------------------------------------------- */
 
     const checkIn =
       data?.check_in ??
       fallback?.checkIn ??
       `${visitDate}T${visitTime}`;
 
-
-    /* ---------------------------------------------------------
-       CHECK OUT
-       --------------------------------------------------------- */
-
     const checkOut =
       data?.check_out ??
       fallback?.checkOut ??
       null;
 
-
-    /* ---------------------------------------------------------
-       DURATION
-       --------------------------------------------------------- */
-
     let durationMinutes =
       data?.duration_minutes ??
       fallback?.durationMinutes ??
       null;
-
-
-    /*
-     * If backend did not provide duration,
-     * calculate it from check-in and check-out.
-     */
 
     if (
       durationMinutes === null &&
@@ -740,11 +732,6 @@ export class VisitService {
         );
     }
 
-
-    /* ---------------------------------------------------------
-       STATUS
-       --------------------------------------------------------- */
-
     const status =
       (
         data?.status ??
@@ -756,11 +743,6 @@ export class VisitService {
         )
       ) as VisitStatus;
 
-
-    /* ---------------------------------------------------------
-       FINAL ANGULAR MODEL
-       --------------------------------------------------------- */
-
     return {
 
       id:
@@ -769,9 +751,6 @@ export class VisitService {
           fallback?.id ??
           this.generateId()
         ),
-
-
-      /* PATIENT */
 
       patient:
         patientId,
@@ -797,9 +776,6 @@ export class VisitService {
           fallback?.ward
         ),
 
-
-      /* VISITOR NAMES */
-
       firstName:
         firstName,
 
@@ -818,26 +794,17 @@ export class VisitService {
       visitorLastName:
         lastName,
 
-
-      /* PHONE */
-
       phone:
         phone,
 
       visitorPhone:
         phone,
 
-
-      /* CARD */
-
       cardNumber:
         cardNumber,
 
       visitorCardNumber:
         cardNumber,
-
-
-      /* DETAILS */
 
       gender:
         gender,
@@ -851,9 +818,6 @@ export class VisitService {
       visitorRelation:
         relation,
 
-
-      /* SESSION */
-
       session:
         session,
 
@@ -862,9 +826,6 @@ export class VisitService {
 
       slot:
         visitorNumber,
-
-
-      /* TIME */
 
       visitDate:
         visitDate,
@@ -884,24 +845,13 @@ export class VisitService {
       durationMinutes:
         durationMinutes,
 
-
-      /* STATUS */
-
       status:
         status
     };
   }
 
-
   /* =========================================================
      NORMALIZE SESSION
-     
-     IMPORTANT:
-     Only these three sessions are supported:
-     
-     Morning
-     Day
-     Evening
      ========================================================= */
 
   private normalizeSession(
@@ -914,7 +864,6 @@ export class VisitService {
       )
         .trim()
         .toLowerCase();
-
 
     switch (session) {
 
@@ -932,7 +881,6 @@ export class VisitService {
     }
   }
 
-
   /* =========================================================
      NORMALIZE DATE
      ========================================================= */
@@ -945,27 +893,15 @@ export class VisitService {
       return this.getToday();
     }
 
-
     const stringValue =
       String(value).trim();
-
-
-    /*
-     * Already YYYY-MM-DD
-     */
 
     if (
       /^\d{4}-\d{2}-\d{2}$/
         .test(stringValue)
     ) {
-
       return stringValue;
     }
-
-
-    /*
-     * ISO datetime
-     */
 
     if (
       stringValue.includes('T')
@@ -975,10 +911,8 @@ export class VisitService {
         .split('T')[0];
     }
 
-
     return stringValue;
   }
-
 
   /* =========================================================
      NORMALIZE TIME
@@ -992,26 +926,13 @@ export class VisitService {
       return this.getCurrentTime();
     }
 
-
     const time =
       String(value)
         .trim();
 
-
-    /*
-     * Django may return:
-     *
-     * 16:31:44.591936
-     *
-     * Angular only needs:
-     *
-     * 16:31:44
-     */
-
     return time
       .split('.')[0];
   }
-
 
   /* =========================================================
      CLEAN STRING
@@ -1029,11 +950,9 @@ export class VisitService {
       return '';
     }
 
-
     return String(value)
       .trim();
   }
-
 
   /* =========================================================
      CALCULATE DURATION
@@ -1049,12 +968,10 @@ export class VisitService {
         checkIn
       ).getTime();
 
-
     const end =
       new Date(
         checkOut
       ).getTime();
-
 
     if (
       Number.isNaN(start) ||
@@ -1065,7 +982,6 @@ export class VisitService {
       return 0;
     }
 
-
     return Math.round(
       (
         end - start
@@ -1074,9 +990,8 @@ export class VisitService {
     );
   }
 
-
   /* =========================================================
-     TODAY
+     GET TODAY
      ========================================================= */
 
   private getToday(): string {
@@ -1084,9 +999,7 @@ export class VisitService {
     const now =
       new Date();
 
-
     return [
-
       now.getFullYear(),
 
       String(
@@ -1106,9 +1019,8 @@ export class VisitService {
     ].join('-');
   }
 
-
   /* =========================================================
-     CURRENT TIME
+     GET CURRENT TIME
      ========================================================= */
 
   private getCurrentTime(): string {
@@ -1116,9 +1028,7 @@ export class VisitService {
     const now =
       new Date();
 
-
     return [
-
       String(
         now.getHours()
       ).padStart(
@@ -1143,9 +1053,8 @@ export class VisitService {
     ].join(':');
   }
 
-
   /* =========================================================
-     LOCAL DATETIME
+     GET LOCAL DATETIME
      ========================================================= */
 
   private getDateTimeLocal(): string {
@@ -1153,10 +1062,8 @@ export class VisitService {
     const now =
       new Date();
 
-
     const year =
       now.getFullYear();
-
 
     const month =
       String(
@@ -1166,7 +1073,6 @@ export class VisitService {
         '0'
       );
 
-
     const day =
       String(
         now.getDate()
@@ -1174,7 +1080,6 @@ export class VisitService {
         2,
         '0'
       );
-
 
     const hours =
       String(
@@ -1184,7 +1089,6 @@ export class VisitService {
         '0'
       );
 
-
     const minutes =
       String(
         now.getMinutes()
@@ -1193,8 +1097,6 @@ export class VisitService {
         '0'
       );
 
-
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   }
-
 }

@@ -1,3 +1,4 @@
+
 import {
   Injectable,
   PLATFORM_ID,
@@ -14,7 +15,8 @@ import {
 
 import {
   Observable,
-  tap
+  tap,
+  map
 } from 'rxjs';
 
 import {
@@ -25,8 +27,13 @@ import {
   AuthUser,
   LoginResponse,
   ChangePasswordResponse,
-  UserRole
+  UserRole,
+  ModulePermission
 } from '../models/auth-user';
+
+import {
+  environment
+} from '../../../environments/environment';
 
 
 @Injectable({
@@ -34,8 +41,17 @@ import {
 })
 export class AuthService {
 
+  // =========================================================
+  // API URL
+  // =========================================================
+
   private readonly apiUrl =
-    'https://followup-system-backend.onrender.com/api/auth';  //'http://127.0.0.1:8000/api/auth'
+    `${environment.apiUrl}/auth`;
+
+
+  // =========================================================
+  // LOCAL STORAGE KEYS
+  // =========================================================
 
   private readonly accessTokenKey =
     'followup_access_token';
@@ -46,9 +62,18 @@ export class AuthService {
   private readonly authUserKey =
     'followup_auth_user';
 
+
+  // =========================================================
+  // PLATFORM
+  // =========================================================
+
   private readonly platformId =
     inject(PLATFORM_ID);
 
+
+  // =========================================================
+  // CONSTRUCTOR
+  // =========================================================
 
   constructor(
     private http: HttpClient,
@@ -94,20 +119,40 @@ export class AuthService {
             return;
           }
 
+
+          // -----------------------------------------------
+          // NORMALIZE USER
+          // -----------------------------------------------
+
           const user =
             this.normalizeUser(
               response.user
             );
+
+
+          // -----------------------------------------------
+          // SAVE ACCESS TOKEN
+          // -----------------------------------------------
 
           localStorage.setItem(
             this.accessTokenKey,
             response.access
           );
 
+
+          // -----------------------------------------------
+          // SAVE REFRESH TOKEN
+          // -----------------------------------------------
+
           localStorage.setItem(
             this.refreshTokenKey,
             response.refresh
           );
+
+
+          // -----------------------------------------------
+          // SAVE NORMALIZED USER
+          // -----------------------------------------------
 
           localStorage.setItem(
             this.authUserKey,
@@ -129,13 +174,74 @@ export class AuthService {
     user: AuthUser
   ): AuthUser {
 
+    // Backend:
+    //
+    // ADMIN
+    // USER
+    //
+    // Angular:
+    //
+    // admin
+    // user
+
+    const normalizedRole =
+      String(user.role ?? '')
+        .trim()
+        .toLowerCase();
+
+
+    // Only allow valid application roles.
+
+    const role: UserRole =
+      normalizedRole === 'admin'
+        ? 'admin'
+        : 'user';
+
+
+    // Normalize module permissions.
+
+    const permissions: ModulePermission[] =
+      Array.isArray(user.permissions)
+
+        ? user.permissions
+            .map(permission =>
+              String(permission)
+                .trim()
+                .toUpperCase()
+            ) as ModulePermission[]
+
+        : [];
+
+
     return {
 
-      ...user,
+      id:
+        user.id,
 
-      role:
-        String(user.role)
-          .toLowerCase() as UserRole
+      username:
+        user.username,
+
+      first_name:
+        user.first_name ?? '',
+
+      last_name:
+        user.last_name ?? '',
+
+      email:
+        user.email ?? '',
+
+      phone:
+        user.phone ?? '',
+
+      role,
+
+      must_change_password:
+        user.must_change_password === true,
+
+      is_active:
+        user.is_active === true,
+
+      permissions
 
     };
 
@@ -143,7 +249,7 @@ export class AuthService {
 
 
   // =========================================================
-  // CURRENT USER
+  // CURRENT USER FROM LOCAL STORAGE
   // =========================================================
 
   getCurrentUser():
@@ -153,19 +259,28 @@ export class AuthService {
       return null;
     }
 
+
     const storedUser =
       localStorage.getItem(
         this.authUserKey
       );
 
+
     if (!storedUser) {
       return null;
     }
 
+
     try {
 
+      const parsedUser =
+        JSON.parse(
+          storedUser
+        );
+
+
       return this.normalizeUser(
-        JSON.parse(storedUser)
+        parsedUser
       );
 
     }
@@ -174,6 +289,7 @@ export class AuthService {
       localStorage.removeItem(
         this.authUserKey
       );
+
 
       return null;
 
@@ -193,6 +309,7 @@ export class AuthService {
       return null;
     }
 
+
     return localStorage.getItem(
       this.accessTokenKey
     );
@@ -210,6 +327,7 @@ export class AuthService {
     if (!this.isBrowser()) {
       return null;
     }
+
 
     return localStorage.getItem(
       this.refreshTokenKey
@@ -229,6 +347,7 @@ export class AuthService {
     if (!this.isBrowser()) {
       return;
     }
+
 
     localStorage.setItem(
       this.accessTokenKey,
@@ -250,20 +369,24 @@ export class AuthService {
       return;
     }
 
+
     const user =
       this.normalizeUser(
         response.user
       );
+
 
     localStorage.setItem(
       this.accessTokenKey,
       response.access
     );
 
+
     localStorage.setItem(
       this.refreshTokenKey,
       response.refresh
     );
+
 
     localStorage.setItem(
       this.authUserKey,
@@ -283,6 +406,7 @@ export class AuthService {
     const refreshToken =
       this.getRefreshToken();
 
+
     if (!refreshToken) {
 
       throw new Error(
@@ -290,6 +414,7 @@ export class AuthService {
       );
 
     }
+
 
     return this.http
       .post<{ access: string }>(
@@ -319,63 +444,77 @@ export class AuthService {
   }
 
 
- // =========================================================
-// CHANGE PASSWORD
-// =========================================================
+  // =========================================================
+  // CHANGE PASSWORD
+  // =========================================================
 
-changePassword(
-  oldPassword: string,
-  newPassword: string,
-  confirmPassword: string
-):
-  Observable<ChangePasswordResponse> {
+  changePassword(
+    oldPassword: string,
+    newPassword: string,
+    confirmPassword: string
+  ):
+    Observable<ChangePasswordResponse> {
 
-  return this.http
-    .post<ChangePasswordResponse>(
-      `${this.apiUrl}/change-password/`,
-      {
-        old_password: oldPassword,
-        new_password: newPassword,
-        confirm_password: confirmPassword
-      }
-    )
-    .pipe(
-
-      tap(response => {
-
-        if (!this.isBrowser()) {
-          return;
+    return this.http
+      .post<ChangePasswordResponse>(
+        `${this.apiUrl}/change-password/`,
+        {
+          old_password: oldPassword,
+          new_password: newPassword,
+          confirm_password: confirmPassword
         }
+      )
+      .pipe(
 
-        const user =
-          this.getCurrentUser();
+        tap(response => {
 
-        if (!user) {
-          return;
-        }
+          if (!this.isBrowser()) {
+            return;
+          }
 
-        const updatedUser: AuthUser = {
 
-          ...user,
+          const user =
+            this.getCurrentUser();
 
-          must_change_password:
-            response.must_change_password
 
-        };
+          if (!user) {
+            return;
+          }
 
-        localStorage.setItem(
-          this.authUserKey,
-          JSON.stringify(updatedUser)
-        );
 
-      })
+          const updatedUser: AuthUser = {
 
-    );
+            ...user,
 
-}
+            must_change_password:
+              response.must_change_password
+
+          };
+
+
+          localStorage.setItem(
+            this.authUserKey,
+            JSON.stringify(
+              updatedUser
+            )
+          );
+
+        })
+
+      );
+
+  }
+
 
   // =========================================================
-  // LOAD CURRENT USER
+  // LOAD CURRENT USER FROM BACKEND
+  // =========================================================
+  //
+  // This method remains available for guards or other
+  // parts of the application that explicitly need a
+  // fresh user from the backend.
+  //
+  // LOGIN DOES NOT CALL THIS METHOD ANYMORE.
   // =========================================================
 
   loadCurrentUser():
@@ -387,16 +526,19 @@ changePassword(
       )
       .pipe(
 
-        tap(user => {
+        map(user =>
+          this.normalizeUser(
+            user
+          )
+        ),
+
+
+        tap(normalizedUser => {
 
           if (!this.isBrowser()) {
             return;
           }
 
-          const normalizedUser =
-            this.normalizeUser(
-              user
-            );
 
           localStorage.setItem(
             this.authUserKey,
@@ -408,6 +550,54 @@ changePassword(
         })
 
       );
+
+  }
+
+
+  // =========================================================
+  // LOGIN + LOAD CURRENT USER
+  // =========================================================
+  //
+  // IMPORTANT:
+  //
+  // The login endpoint already returns:
+  //
+  // response.user
+  //
+  // Therefore there is no need to call:
+  //
+  // GET /api/auth/me/
+  //
+  // immediately after login.
+  //
+  // This removes one HTTP request and makes login faster.
+  //
+  // The method name is intentionally kept as:
+  //
+  // loginAndLoadUser()
+  //
+  // so existing components do not break.
+  // =========================================================
+
+  loginAndLoadUser(
+    username: string,
+    password: string
+  ):
+    Observable<AuthUser> {
+
+    return this.login(
+      username,
+      password
+    )
+    .pipe(
+
+      map(response =>
+        this.normalizeUser(
+          response.user
+        )
+      )
+
+    );
 
   }
 
@@ -434,6 +624,7 @@ changePassword(
     const user =
       this.getCurrentUser();
 
+
     return user?.role === 'admin';
 
   }
@@ -445,10 +636,15 @@ changePassword(
     const user =
       this.getCurrentUser();
 
+
     return user?.role === 'user';
 
   }
 
+
+  // =========================================================
+  // GENERIC ROLE CHECK
+  // =========================================================
 
   hasRole(
     role: UserRole
@@ -459,6 +655,96 @@ changePassword(
       this.getCurrentUser()
         ?.role === role
     );
+
+  }
+
+
+  // =========================================================
+  // MODULE PERMISSION CHECK
+  // =========================================================
+
+  hasPermission(
+    module: ModulePermission
+  ):
+    boolean {
+
+    const user =
+      this.getCurrentUser();
+
+
+    // No logged-in user.
+
+    if (!user) {
+      return false;
+    }
+
+
+    // Admin has access to all modules.
+
+    if (
+      user.role === 'admin'
+    ) {
+
+      return true;
+
+    }
+
+
+    // Normal user must have the
+    // requested module assigned.
+
+    return (
+      user.permissions
+        ?.includes(module) ?? false
+    );
+
+  }
+
+
+  // =========================================================
+  // GET USER PERMISSIONS
+  // =========================================================
+
+  getPermissions():
+    ModulePermission[] {
+
+    const user =
+      this.getCurrentUser();
+
+
+    if (!user) {
+      return [];
+    }
+
+
+    // Admin has every module.
+
+    if (
+      user.role === 'admin'
+    ) {
+
+      return [
+
+        'PATIENTS',
+
+        'VISITOR_CHECK',
+
+        'REPORTS',
+
+        'USER_UPLOAD',
+
+        'USER_MANAGEMENT',
+
+        'SYSTEM_SETTINGS'
+
+      ];
+
+    }
+
+
+    // Normal user gets assigned modules.
+
+    return user.permissions ?? [];
 
   }
 
@@ -488,13 +774,16 @@ changePassword(
       return;
     }
 
+
     localStorage.removeItem(
       this.accessTokenKey
     );
 
+
     localStorage.removeItem(
       this.refreshTokenKey
     );
+
 
     localStorage.removeItem(
       this.authUserKey
@@ -510,6 +799,7 @@ changePassword(
   logout(): void {
 
     this.clearAuthentication();
+
 
     this.router.navigate([
       '/login'

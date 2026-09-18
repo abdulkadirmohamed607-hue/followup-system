@@ -1326,3 +1326,737 @@ tbody tr:last-child td {
   }
 
 }
+/* =========================================================
+   PERMISSIONS ACTION BUTTON
+   ========================================================= */
+
+.action-button.permissions {
+
+  background: #eef5fb;
+
+  border-color: #bfd7e8;
+
+  color: #2f6d8f;
+
+}
+
+.action-button.permissions:hover {
+
+  background: #dcecf6;
+
+  border-color: #a9c8dc;
+
+  color: #245b78;
+
+}
+
+
+/* =========================================================
+   PERMISSIONS MODAL
+   ========================================================= */
+
+.permissions-modal {
+
+  width: 100%;
+
+  max-width: 720px;
+
+  max-height: 90vh;
+
+  overflow-y: auto;
+
+  background: #ffffff;
+
+  border-radius: 12px;
+
+  box-shadow:
+    0 15px 50px
+    rgba(20, 60, 90, 0.20);
+
+}
+
+
+/* =========================================================
+   PERMISSIONS BODY
+   ========================================================= */
+
+.permissions-body {
+
+  padding: 25px;
+
+}
+
+
+/* =========================================================
+   SELECTED USER CARD
+   ========================================================= */
+
+.selected-user-card {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 14px;
+
+  padding: 15px;
+
+  margin-bottom: 20px;
+
+  background: #f4f8fb;
+
+  border: 1px solid #dcecf5;
+
+  border-radius: 9px;
+
+}
+
+
+.selected-user-icon {
+
+  width: 44px;
+
+  height: 44px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background: #dcecf6;
+
+  color: #2f6d8f;
+
+  font-size: 18px;
+
+}
+
+
+.selected-user-info {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 3px;
+
+}
+
+
+.selected-user-info strong {
+
+  color: #123b5d;
+
+  font-size: 15px;
+
+}
+
+
+.selected-user-info span {
+
+  color: #71818c;
+
+  font-size: 12px;
+
+}
+
+
+/* =========================================================
+   ADMIN INFORMATION
+   ========================================================= */
+
+.admin-permission-info {
+
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 12px;
+
+  margin-bottom: 20px;
+
+  padding: 15px;
+
+  background: #eaf5fb;
+
+  border: 1px solid #c7e1ef;
+
+  border-radius: 8px;
+
+  color: #315f78;
+
+}
+
+
+.admin-permission-icon {
+
+  width: 34px;
+
+  height: 34px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background: #dcecf6;
+
+  color: #2f6d8f;
+
+}
+
+
+.admin-permission-info strong {
+
+  display: block;
+
+  margin-bottom: 4px;
+
+  color: #245b78;
+
+  font-size: 13px;
+
+}
+
+
+.admin-permission-info span {
+
+  display: block;
+
+  color: #4e6d7d;
+
+  font-size: 12px;
+
+  line-height: 1.5;
+
+}
+
+
+/* =========================================================
+   PERMISSIONS LOADING
+   ========================================================= */
+
+.permissions-loading {
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 12px;
+
+  min-height: 180px;
+
+  color: #607987;
+
+  font-size: 13px;
+
+}
+
+
+.permissions-loading .spinner {
+
+  width: 28px;
+
+  height: 28px;
+
+}
+
+
+/* =========================================================
+   PERMISSIONS ERROR
+   ========================================================= */
+
+.permissions-error {
+
+  margin-bottom: 18px;
+
+  padding: 11px 13px;
+
+  border-radius: 7px;
+
+  background: #fff1f1;
+
+  border: 1px solid #edc3c3;
+
+  color: #9b3d3d;
+
+  font-size: 13px;
+
+}
+
+
+/* =========================================================
+   PERMISSIONS SUCCESS
+   ========================================================= */
+
+.permissions-success {
+
+  margin-bottom: 18px;
+
+  padding: 11px 13px;
+
+  border-radius: 7px;
+
+  background: #eaf5fb;
+
+  border: 1px solid #c7e1ef;
+
+  color: #245b78;
+
+  font-size: 13px;
+
+}
+
+
+/* =========================================================
+   PERMISSIONS SECTION HEADER
+   ========================================================= */
+
+.permissions-section-header {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 15px;
+
+  margin-bottom: 12px;
+
+}
+
+
+.permissions-section-header h3 {
+
+  margin: 0;
+
+  color: #123b5d;
+
+  font-size: 15px;
+
+  font-weight: 700;
+
+}
+
+
+.permissions-section-header p {
+
+  margin: 4px 0 0;
+
+  color: #71818c;
+
+  font-size: 12px;
+
+}
+
+
+/* =========================================================
+   PERMISSION ACTIONS
+   ========================================================= */
+
+.permission-actions {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+}
+
+
+.permission-link-button {
+
+  border: none;
+
+  background: transparent;
+
+  color: #2f80b7;
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  padding: 5px 7px;
+
+  border-radius: 5px;
+
+}
+
+
+.permission-link-button:hover {
+
+  background: #eef5fb;
+
+  color: #246b99;
+
+}
+
+
+/* =========================================================
+   MODULE LIST
+   ========================================================= */
+
+.module-list {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 10px;
+
+}
+
+
+/* =========================================================
+   MODULE PERMISSION ITEM
+   ========================================================= */
+
+.module-permission-item {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 14px;
+
+  padding: 14px;
+
+  background: #ffffff;
+
+  border: 1px solid #dce7ee;
+
+  border-radius: 8px;
+
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+
+}
+
+
+.module-permission-item:hover {
+
+  background: #f8fbfd;
+
+  border-color: #bfd7e8;
+
+  box-shadow:
+    0 2px 8px
+    rgba(30, 70, 100, 0.05);
+
+}
+
+
+/* =========================================================
+   CUSTOM CHECKBOX
+   ========================================================= */
+
+.module-checkbox {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  flex-shrink: 0;
+
+}
+
+
+.module-checkbox input {
+
+  position: absolute;
+
+  opacity: 0;
+
+  pointer-events: none;
+
+}
+
+
+.custom-checkbox {
+
+  width: 20px;
+
+  height: 20px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border: 2px solid #b9ccd9;
+
+  border-radius: 5px;
+
+  background: #ffffff;
+
+  color: #ffffff;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+
+}
+
+
+.module-checkbox input:checked + .custom-checkbox {
+
+  background: #2f80b7;
+
+  border-color: #2f80b7;
+
+}
+
+
+.module-checkbox input:checked + .custom-checkbox::after {
+
+  content: "✓";
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  line-height: 1;
+
+}
+
+
+/* =========================================================
+   MODULE ICON
+   ========================================================= */
+
+.module-icon {
+
+  width: 38px;
+
+  height: 38px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 8px;
+
+  background: #edf5fa;
+
+  color: #2f6d8f;
+
+  font-size: 16px;
+
+}
+
+
+/* =========================================================
+   MODULE INFORMATION
+   ========================================================= */
+
+.module-information {
+
+  flex: 1;
+
+  min-width: 0;
+
+}
+
+
+.module-information strong {
+
+  display: block;
+
+  margin-bottom: 4px;
+
+  color: #244f68;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+}
+
+
+.module-information span {
+
+  display: block;
+
+  color: #7b8d98;
+
+  font-size: 11px;
+
+  line-height: 1.45;
+
+}
+
+
+/* =========================================================
+   MODULE STATUS
+   ========================================================= */
+
+.module-status {
+
+  flex-shrink: 0;
+
+  min-width: 82px;
+
+  text-align: right;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+}
+
+
+.module-status.permission-granted {
+
+  color: #2f6d8f;
+
+}
+
+
+.module-status.permission-denied {
+
+  color: #8a969e;
+
+}
+
+
+/* =========================================================
+   NO MODULES
+   ========================================================= */
+
+.no-modules {
+
+  padding: 35px 20px;
+
+  text-align: center;
+
+  color: #7d8d98;
+
+  font-size: 13px;
+
+  border: 1px dashed #cbdce7;
+
+  border-radius: 8px;
+
+  background: #f8fafb;
+
+}
+
+
+/* =========================================================
+   PERMISSIONS MODAL FOOTER
+   ========================================================= */
+
+.permissions-modal .modal-footer {
+
+  position: sticky;
+
+  bottom: 0;
+
+  background: #ffffff;
+
+  z-index: 2;
+
+}
+
+
+/* =========================================================
+   RESPONSIVE - PERMISSIONS
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+  .permissions-modal {
+
+    max-height: 94vh;
+
+  }
+
+
+  .permissions-body {
+
+    padding: 18px;
+
+  }
+
+
+  .permissions-section-header {
+
+    align-items: flex-start;
+
+    flex-direction: column;
+
+  }
+
+
+  .permission-actions {
+
+    width: 100%;
+
+  }
+
+
+  .permission-link-button {
+
+    padding-left: 0;
+
+  }
+
+
+  .module-permission-item {
+
+    gap: 10px;
+
+    padding: 12px;
+
+  }
+
+
+  .module-icon {
+
+    width: 34px;
+
+    height: 34px;
+
+    font-size: 14px;
+
+  }
+
+
+  .module-status {
+
+    min-width: auto;
+
+    font-size: 10px;
+
+  }
+
+}
