@@ -51,11 +51,36 @@
           "configurations": {
             "production": {
               "fileReplacements": [
-               {
-                 "replace": "src/environments/environment.ts",
-                 "with": "src/environments/environment.prod.ts"
-               }
-             ],
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ],
+
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2MB",
+                  "maximumError": "3MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "15kB",
+                  "maximumError": "20kB"
+                }
+              ],
+
+              "outputHashing": "all"
+            },
+
+            "lan": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.lan.ts"
+                }
+              ],
+
               "budgets": [
                 {
                   "type": "initial",
@@ -88,6 +113,10 @@
           "configurations": {
             "production": {
               "buildTarget": "followup-system:build:production"
+            },
+
+            "lan": {
+              "buildTarget": "followup-system:build:lan"
             },
 
             "development": {
